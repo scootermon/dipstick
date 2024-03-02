@@ -1,0 +1,17 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+import "dipstick/can/v1/driver.proto";
+import "dipstick/can/v1/frame.proto";
+
+service CanService {
+  rpc ListDrivers(ListDriversRequest) returns (ListDriversResponse);
+
+  rpc SendCanFrame(SendCanFrameRequest) returns (SendCanFrameResponse);
+}
+
+message ListDriversRequest { string id = 1; }
+message ListDriversResponse { repeated DriverInfo drivers = 1; }
+
+message SendCanFrameRequest { Frame frame = 1; }
+message SendCanFrameResponse {}

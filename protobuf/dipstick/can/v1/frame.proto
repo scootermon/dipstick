@@ -1,0 +1,25 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+import "google/protobuf/timestamp.proto";
+
+enum Protocol {
+  PROTOCOL_UNSPECIFIED = 0;
+  PROTOCOL_CLASSIC = 1;
+  PROTOCOL_FD = 2;
+}
+
+message Id {
+  uint32 value = 1;
+  bool is_extended = 2;
+}
+
+message Frame {
+  Protocol protocol = 1;
+  Id id = 2;
+  uint32 length = 3;
+  bytes data = 4;
+  bool is_remote = 5;
+  bool is_error = 6;
+  google.protobuf.Timestamp received_at = 7;
+}

@@ -1,0 +1,35 @@
+syntax = "proto3";
+package dipstick.server.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+enum LogLevel {
+  LOG_LEVEL_UNSPECIFIED = 0;
+  LOG_LEVEL_TRACE = 1;
+  LOG_LEVEL_DEBUG = 2;
+  LOG_LEVEL_INFO = 3;
+  LOG_LEVEL_WARN = 4;
+  LOG_LEVEL_ERROR = 5;
+  LOG_LEVEL_OFF = 6;
+}
+
+message LogEvent {
+  google.protobuf.Timestamp timestamp = 1;
+  LogLevel level = 2;
+  string target = 3;
+  string message = 4;
+  map<string, google.protobuf.Value> fields = 5;
+  repeated LogSpan spans = 6;
+}
+
+message LogSpan {
+  uint64 id = 1;
+  string name = 2;
+  map<string, google.protobuf.Value> fields = 3;
+}
+
+message LogConfig {
+  LogLevel default_level = 1;
+  map<string, LogLevel> target_filters = 2;
+}

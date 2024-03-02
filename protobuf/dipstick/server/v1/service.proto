@@ -1,0 +1,20 @@
+syntax = "proto3";
+package dipstick.server.v1;
+
+import "dipstick/server/v1/logging.proto";
+
+service ServerService {
+  rpc Version(VersionRequest) returns (VersionResponse);
+
+  rpc LogConfig(LogConfigRequest) returns (LogConfigResponse);
+  rpc LogSubscribe(LogSubscribeRequest) returns (stream LogSubscribeResponse);
+}
+
+message VersionRequest {}
+message VersionResponse { string version = 1; }
+
+message LogConfigRequest { LogConfig config_changes = 1; }
+message LogConfigResponse { LogConfig config = 1; }
+
+message LogSubscribeRequest {}
+message LogSubscribeResponse { LogEvent event = 1; }

@@ -1,0 +1,17 @@
+[workspace]
+members = ["packages/*"]
+resolver = "2"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/workspaces.html
+
+[workspace.package]
+authors = ["Simon Berger <simon.berger@inomotech.com>"]
+edition = "2021"
+homepage = "https://github.com/inomotech-foss/dipstick"
+repository = "https://github.com/inomotech-foss/dipstick"
+rust-version = "1.76"
+
+[workspace.dependencies]
+
+[profile.release]
+lto = true

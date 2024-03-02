@@ -1,0 +1,9 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+message DriverInfo {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string version = 4;
+}
