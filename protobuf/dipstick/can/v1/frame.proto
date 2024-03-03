@@ -3,23 +3,38 @@ package dipstick.can.v1;
 
 import "google/protobuf/timestamp.proto";
 
+// CAN frame protocol.
 enum Protocol {
+  // Unspecified
   PROTOCOL_UNSPECIFIED = 0;
+  // Classic
   PROTOCOL_CLASSIC = 1;
+  // Flexible data-rate
   PROTOCOL_FD = 2;
 }
 
+// CAN id
 message Id {
+  // 11-bit or 29-bit value depending on the is_extended field.
   uint32 value = 1;
+  // True if the id is 29-bit, false if 11-bit.
   bool is_extended = 2;
 }
 
+// CAN frame.
 message Frame {
+  // Protocol
   Protocol protocol = 1;
+  // Arbitration id
   Id id = 2;
+  // Length of the data in bytes (not DLC!).
   uint32 length = 3;
+  // Frame data (if data frame)
   bytes data = 4;
+  // True if the frame is a remote request.
   bool is_remote = 5;
+  // True if the frame is an error frame.
   bool is_error = 6;
+  // Timestamp when the frame was received. Ignored when sending.
   google.protobuf.Timestamp received_at = 7;
 }

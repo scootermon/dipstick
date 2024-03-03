@@ -1,9 +1,14 @@
 syntax = "proto3";
 package dipstick.can.v1;
 
+// CAN driver information.
 message DriverInfo {
+  // Unique ID of the driver.
   string id = 1;
+  // Human-readable name.
   string name = 2;
+  // Description of the driver.
   string description = 3;
+  // Version of the driver.
   string version = 4;
 }

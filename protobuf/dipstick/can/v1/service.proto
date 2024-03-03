@@ -4,14 +4,30 @@ package dipstick.can.v1;
 import "dipstick/can/v1/driver.proto";
 import "dipstick/can/v1/frame.proto";
 
+// CAN service
 service CanService {
+  // List all available drivers.
   rpc ListDrivers(ListDriversRequest) returns (ListDriversResponse);
 
+  // Send a single CAN frame.
   rpc SendCanFrame(SendCanFrameRequest) returns (SendCanFrameResponse);
 }
 
-message ListDriversRequest { string id = 1; }
-message ListDriversResponse { repeated DriverInfo drivers = 1; }
+// ListDrivers request
+message ListDriversRequest {
+  // Optional driver ID to filter the list of drivers.
+  string id = 1;
+}
+// ListDrivers response
+message ListDriversResponse {
+  // List of drivers.
+  repeated DriverInfo drivers = 1;
+}
 
-message SendCanFrameRequest { Frame frame = 1; }
+// SendCanFrame request
+message SendCanFrameRequest {
+  // CAN frame to send.
+  Frame frame = 1;
+}
+// SendCanFrame response
 message SendCanFrameResponse {}

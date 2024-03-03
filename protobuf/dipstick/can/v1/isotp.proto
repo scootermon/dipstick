@@ -3,7 +3,10 @@ package dipstick.can.v1;
 
 import "google/protobuf/timestamp.proto";
 
+// ISO-TP frame
 message IsotpFrame {
+  // Frame payload
   bytes data = 1;
+  // Timestamp when the frame was received. Ignored when sending.
   google.protobuf.Timestamp received_at = 7;
 }

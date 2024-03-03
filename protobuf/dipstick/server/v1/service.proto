@@ -3,18 +3,41 @@ package dipstick.server.v1;
 
 import "dipstick/server/v1/logging.proto";
 
+// Server control services.
 service ServerService {
+  // Returns the version of the server.
   rpc Version(VersionRequest) returns (VersionResponse);
 
+  // Configures or queries the server's logging.
   rpc LogConfig(LogConfigRequest) returns (LogConfigResponse);
+  // Subscribes to the server's logging.
   rpc LogSubscribe(LogSubscribeRequest) returns (stream LogSubscribeResponse);
 }
 
+// Version request
 message VersionRequest {}
-message VersionResponse { string version = 1; }
+// Version response
+message VersionResponse {
+  // The version of the server.
+  string version = 1;
+}
 
-message LogConfigRequest { LogConfig config_changes = 1; }
-message LogConfigResponse { LogConfig config = 1; }
+// LogConfig request
+message LogConfigRequest {
+  // The new logging configuration.
+  // If empty, the current configuration is returned.
+  LogConfig config = 1;
+}
+// LogConfig response
+message LogConfigResponse {
+  // The current logging configuration.
+  LogConfig config = 1;
+}
 
+// LogSubscribe request
 message LogSubscribeRequest {}
-message LogSubscribeResponse { LogEvent event = 1; }
+// LogSubscribe response
+message LogSubscribeResponse {
+  // A log event.
+  LogEvent event = 1;
+}

@@ -4,32 +4,58 @@ package dipstick.server.v1;
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";
 
+// Log level
 enum LogLevel {
+  // Unspecified
   LOG_LEVEL_UNSPECIFIED = 0;
+  // Trace
   LOG_LEVEL_TRACE = 1;
+  // Debug
   LOG_LEVEL_DEBUG = 2;
+  // Info
   LOG_LEVEL_INFO = 3;
+  // Warn
   LOG_LEVEL_WARN = 4;
+  // Error
   LOG_LEVEL_ERROR = 5;
+  // Off. Only used for filters
   LOG_LEVEL_OFF = 6;
 }
 
+// Log event
 message LogEvent {
+  // Timestamp
   google.protobuf.Timestamp timestamp = 1;
+  // Log level of the event.
   LogLevel level = 2;
+  // Target module that generated the event.
   string target = 3;
+  // Log message.
   string message = 4;
+  // Additional fields.
   map<string, google.protobuf.Value> fields = 5;
+  // Active spans.
   repeated LogSpan spans = 6;
 }
 
+// Log span
 message LogSpan {
+  // Unique id of the span.
   uint64 id = 1;
+  // Log level of the span.
+  LogLevel level = 5;
+  // User defined name of the span.
   string name = 2;
+  // Target where the span was created.
+  string target = 4;
+  // Fields.
   map<string, google.protobuf.Value> fields = 3;
 }
 
+// Log config
 message LogConfig {
+  // Default log level.
   LogLevel default_level = 1;
+  // Target-specific log levels.
   map<string, LogLevel> target_filters = 2;
 }

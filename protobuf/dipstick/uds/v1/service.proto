@@ -1,22 +1,37 @@
 syntax = "proto3";
 package dipstick.uds.v1;
 
-service UdsService { rpc Generic(GenericRequest) returns (GenericResponse); }
+// UDS service.
+service UdsService {
+  // Performs a generic request and returns the response.
+  rpc Generic(GenericRequest) returns (GenericResponse);
+}
 
+// Generic request.
 message GenericRequest {
+  // Service id.
   ServiceId service_id = 1;
+  // Sub function. Only set if the service supports it.
   optional uint32 sub_function = 2;
+  // Data.
   bytes data = 3;
 }
 
+// Generic response.
 message GenericResponse {
+  // Service id.
   ServiceId service_id = 1;
-  ErrorCode code = 2;
+  // Error code. UNSPECIFIED if the request was successful.
+  ErrorCode error = 2;
+  // Sub function. Only set if the service supports it.
   optional uint32 sub_function = 3;
+  // Data.
   bytes data = 4;
 }
 
+// UDS service id.
 enum ServiceId {
+  // Unspecified
   SERVICE_ID_UNSPECIFIED = 0;
   // DiagnosticSessionControl
   SERVICE_ID_DSC = 0x10;
@@ -60,6 +75,7 @@ enum ServiceId {
   SERVICE_ID_NR_SI = 0x3F;
 }
 
+// Error code.
 enum ErrorCode {
   // positive response
   ERROR_CODE_UNSPECIFIED = 0x00;
