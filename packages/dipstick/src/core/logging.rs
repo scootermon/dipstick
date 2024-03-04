@@ -11,7 +11,9 @@ use tracing_subscriber::util::SubscriberInitExt;
 const CHANNEL_CAPACITY: usize = 128;
 
 pub fn init() -> LoggingHandle {
-    let filter_layer = filter::Targets::new().with_default(tracing::Level::INFO);
+    let filter_layer = filter::Targets::new()
+        .with_default(tracing::Level::INFO)
+        .with_target("dipstick", tracing::Level::DEBUG);
     let (filter_layer, filter_layer_handle) = tracing_subscriber::reload::Layer::new(filter_layer);
 
     let fmt_layer = tracing_subscriber::fmt::layer().with_writer(std::io::stderr);
