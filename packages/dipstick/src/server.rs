@@ -9,13 +9,19 @@ use dipstick_proto::server::{
     VersionResponse,
 };
 use futures::stream::BoxStream;
+use futures::StreamExt;
+use tokio_stream::wrappers::BroadcastStream;
 use tonic::{Request, Response};
 
-pub struct Server {}
+pub mod logging;
+
+pub struct Server {
+    log_handle: logging::LoggingHandle,
+}
 
 impl Server {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(log_handle: logging::LoggingHandle) -> Self {
+        Self { log_handle }
     }
 
     pub fn into_server(self) -> ServerServiceServer<Self> {
@@ -27,7 +33,7 @@ impl Server {
 impl ServerService for Server {
     async fn version(
         &self,
-        request: Request<VersionRequest>,
+        _request: Request<VersionRequest>,
     ) -> tonic::Result<Response<VersionResponse>> {
         Ok(Response::new(VersionResponse {
             version: crate::consts::VERSION.to_owned(),
@@ -38,15 +44,37 @@ impl ServerService for Server {
         &self,
         request: Request<LogConfigRequest>,
     ) -> tonic::Result<Response<LogConfigResponse>> {
-        todo!()
+        let LogConfigRequest { config } = request.into_inner();
+        if let Some(config) = config {
+            // update config
+            self.log_handle
+                .set_log_config(config)
+                .map_err(|err| tonic::Status::internal(err.to_string()))?;
+        }
+
+        let Some(config) = self.log_handle.log_config() else {
+            return Err(tonic::Status::internal("subscriber dropped"));
+        };
+        Ok(Response::new(LogConfigResponse {
+            config: Some(config),
+        }))
     }
 
     type LogSubscribeStream = BoxStream<'static, tonic::Result<LogSubscribeResponse>>;
 
     async fn log_subscribe(
         &self,
-        request: Request<LogSubscribeRequest>,
+        _request: Request<LogSubscribeRequest>,
     ) -> tonic::Result<Response<Self::LogSubscribeStream>> {
-        todo!()
+        let stream = BroadcastStream::new(self.log_handle.logs_tx.subscribe())
+            .filter_map(|item| {
+                std::future::ready(match item {
+                    Ok(event) => Some(Ok(LogSubscribeResponse { event: Some(event) })),
+                    _ => None,
+                })
+            })
+            .boxed();
+
+        Ok(Response::new(stream))
     }
 }

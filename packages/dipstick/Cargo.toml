@@ -16,6 +16,7 @@ anyhow.workspace = true
 async-trait.workspace = true
 dipstick-proto.workspace = true
 futures.workspace = true
+tokio-stream.workspace = true
 tokio.workspace = true
 tonic-reflection.workspace = true
 tonic-web.workspace = true

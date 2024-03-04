@@ -7,11 +7,11 @@ mod consts;
 mod server;
 
 async fn _main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt::init();
+    let log_handle = server::logging::init();
 
     let addr = "127.0.0.1:3000".parse()?;
 
-    let server = server::Server::new();
+    let server = server::Server::new(log_handle);
     let reflection_server = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(dipstick_proto::can::FILE_DESCRIPTOR_SET)
         .register_encoded_file_descriptor_set(dipstick_proto::server::FILE_DESCRIPTOR_SET)
@@ -20,6 +20,7 @@ async fn _main() -> anyhow::Result<()> {
         .build()
         .context("build gRPC reflection server")?;
 
+    tracing::debug!("Starting server at {addr:?}");
     Server::builder()
         .accept_http1(true)
         .add_service(reflection_server)
