@@ -5,6 +5,9 @@ import "dipstick/core/v1/logging.proto";
 
 // Server control services.
 service CoreService {
+  // Shuts down the server.
+  rpc Shutdown(ShutdownRequest) returns (ShutdownResponse);
+
   // Returns the version of the server.
   rpc Version(VersionRequest) returns (VersionResponse);
 
@@ -13,6 +16,11 @@ service CoreService {
   // Subscribes to the server's logging.
   rpc LogSubscribe(LogSubscribeRequest) returns (stream LogSubscribeResponse);
 }
+
+// Shutdown request
+message ShutdownRequest {}
+// Shutdown response
+message ShutdownResponse {}
 
 // Version request
 message VersionRequest {}

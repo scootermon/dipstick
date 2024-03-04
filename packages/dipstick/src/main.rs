@@ -1,6 +1,7 @@
 use std::process::ExitCode;
 
 use anyhow::Context;
+use tokio::sync::mpsc;
 use tonic::transport::Server;
 
 use crate::core::Core;
@@ -11,9 +12,21 @@ mod core;
 async fn _main() -> anyhow::Result<()> {
     let log_handle = core::logging::init();
 
-    let addr = "127.0.0.1:3000".parse()?;
+    let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
+    tokio::spawn({
+        let shutdown_tx = shutdown_tx.clone();
+        async move {
+            if let Err(err) = tokio::signal::ctrl_c().await {
+                tracing::error!("failed to register signal handler for ctrl-c: {err}");
+                return;
+            }
 
-    let server = Core::new(log_handle);
+            tracing::info!("received ctrl-c");
+            let _ = shutdown_tx.send(()).await;
+        }
+    });
+
+    let server = Core::new(log_handle, shutdown_tx);
     let reflection_server = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(dipstick_proto::can::FILE_DESCRIPTOR_SET)
         .register_encoded_file_descriptor_set(dipstick_proto::core::FILE_DESCRIPTOR_SET)
@@ -23,15 +36,23 @@ async fn _main() -> anyhow::Result<()> {
         .build()
         .context("build gRPC reflection server")?;
 
-    tracing::debug!("Starting server at {addr:?}");
-    Server::builder()
+    let addr = "127.0.0.1:3000".parse()?;
+    tracing::debug!("starting server at {addr:?}");
+    let res = Server::builder()
         .accept_http1(true)
-        .add_service(reflection_server)
+        .add_service(tonic_web::enable(reflection_server))
         .add_service(tonic_web::enable(server.into_server()))
-        .serve(addr)
-        .await?;
+        .serve_with_shutdown(addr, async {
+            shutdown_rx.recv().await;
+        })
+        .await
+        .map_err(anyhow::Error::from);
 
-    Ok(())
+    tracing::info!("shutting down");
+
+    // TODO: wait for all tasks to finish
+
+    res
 }
 
 #[tokio::main]
@@ -39,7 +60,7 @@ async fn main() -> ExitCode {
     match _main().await {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
-            eprintln!("Error: {err:?}");
+            eprintln!("error: {err:?}");
             ExitCode::FAILURE
         }
     }

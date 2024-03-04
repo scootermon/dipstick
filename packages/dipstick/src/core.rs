@@ -5,11 +5,14 @@ use dipstick_proto::core::{
     LogConfigResponse,
     LogSubscribeRequest,
     LogSubscribeResponse,
+    ShutdownRequest,
+    ShutdownResponse,
     VersionRequest,
     VersionResponse,
 };
 use futures::stream::BoxStream;
 use futures::StreamExt;
+use tokio::sync::mpsc;
 use tokio_stream::wrappers::BroadcastStream;
 use tonic::{Request, Response};
 
@@ -17,11 +20,15 @@ pub mod logging;
 
 pub struct Core {
     log_handle: logging::LoggingHandle,
+    shutdown_tx: mpsc::Sender<()>,
 }
 
 impl Core {
-    pub fn new(log_handle: logging::LoggingHandle) -> Self {
-        Self { log_handle }
+    pub fn new(log_handle: logging::LoggingHandle, shutdown_tx: mpsc::Sender<()>) -> Self {
+        Self {
+            log_handle,
+            shutdown_tx,
+        }
     }
 
     pub fn into_server(self) -> CoreServiceServer<Self> {
@@ -31,6 +38,15 @@ impl Core {
 
 #[async_trait::async_trait]
 impl CoreService for Core {
+    async fn shutdown(
+        &self,
+        _request: Request<ShutdownRequest>,
+    ) -> tonic::Result<Response<ShutdownResponse>> {
+        tracing::info!("received shutdown request");
+        let _ = self.shutdown_tx.send(()).await;
+        Ok(Response::new(ShutdownResponse {}))
+    }
+
     async fn version(
         &self,
         _request: Request<VersionRequest>,
