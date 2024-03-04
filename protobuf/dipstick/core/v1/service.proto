@@ -1,10 +1,10 @@
 syntax = "proto3";
-package dipstick.server.v1;
+package dipstick.core.v1;
 
-import "dipstick/server/v1/logging.proto";
+import "dipstick/core/v1/logging.proto";
 
 // Server control services.
-service ServerService {
+service CoreService {
   // Returns the version of the server.
   rpc Version(VersionRequest) returns (VersionResponse);
 

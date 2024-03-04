@@ -3,18 +3,21 @@ use std::process::ExitCode;
 use anyhow::Context;
 use tonic::transport::Server;
 
+use crate::core::Core;
+
 mod consts;
-mod server;
+mod core;
 
 async fn _main() -> anyhow::Result<()> {
-    let log_handle = server::logging::init();
+    let log_handle = core::logging::init();
 
     let addr = "127.0.0.1:3000".parse()?;
 
-    let server = server::Server::new(log_handle);
+    let server = Core::new(log_handle);
     let reflection_server = tonic_reflection::server::Builder::configure()
         .register_encoded_file_descriptor_set(dipstick_proto::can::FILE_DESCRIPTOR_SET)
-        .register_encoded_file_descriptor_set(dipstick_proto::server::FILE_DESCRIPTOR_SET)
+        .register_encoded_file_descriptor_set(dipstick_proto::core::FILE_DESCRIPTOR_SET)
+        .register_encoded_file_descriptor_set(dipstick_proto::isotp::FILE_DESCRIPTOR_SET)
         .register_encoded_file_descriptor_set(dipstick_proto::uds::FILE_DESCRIPTOR_SET)
         .register_encoded_file_descriptor_set(dipstick_proto::wkt::FILE_DESCRIPTOR_SET)
         .build()

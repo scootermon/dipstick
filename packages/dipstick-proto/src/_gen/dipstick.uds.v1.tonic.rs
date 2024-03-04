@@ -84,11 +84,11 @@ pub mod uds_service_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        pub async fn generic(
+        pub async fn session_open(
             &mut self,
-            request: impl tonic::IntoRequest<super::GenericRequest>,
+            request: impl tonic::IntoRequest<super::SessionOpenRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::GenericResponse>,
+            tonic::Response<super::SessionOpenResponse>,
             tonic::Status,
         > {
             self.inner
@@ -102,11 +102,86 @@ pub mod uds_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.uds.v1.UdsService/Generic",
+                "/dipstick.uds.v1.UdsService/SessionOpen",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.uds.v1.UdsService", "Generic"));
+                .insert(GrpcMethod::new("dipstick.uds.v1.UdsService", "SessionOpen"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn session_list(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SessionListRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SessionListResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.uds.v1.UdsService/SessionList",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.uds.v1.UdsService", "SessionList"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn session_close(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SessionCloseRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SessionCloseResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.uds.v1.UdsService/SessionClose",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.uds.v1.UdsService", "SessionClose"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn svc_generic(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SvcGenericRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SvcGenericResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.uds.v1.UdsService/SvcGeneric",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.uds.v1.UdsService", "SvcGeneric"));
             self.inner.unary(req, path, codec).await
         }
     }
@@ -118,10 +193,34 @@ pub mod uds_service_server {
     /// Generated trait containing gRPC methods that should be implemented for use with UdsServiceServer.
     #[async_trait]
     pub trait UdsService: Send + Sync + 'static {
-        async fn generic(
+        async fn session_open(
             &self,
-            request: tonic::Request<super::GenericRequest>,
-        ) -> std::result::Result<tonic::Response<super::GenericResponse>, tonic::Status>;
+            request: tonic::Request<super::SessionOpenRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SessionOpenResponse>,
+            tonic::Status,
+        >;
+        async fn session_list(
+            &self,
+            request: tonic::Request<super::SessionListRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SessionListResponse>,
+            tonic::Status,
+        >;
+        async fn session_close(
+            &self,
+            request: tonic::Request<super::SessionCloseRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SessionCloseResponse>,
+            tonic::Status,
+        >;
+        async fn svc_generic(
+            &self,
+            request: tonic::Request<super::SvcGenericRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SvcGenericResponse>,
+            tonic::Status,
+        >;
     }
     #[derive(Debug)]
     pub struct UdsServiceServer<T: UdsService> {
@@ -202,25 +301,25 @@ pub mod uds_service_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/dipstick.uds.v1.UdsService/Generic" => {
+                "/dipstick.uds.v1.UdsService/SessionOpen" => {
                     #[allow(non_camel_case_types)]
-                    struct GenericSvc<T: UdsService>(pub Arc<T>);
+                    struct SessionOpenSvc<T: UdsService>(pub Arc<T>);
                     impl<
                         T: UdsService,
-                    > tonic::server::UnaryService<super::GenericRequest>
-                    for GenericSvc<T> {
-                        type Response = super::GenericResponse;
+                    > tonic::server::UnaryService<super::SessionOpenRequest>
+                    for SessionOpenSvc<T> {
+                        type Response = super::SessionOpenResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::GenericRequest>,
+                            request: tonic::Request<super::SessionOpenRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as UdsService>::generic(&inner, request).await
+                                <T as UdsService>::session_open(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -232,7 +331,145 @@ pub mod uds_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = GenericSvc(inner);
+                        let method = SessionOpenSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.uds.v1.UdsService/SessionList" => {
+                    #[allow(non_camel_case_types)]
+                    struct SessionListSvc<T: UdsService>(pub Arc<T>);
+                    impl<
+                        T: UdsService,
+                    > tonic::server::UnaryService<super::SessionListRequest>
+                    for SessionListSvc<T> {
+                        type Response = super::SessionListResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::SessionListRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as UdsService>::session_list(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = SessionListSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.uds.v1.UdsService/SessionClose" => {
+                    #[allow(non_camel_case_types)]
+                    struct SessionCloseSvc<T: UdsService>(pub Arc<T>);
+                    impl<
+                        T: UdsService,
+                    > tonic::server::UnaryService<super::SessionCloseRequest>
+                    for SessionCloseSvc<T> {
+                        type Response = super::SessionCloseResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::SessionCloseRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as UdsService>::session_close(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = SessionCloseSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.uds.v1.UdsService/SvcGeneric" => {
+                    #[allow(non_camel_case_types)]
+                    struct SvcGenericSvc<T: UdsService>(pub Arc<T>);
+                    impl<
+                        T: UdsService,
+                    > tonic::server::UnaryService<super::SvcGenericRequest>
+                    for SvcGenericSvc<T> {
+                        type Response = super::SvcGenericResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::SvcGenericRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as UdsService>::svc_generic(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = SvcGenericSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

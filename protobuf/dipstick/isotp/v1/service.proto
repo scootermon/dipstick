@@ -1,0 +1,5 @@
+syntax = "proto3";
+package dipstick.isotp.v1;
+
+// ISO-TP service
+service IsotpService {}

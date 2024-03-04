@@ -1,10 +1,10 @@
-use dipstick_proto::server::{
+use dipstick_proto::core::{
+    CoreService,
+    CoreServiceServer,
     LogConfigRequest,
     LogConfigResponse,
     LogSubscribeRequest,
     LogSubscribeResponse,
-    ServerService,
-    ServerServiceServer,
     VersionRequest,
     VersionResponse,
 };
@@ -15,22 +15,22 @@ use tonic::{Request, Response};
 
 pub mod logging;
 
-pub struct Server {
+pub struct Core {
     log_handle: logging::LoggingHandle,
 }
 
-impl Server {
+impl Core {
     pub fn new(log_handle: logging::LoggingHandle) -> Self {
         Self { log_handle }
     }
 
-    pub fn into_server(self) -> ServerServiceServer<Self> {
-        ServerServiceServer::new(self)
+    pub fn into_server(self) -> CoreServiceServer<Self> {
+        CoreServiceServer::new(self)
     }
 }
 
 #[async_trait::async_trait]
-impl ServerService for Server {
+impl CoreService for Core {
     async fn version(
         &self,
         _request: Request<VersionRequest>,

@@ -1,10 +1,10 @@
 syntax = "proto3";
-package dipstick.can.v1;
+package dipstick.isotp.v1;
 
 import "google/protobuf/timestamp.proto";
 
 // ISO-TP frame
-message IsotpFrame {
+message Frame {
   // Frame payload
   bytes data = 1;
   // Timestamp when the frame was received. Ignored when sending.

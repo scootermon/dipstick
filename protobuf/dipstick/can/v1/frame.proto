@@ -27,7 +27,7 @@ message Frame {
   Protocol protocol = 1;
   // Arbitration id
   Id id = 2;
-  // Length of the data in bytes (not DLC!).
+  // Length of the data in bytes (not DLC!). Only relevant for remote frames.
   uint32 length = 3;
   // Frame data (if data frame)
   bytes data = 4;

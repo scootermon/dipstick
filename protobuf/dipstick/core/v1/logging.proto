@@ -1,5 +1,5 @@
 syntax = "proto3";
-package dipstick.server.v1;
+package dipstick.core.v1;
 
 import "google/protobuf/struct.proto";
 import "google/protobuf/timestamp.proto";

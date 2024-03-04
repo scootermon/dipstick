@@ -11,11 +11,19 @@ pub mod can {
     pub use self::can_service_client::CanServiceClient;
     pub use self::can_service_server::{CanService, CanServiceServer};
 }
-pub mod server {
-    include!("_gen/dipstick.server.v1.rs");
 
-    pub use self::server_service_client::ServerServiceClient;
-    pub use self::server_service_server::{ServerService, ServerServiceServer};
+pub mod core {
+    include!("_gen/dipstick.core.v1.rs");
+
+    pub use self::core_service_client::CoreServiceClient;
+    pub use self::core_service_server::{CoreService, CoreServiceServer};
+}
+
+pub mod isotp {
+    include!("_gen/dipstick.isotp.v1.rs");
+
+    pub use self::isotp_service_client::IsotpServiceClient;
+    pub use self::isotp_service_server::{IsotpService, IsotpServiceServer};
 }
 
 pub mod uds {

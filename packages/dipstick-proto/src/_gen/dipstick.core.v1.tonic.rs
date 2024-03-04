@@ -1,14 +1,14 @@
 // @generated
 /// Generated client implementations.
-pub mod server_service_client {
+pub mod core_service_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
-    pub struct ServerServiceClient<T> {
+    pub struct CoreServiceClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl ServerServiceClient<tonic::transport::Channel> {
+    impl CoreServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -19,7 +19,7 @@ pub mod server_service_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> ServerServiceClient<T>
+    impl<T> CoreServiceClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
@@ -37,7 +37,7 @@ pub mod server_service_client {
         pub fn with_interceptor<F>(
             inner: T,
             interceptor: F,
-        ) -> ServerServiceClient<InterceptedService<T, F>>
+        ) -> CoreServiceClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -51,7 +51,7 @@ pub mod server_service_client {
                 http::Request<tonic::body::BoxBody>,
             >>::Error: Into<StdError> + Send + Sync,
         {
-            ServerServiceClient::new(InterceptedService::new(inner, interceptor))
+            CoreServiceClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -102,11 +102,11 @@ pub mod server_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.server.v1.ServerService/Version",
+                "/dipstick.core.v1.CoreService/Version",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.server.v1.ServerService", "Version"));
+                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "Version"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn log_config(
@@ -127,13 +127,11 @@ pub mod server_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.server.v1.ServerService/LogConfig",
+                "/dipstick.core.v1.CoreService/LogConfig",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dipstick.server.v1.ServerService", "LogConfig"),
-                );
+                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "LogConfig"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn log_subscribe(
@@ -154,24 +152,22 @@ pub mod server_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.server.v1.ServerService/LogSubscribe",
+                "/dipstick.core.v1.CoreService/LogSubscribe",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dipstick.server.v1.ServerService", "LogSubscribe"),
-                );
+                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "LogSubscribe"));
             self.inner.server_streaming(req, path, codec).await
         }
     }
 }
 /// Generated server implementations.
-pub mod server_service_server {
+pub mod core_service_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    /// Generated trait containing gRPC methods that should be implemented for use with ServerServiceServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with CoreServiceServer.
     #[async_trait]
-    pub trait ServerService: Send + Sync + 'static {
+    pub trait CoreService: Send + Sync + 'static {
         async fn version(
             &self,
             request: tonic::Request<super::VersionRequest>,
@@ -198,7 +194,7 @@ pub mod server_service_server {
         >;
     }
     #[derive(Debug)]
-    pub struct ServerServiceServer<T: ServerService> {
+    pub struct CoreServiceServer<T: CoreService> {
         inner: _Inner<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
@@ -206,7 +202,7 @@ pub mod server_service_server {
         max_encoding_message_size: Option<usize>,
     }
     struct _Inner<T>(Arc<T>);
-    impl<T: ServerService> ServerServiceServer<T> {
+    impl<T: CoreService> CoreServiceServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -258,9 +254,9 @@ pub mod server_service_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for ServerServiceServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for CoreServiceServer<T>
     where
-        T: ServerService,
+        T: CoreService,
         B: Body + Send + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -276,11 +272,11 @@ pub mod server_service_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/dipstick.server.v1.ServerService/Version" => {
+                "/dipstick.core.v1.CoreService/Version" => {
                     #[allow(non_camel_case_types)]
-                    struct VersionSvc<T: ServerService>(pub Arc<T>);
+                    struct VersionSvc<T: CoreService>(pub Arc<T>);
                     impl<
-                        T: ServerService,
+                        T: CoreService,
                     > tonic::server::UnaryService<super::VersionRequest>
                     for VersionSvc<T> {
                         type Response = super::VersionResponse;
@@ -294,7 +290,7 @@ pub mod server_service_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as ServerService>::version(&inner, request).await
+                                <T as CoreService>::version(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -322,11 +318,11 @@ pub mod server_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.server.v1.ServerService/LogConfig" => {
+                "/dipstick.core.v1.CoreService/LogConfig" => {
                     #[allow(non_camel_case_types)]
-                    struct LogConfigSvc<T: ServerService>(pub Arc<T>);
+                    struct LogConfigSvc<T: CoreService>(pub Arc<T>);
                     impl<
-                        T: ServerService,
+                        T: CoreService,
                     > tonic::server::UnaryService<super::LogConfigRequest>
                     for LogConfigSvc<T> {
                         type Response = super::LogConfigResponse;
@@ -340,7 +336,7 @@ pub mod server_service_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as ServerService>::log_config(&inner, request).await
+                                <T as CoreService>::log_config(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -368,11 +364,11 @@ pub mod server_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.server.v1.ServerService/LogSubscribe" => {
+                "/dipstick.core.v1.CoreService/LogSubscribe" => {
                     #[allow(non_camel_case_types)]
-                    struct LogSubscribeSvc<T: ServerService>(pub Arc<T>);
+                    struct LogSubscribeSvc<T: CoreService>(pub Arc<T>);
                     impl<
-                        T: ServerService,
+                        T: CoreService,
                     > tonic::server::ServerStreamingService<super::LogSubscribeRequest>
                     for LogSubscribeSvc<T> {
                         type Response = super::LogSubscribeResponse;
@@ -387,7 +383,7 @@ pub mod server_service_server {
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as ServerService>::log_subscribe(&inner, request).await
+                                <T as CoreService>::log_subscribe(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -430,7 +426,7 @@ pub mod server_service_server {
             }
         }
     }
-    impl<T: ServerService> Clone for ServerServiceServer<T> {
+    impl<T: CoreService> Clone for CoreServiceServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -442,7 +438,7 @@ pub mod server_service_server {
             }
         }
     }
-    impl<T: ServerService> Clone for _Inner<T> {
+    impl<T: CoreService> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(Arc::clone(&self.0))
         }
@@ -452,7 +448,7 @@ pub mod server_service_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: ServerService> tonic::server::NamedService for ServerServiceServer<T> {
-        const NAME: &'static str = "dipstick.server.v1.ServerService";
+    impl<T: CoreService> tonic::server::NamedService for CoreServiceServer<T> {
+        const NAME: &'static str = "dipstick.core.v1.CoreService";
     }
 }
