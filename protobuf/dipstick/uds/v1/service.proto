@@ -43,8 +43,8 @@ message SessionCloseResponse {}
 
 // SvcGeneric request.
 message SvcGenericRequest {
-  // Interface to use.
-  uint64 interface_id = 1;
+  // Session to use.
+  uint64 session_id = 1;
   // UDS request.
   Request request = 2;
 }
