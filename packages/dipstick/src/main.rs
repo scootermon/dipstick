@@ -4,10 +4,14 @@ use anyhow::Context;
 use tokio::sync::mpsc;
 use tonic::transport::Server;
 
+use self::can::Can;
 use crate::core::Core;
+use crate::xcp::Xcp;
 
+mod can;
 mod consts;
 mod core;
+mod xcp;
 
 async fn _main() -> anyhow::Result<()> {
     let log_handle = core::logging::init();
@@ -26,22 +30,22 @@ async fn _main() -> anyhow::Result<()> {
         }
     });
 
-    let server = Core::new(log_handle, shutdown_tx);
-    let reflection_server = tonic_reflection::server::Builder::configure()
-        .register_encoded_file_descriptor_set(dipstick_proto::can::FILE_DESCRIPTOR_SET)
-        .register_encoded_file_descriptor_set(dipstick_proto::core::FILE_DESCRIPTOR_SET)
-        .register_encoded_file_descriptor_set(dipstick_proto::isotp::FILE_DESCRIPTOR_SET)
-        .register_encoded_file_descriptor_set(dipstick_proto::uds::FILE_DESCRIPTOR_SET)
-        .register_encoded_file_descriptor_set(dipstick_proto::wkt::FILE_DESCRIPTOR_SET)
+    let core = Core::new(log_handle, shutdown_tx);
+    let can = Can::new();
+    let xcp = Xcp::new();
+
+    let reflection_server = reflection_server_builder()
         .build()
-        .context("build gRPC reflection server")?;
+        .context("build reflection server")?;
 
     let addr = "127.0.0.1:3000".parse()?;
     tracing::debug!("starting server at {addr:?}");
     let res = Server::builder()
         .accept_http1(true)
         .add_service(tonic_web::enable(reflection_server))
-        .add_service(tonic_web::enable(server.into_server()))
+        .add_service(tonic_web::enable(core.into_server()))
+        .add_service(tonic_web::enable(can.into_server()))
+        .add_service(tonic_web::enable(xcp.into_server()))
         .serve_with_shutdown(addr, async {
             shutdown_rx.recv().await;
         })
@@ -55,12 +59,27 @@ async fn _main() -> anyhow::Result<()> {
     res
 }
 
+fn reflection_server_builder() -> tonic_reflection::server::Builder<'static> {
+    let mut builder = tonic_reflection::server::Builder::configure();
+    for file_descriptor_set in &[
+        dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
+        dipstick_proto::core::v1::FILE_DESCRIPTOR_SET,
+        dipstick_proto::isotp::v1::FILE_DESCRIPTOR_SET,
+        dipstick_proto::uds::v1::FILE_DESCRIPTOR_SET,
+        dipstick_proto::wkt::FILE_DESCRIPTOR_SET,
+        dipstick_proto::xcp::v1::FILE_DESCRIPTOR_SET,
+    ] {
+        builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);
+    }
+    builder
+}
+
 #[tokio::main]
 async fn main() -> ExitCode {
     match _main().await {
         Ok(_) => ExitCode::SUCCESS,
         Err(err) => {
-            eprintln!("error: {err:?}");
+            eprintln!("FATAL: {err:?}");
             ExitCode::FAILURE
         }
     }

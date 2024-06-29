@@ -3,45 +3,48 @@ package dipstick.can.v1;
 
 import "dipstick/can/v1/driver.proto";
 import "dipstick/can/v1/frame.proto";
-import "dipstick/can/v1/interface.proto";
+import "dipstick/can/v1/socket.proto";
 
 // CAN service
 service CanService {
-  // List all available drivers.
-  rpc DriverList(DriverListRequest) returns (DriverListResponse);
+  // Lists all available drivers.
+  rpc ListDrivers(ListDriversRequest) returns (ListDriversResponse);
 
-  // Opens a new CAN interface.
-  rpc InterfaceOpen(InterfaceOpenRequest) returns (InterfaceOpenResponse);
+  // Creates a new CAN socket.
+  rpc CreateSocket(CreateSocketRequest) returns (CreateSocketResponse);
 
-  // Send a single CAN frame.
-  rpc SendCanFrame(SendCanFrameRequest) returns (SendCanFrameResponse);
+  // Sends a single CAN frame.
+  rpc SendFrame(SendFrameRequest) returns (SendFrameResponse);
 }
 
-// DriverList request
-message DriverListRequest {
+// ListDrivers request
+message ListDriversRequest {
   // Optional driver ID to filter the list of drivers.
   string id = 1;
 }
-// DriverList response
-message DriverListResponse {
+
+// ListDrivers response
+message ListDriversResponse {
   // List of drivers.
   repeated DriverInfo drivers = 1;
 }
 
-// InterfaceOpen request
-message InterfaceOpenRequest {}
-// InterfaceOpen response
-message InterfaceOpenResponse {
-  // Interface info.
-  InterfaceInfo interface = 1;
+// CreateSocket request
+message CreateSocketRequest {}
+
+// CreateSocket response
+message CreateSocketResponse {
+  // Socket info.
+  SocketInfo socket = 1;
 }
 
-// SendCanFrame request
-message SendCanFrameRequest {
-  // Interface id to send the frame to.
-  uint64 interface_id = 1;
+// SendFrame request
+message SendFrameRequest {
+  // Socket id to send the frame to.
+  uint64 socket_id = 1;
   // CAN frame to send.
   Frame frame = 2;
 }
-// SendCanFrame response
-message SendCanFrameResponse {}
+
+// SendFrame response
+message SendFrameResponse {}

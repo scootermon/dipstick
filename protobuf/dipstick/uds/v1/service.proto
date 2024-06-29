@@ -19,6 +19,7 @@ service UdsService {
 
 // SessionOpen request.
 message SessionOpenRequest {}
+
 // SessionOpen response.
 message SessionOpenResponse {
   // Session info.
@@ -27,6 +28,7 @@ message SessionOpenResponse {
 
 // SessionList request.
 message SessionListRequest {}
+
 // SessionList response.
 message SessionListResponse {
   // List of sessions.
@@ -38,6 +40,7 @@ message SessionCloseRequest {
   // Id of the session to close.
   uint64 id = 1;
 }
+
 // SessionClose response.
 message SessionCloseResponse {}
 
@@ -48,6 +51,7 @@ message SvcGenericRequest {
   // UDS request.
   Request request = 2;
 }
+
 // SvcGeneric response.
 message SvcGenericResponse {
   // UDS response.

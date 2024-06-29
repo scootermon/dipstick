@@ -19,11 +19,13 @@ service CoreService {
 
 // Shutdown request
 message ShutdownRequest {}
+
 // Shutdown response
 message ShutdownResponse {}
 
 // Version request
 message VersionRequest {}
+
 // Version response
 message VersionResponse {
   // The version of the server.
@@ -36,6 +38,7 @@ message LogConfigRequest {
   // If empty, the current configuration is returned.
   LogConfig config = 1;
 }
+
 // LogConfig response
 message LogConfigResponse {
   // The current logging configuration.
@@ -44,6 +47,7 @@ message LogConfigResponse {
 
 // LogSubscribe request
 message LogSubscribeRequest {}
+
 // LogSubscribe response
 message LogSubscribeResponse {
   // A log event.

@@ -6,23 +6,29 @@ resolver = "2"
 
 [workspace.package]
 authors = ["Simon Berger <simon.berger@inomotech.com>"]
+categories = []
 edition = "2021"
 homepage = "https://github.com/inomotech-foss/dipstick"
+keywords = []
+license = "MIT OR Apache-2.0"
 repository = "https://github.com/inomotech-foss/dipstick"
-rust-version = "1.76"
+rust-version = "1.79"
 
 [workspace.dependencies]
 dipstick-proto = { path = "packages/dipstick-proto" }
 
 anyhow = "1"
 async-trait = "0.1"
+bytes = "1"
 futures = "0.3"
 prost = "0.12"
 prost-types = "0.12"
 protoc-wkt = "1"
+rand = "0.8"
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1", features = ["full"] }
 tonic = "0.11"
+tonic-build = "0.11"
 tonic-reflection = "0.11"
 tonic-web = "0.11"
 tracing = "0.1"

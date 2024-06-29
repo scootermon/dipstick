@@ -4,8 +4,8 @@
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct Frame {
     /// Frame payload
-    #[prost(bytes="vec", tag="1")]
-    pub data: ::prost::alloc::vec::Vec<u8>,
+    #[prost(bytes="bytes", tag="1")]
+    pub data: ::prost::bytes::Bytes,
     /// Timestamp when the frame was received. Ignored when sending.
     #[prost(message, optional, tag="7")]
     pub received_at: ::core::option::Option<::prost_types::Timestamp>,

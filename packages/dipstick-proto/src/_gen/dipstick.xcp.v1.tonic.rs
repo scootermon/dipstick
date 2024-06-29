@@ -1,14 +1,14 @@
 // @generated
 /// Generated client implementations.
-pub mod can_service_client {
+pub mod xcp_service_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
-    pub struct CanServiceClient<T> {
+    pub struct XcpServiceClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl CanServiceClient<tonic::transport::Channel> {
+    impl XcpServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -19,7 +19,7 @@ pub mod can_service_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> CanServiceClient<T>
+    impl<T> XcpServiceClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
@@ -37,7 +37,7 @@ pub mod can_service_client {
         pub fn with_interceptor<F>(
             inner: T,
             interceptor: F,
-        ) -> CanServiceClient<InterceptedService<T, F>>
+        ) -> XcpServiceClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -51,7 +51,7 @@ pub mod can_service_client {
                 http::Request<tonic::body::BoxBody>,
             >>::Error: Into<StdError> + Send + Sync,
         {
-            CanServiceClient::new(InterceptedService::new(inner, interceptor))
+            XcpServiceClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -84,13 +84,10 @@ pub mod can_service_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        pub async fn list_drivers(
+        pub async fn create(
             &mut self,
-            request: impl tonic::IntoRequest<super::ListDriversRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListDriversResponse>,
-            tonic::Status,
-        > {
+            request: impl tonic::IntoRequest<super::CreateRequest>,
+        ) -> std::result::Result<tonic::Response<super::CreateResponse>, tonic::Status> {
             self.inner
                 .ready()
                 .await
@@ -102,18 +99,18 @@ pub mod can_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.can.v1.CanService/ListDrivers",
+                "/dipstick.xcp.v1.XcpService/Create",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "ListDrivers"));
+                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "Create"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn create_socket(
+        pub async fn destroy(
             &mut self,
-            request: impl tonic::IntoRequest<super::CreateSocketRequest>,
+            request: impl tonic::IntoRequest<super::DestroyRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::CreateSocketResponse>,
+            tonic::Response<super::DestroyResponse>,
             tonic::Status,
         > {
             self.inner
@@ -127,18 +124,18 @@ pub mod can_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.can.v1.CanService/CreateSocket",
+                "/dipstick.xcp.v1.XcpService/Destroy",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "CreateSocket"));
+                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "Destroy"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn send_frame(
+        pub async fn connect_session(
             &mut self,
-            request: impl tonic::IntoRequest<super::SendFrameRequest>,
+            request: impl tonic::IntoRequest<super::ConnectSessionRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::SendFrameResponse>,
+            tonic::Response<super::ConnectSessionResponse>,
             tonic::Status,
         > {
             self.inner
@@ -152,46 +149,69 @@ pub mod can_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.can.v1.CanService/SendFrame",
+                "/dipstick.xcp.v1.XcpService/ConnectSession",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "SendFrame"));
+                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "ConnectSession"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn command(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CommandRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::CommandResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.xcp.v1.XcpService/Command",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "Command"));
             self.inner.unary(req, path, codec).await
         }
     }
 }
 /// Generated server implementations.
-pub mod can_service_server {
+pub mod xcp_service_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    /// Generated trait containing gRPC methods that should be implemented for use with CanServiceServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with XcpServiceServer.
     #[async_trait]
-    pub trait CanService: Send + Sync + 'static {
-        async fn list_drivers(
+    pub trait XcpService: Send + Sync + 'static {
+        async fn create(
             &self,
-            request: tonic::Request<super::ListDriversRequest>,
+            request: tonic::Request<super::CreateRequest>,
+        ) -> std::result::Result<tonic::Response<super::CreateResponse>, tonic::Status>;
+        async fn destroy(
+            &self,
+            request: tonic::Request<super::DestroyRequest>,
+        ) -> std::result::Result<tonic::Response<super::DestroyResponse>, tonic::Status>;
+        async fn connect_session(
+            &self,
+            request: tonic::Request<super::ConnectSessionRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::ListDriversResponse>,
+            tonic::Response<super::ConnectSessionResponse>,
             tonic::Status,
         >;
-        async fn create_socket(
+        async fn command(
             &self,
-            request: tonic::Request<super::CreateSocketRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::CreateSocketResponse>,
-            tonic::Status,
-        >;
-        async fn send_frame(
-            &self,
-            request: tonic::Request<super::SendFrameRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::SendFrameResponse>,
-            tonic::Status,
-        >;
+            request: tonic::Request<super::CommandRequest>,
+        ) -> std::result::Result<tonic::Response<super::CommandResponse>, tonic::Status>;
     }
     #[derive(Debug)]
-    pub struct CanServiceServer<T: CanService> {
+    pub struct XcpServiceServer<T: XcpService> {
         inner: _Inner<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
@@ -199,7 +219,7 @@ pub mod can_service_server {
         max_encoding_message_size: Option<usize>,
     }
     struct _Inner<T>(Arc<T>);
-    impl<T: CanService> CanServiceServer<T> {
+    impl<T: XcpService> XcpServiceServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -251,9 +271,9 @@ pub mod can_service_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for CanServiceServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for XcpServiceServer<T>
     where
-        T: CanService,
+        T: XcpService,
         B: Body + Send + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -269,25 +289,23 @@ pub mod can_service_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/dipstick.can.v1.CanService/ListDrivers" => {
+                "/dipstick.xcp.v1.XcpService/Create" => {
                     #[allow(non_camel_case_types)]
-                    struct ListDriversSvc<T: CanService>(pub Arc<T>);
-                    impl<
-                        T: CanService,
-                    > tonic::server::UnaryService<super::ListDriversRequest>
-                    for ListDriversSvc<T> {
-                        type Response = super::ListDriversResponse;
+                    struct CreateSvc<T: XcpService>(pub Arc<T>);
+                    impl<T: XcpService> tonic::server::UnaryService<super::CreateRequest>
+                    for CreateSvc<T> {
+                        type Response = super::CreateResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::ListDriversRequest>,
+                            request: tonic::Request<super::CreateRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as CanService>::list_drivers(&inner, request).await
+                                <T as XcpService>::create(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -299,7 +317,7 @@ pub mod can_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = ListDriversSvc(inner);
+                        let method = CreateSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -315,25 +333,25 @@ pub mod can_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.can.v1.CanService/CreateSocket" => {
+                "/dipstick.xcp.v1.XcpService/Destroy" => {
                     #[allow(non_camel_case_types)]
-                    struct CreateSocketSvc<T: CanService>(pub Arc<T>);
+                    struct DestroySvc<T: XcpService>(pub Arc<T>);
                     impl<
-                        T: CanService,
-                    > tonic::server::UnaryService<super::CreateSocketRequest>
-                    for CreateSocketSvc<T> {
-                        type Response = super::CreateSocketResponse;
+                        T: XcpService,
+                    > tonic::server::UnaryService<super::DestroyRequest>
+                    for DestroySvc<T> {
+                        type Response = super::DestroyResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::CreateSocketRequest>,
+                            request: tonic::Request<super::DestroyRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as CanService>::create_socket(&inner, request).await
+                                <T as XcpService>::destroy(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -345,7 +363,7 @@ pub mod can_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = CreateSocketSvc(inner);
+                        let method = DestroySvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -361,25 +379,25 @@ pub mod can_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.can.v1.CanService/SendFrame" => {
+                "/dipstick.xcp.v1.XcpService/ConnectSession" => {
                     #[allow(non_camel_case_types)]
-                    struct SendFrameSvc<T: CanService>(pub Arc<T>);
+                    struct ConnectSessionSvc<T: XcpService>(pub Arc<T>);
                     impl<
-                        T: CanService,
-                    > tonic::server::UnaryService<super::SendFrameRequest>
-                    for SendFrameSvc<T> {
-                        type Response = super::SendFrameResponse;
+                        T: XcpService,
+                    > tonic::server::UnaryService<super::ConnectSessionRequest>
+                    for ConnectSessionSvc<T> {
+                        type Response = super::ConnectSessionResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::SendFrameRequest>,
+                            request: tonic::Request<super::ConnectSessionRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as CanService>::send_frame(&inner, request).await
+                                <T as XcpService>::connect_session(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -391,7 +409,53 @@ pub mod can_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = SendFrameSvc(inner);
+                        let method = ConnectSessionSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.xcp.v1.XcpService/Command" => {
+                    #[allow(non_camel_case_types)]
+                    struct CommandSvc<T: XcpService>(pub Arc<T>);
+                    impl<
+                        T: XcpService,
+                    > tonic::server::UnaryService<super::CommandRequest>
+                    for CommandSvc<T> {
+                        type Response = super::CommandResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::CommandRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as XcpService>::command(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = CommandSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -422,7 +486,7 @@ pub mod can_service_server {
             }
         }
     }
-    impl<T: CanService> Clone for CanServiceServer<T> {
+    impl<T: XcpService> Clone for XcpServiceServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -434,7 +498,7 @@ pub mod can_service_server {
             }
         }
     }
-    impl<T: CanService> Clone for _Inner<T> {
+    impl<T: XcpService> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(Arc::clone(&self.0))
         }
@@ -444,7 +508,7 @@ pub mod can_service_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: CanService> tonic::server::NamedService for CanServiceServer<T> {
-        const NAME: &'static str = "dipstick.can.v1.CanService";
+    impl<T: XcpService> tonic::server::NamedService for XcpServiceServer<T> {
+        const NAME: &'static str = "dipstick.xcp.v1.XcpService";
     }
 }

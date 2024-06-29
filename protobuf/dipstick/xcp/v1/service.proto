@@ -1,0 +1,57 @@
+syntax = "proto3";
+package dipstick.xcp.v1;
+
+import "dipstick/xcp/v1/cto.proto";
+import "dipstick/xcp/v1/transport.proto";
+
+// XCP service.
+service XcpService {
+  rpc Create(CreateRequest) returns (CreateResponse);
+  rpc Destroy(DestroyRequest) returns (DestroyResponse);
+
+  rpc ConnectSession(ConnectSessionRequest) returns (ConnectSessionResponse);
+
+  rpc Command(CommandRequest) returns (CommandResponse);
+}
+
+// Create request.
+message CreateRequest {
+  oneof transport {
+    CanTransport can = 1;
+  }
+  optional bool disconnect_response_optional = 10;
+}
+
+// Create response.
+message CreateResponse {
+  uint64 session_id = 1;
+}
+
+// Destroy request.
+message DestroyRequest {
+  uint64 session_id = 1;
+}
+
+// Destroy response.
+message DestroyResponse {}
+
+// ConnectSession request.
+message ConnectSessionRequest {
+  uint64 session_id = 1;
+  // Connection mode; default is 0x00 (normal mode)
+  uint32 mode = 2;
+}
+
+// ConnectSession response.
+message ConnectSessionResponse {}
+
+// Command request.
+message CommandRequest {
+  uint64 session_id = 1;
+  CtoCommand command = 2;
+}
+
+// Command response.
+message CommandResponse {
+  CtoResponse response = 1;
+}

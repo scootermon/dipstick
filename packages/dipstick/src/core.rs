@@ -1,4 +1,6 @@
-use dipstick_proto::core::{
+use std::sync::Arc;
+
+use dipstick_proto::core::v1::{
     CoreService,
     CoreServiceServer,
     LogConfigRequest,
@@ -16,7 +18,9 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::BroadcastStream;
 use tonic::{Request, Response};
 
+pub mod history;
 pub mod logging;
+pub mod registry;
 
 pub struct Core {
     log_handle: logging::LoggingHandle,
@@ -24,15 +28,15 @@ pub struct Core {
 }
 
 impl Core {
-    pub fn new(log_handle: logging::LoggingHandle, shutdown_tx: mpsc::Sender<()>) -> Self {
-        Self {
+    pub fn new(log_handle: logging::LoggingHandle, shutdown_tx: mpsc::Sender<()>) -> Arc<Self> {
+        Arc::new(Self {
             log_handle,
             shutdown_tx,
-        }
+        })
     }
 
-    pub fn into_server(self) -> CoreServiceServer<Self> {
-        CoreServiceServer::new(self)
+    pub fn into_server(self: Arc<Self>) -> CoreServiceServer<Self> {
+        CoreServiceServer::from_arc(self)
     }
 }
 

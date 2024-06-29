@@ -164,8 +164,10 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
+ "bytes",
  "dipstick-proto",
  "futures",
+ "rand",
  "tokio",
  "tokio-stream",
  "tonic",
@@ -179,6 +181,7 @@ dependencies = [
 name = "dipstick-proto"
 version = "0.1.0"
 dependencies = [
+ "bytes",
  "prost",
  "prost-types",
  "protoc-wkt",

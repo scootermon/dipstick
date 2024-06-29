@@ -1,6 +1,8 @@
 syntax = "proto3";
 package dipstick.can.v1;
 
+import "dipstick/can/v1/id.proto";
+import "dipstick/core/v1/direction.proto";
 import "google/protobuf/timestamp.proto";
 
 // CAN frame protocol.
@@ -13,16 +15,10 @@ enum Protocol {
   PROTOCOL_FD = 2;
 }
 
-// CAN id
-message Id {
-  // 11-bit or 29-bit value depending on the is_extended field.
-  uint32 value = 1;
-  // True if the id is 29-bit, false if 11-bit.
-  bool is_extended = 2;
-}
-
 // CAN frame.
 message Frame {
+  // Direction of the frame.
+  dipstick.core.v1.Direction direction = 8;
   // Protocol
   Protocol protocol = 1;
   // Arbitration id

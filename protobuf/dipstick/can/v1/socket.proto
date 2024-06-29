@@ -3,10 +3,10 @@ package dipstick.can.v1;
 
 import "google/protobuf/timestamp.proto";
 
-// CAN driver information.
-message InterfaceInfo {
-  // Unique id of the interface.
-  uint64 id = 1;
+// CAN socket information.
+message SocketInfo {
+  // Unique id of the socket.
+  uint64 socket_id = 1;
   // Timestamp when the interface was created.
   google.protobuf.Timestamp created_at = 2;
   // ID of the driver.

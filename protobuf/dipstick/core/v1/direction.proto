@@ -1,0 +1,12 @@
+syntax = "proto3";
+package dipstick.core.v1;
+
+// Direction of the data flow.
+enum Direction {
+  // Unspecified direction.
+  DIRECTION_UNSPECIFIED = 0;
+  // Data was received.
+  DIRECTION_RECEIVE = 1;
+  // Data was transmitted.
+  DIRECTION_TRANSMIT = 2;
+}

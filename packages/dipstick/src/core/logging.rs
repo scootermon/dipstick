@@ -1,7 +1,7 @@
 use std::collections::{BTreeMap, HashMap};
 use std::time::SystemTime;
 
-use dipstick_proto::core::{LogConfig, LogEvent, LogLevel, LogSpan};
+use dipstick_proto::core::v1::{LogConfig, LogEvent, LogLevel, LogSpan};
 use tokio::sync::broadcast;
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::filter;
@@ -131,7 +131,7 @@ where
                     let fields = span
                         .extensions()
                         .get::<FieldStorage>()
-                        .map_or_else(|| HashMap::new(), |s| s.0.clone());
+                        .map_or_else(HashMap::new, |s| s.0.clone());
                     LogSpan {
                         id: span.id().into_u64(),
                         level: tracing_level_to_pb(*metadata.level()) as _,
