@@ -1,9 +1,10 @@
-version: v1
+version: v2
 plugins:
-  - plugin: buf.build/community/neoeinstein-prost:v0.3.1
+  - remote: buf.build/community/neoeinstein-prost:v0.3.1
     out: ../packages/dipstick-proto/src/_gen
     opt:
       - file_descriptor_set
+      - bytes=.
 
-  - plugin: buf.build/community/neoeinstein-tonic:v0.4.0
+  - remote: buf.build/community/neoeinstein-tonic:v0.4.0
     out: ../packages/dipstick-proto/src/_gen

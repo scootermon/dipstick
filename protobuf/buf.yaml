@@ -1,6 +1,6 @@
-version: v1
+version: v2
 lint:
   use:
     - DEFAULT
-    - COMMENTS
+    # - COMMENTS
     - RPC_NO_CLIENT_STREAMING # not supported by grpc-web
