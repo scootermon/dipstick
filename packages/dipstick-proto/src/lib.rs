@@ -12,6 +12,15 @@ mod dipstick {
             pub use self::can_service_server::{CanService, CanServiceServer};
             pub use crate::can_impl::*;
         }
+
+        pub mod isotp {
+            pub mod v1 {
+                include!("_gen/dipstick.can.isotp.v1.rs");
+
+                pub use self::isotp_service_client::IsotpServiceClient;
+                pub use self::isotp_service_server::{IsotpService, IsotpServiceServer};
+            }
+        }
     }
 
     pub mod core {
@@ -23,12 +32,12 @@ mod dipstick {
         }
     }
 
-    pub mod isotp {
+    pub mod shadow {
         pub mod v1 {
-            include!("_gen/dipstick.isotp.v1.rs");
+            include!("_gen/dipstick.shadow.v1.rs");
 
-            pub use self::isotp_service_client::IsotpServiceClient;
-            pub use self::isotp_service_server::{IsotpService, IsotpServiceServer};
+            pub use self::shadow_service_client::ShadowServiceClient;
+            pub use self::shadow_service_server::{ShadowService, ShadowServiceServer};
         }
     }
 
@@ -51,6 +60,12 @@ mod dipstick {
             pub use self::xcp_service_client::XcpServiceClient;
             pub use self::xcp_service_server::{XcpService, XcpServiceServer};
             pub use crate::xcp_impl::*;
+        }
+
+        pub mod a2l {
+            pub mod v1 {
+                include!("_gen/dipstick.xcp.a2l.v1.rs");
+            }
         }
     }
 }

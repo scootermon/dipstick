@@ -1,0 +1,38 @@
+syntax = "proto3";
+package dipstick.spi.v1;
+
+import "dipstick/spi/v1/spi.proto";
+import "google/protobuf/timestamp.proto";
+
+// SPI service.
+service SpiService {
+  rpc UpdateDevice(UpdateDeviceRequest) returns (UpdateDeviceResponse);
+  rpc DestroyDevice(DestroyDeviceRequest) returns (DestroyDeviceResponse);
+
+  rpc Transfer(TransferRequest) returns (TransferResponse);
+}
+
+message UpdateDeviceRequest {
+  DeviceInfo info = 1;
+}
+
+message UpdateDeviceResponse {
+  DeviceInfo info = 1;
+}
+
+message DestroyDeviceRequest {
+  uint64 device_id = 1;
+}
+
+message DestroyDeviceResponse {}
+
+message TransferRequest {
+  uint64 device_id = 1;
+  TransferOptions options = 2;
+  bytes data = 3;
+}
+
+message TransferResponse {
+  google.protobuf.Timestamp timestamp = 1;
+  bytes data = 2;
+}

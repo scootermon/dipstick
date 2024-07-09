@@ -1,10 +1,21 @@
 version: v2
+managed:
+  enabled: true
 plugins:
+  # rust
   - remote: buf.build/community/neoeinstein-prost:v0.3.1
     out: ../packages/dipstick-proto/src/_gen
     opt:
       - file_descriptor_set
       - bytes=.
-
+      - type_attribute=ShortUploadCommand=#[derive(Eq\, PartialOrd\, Ord\, Hash)]
   - remote: buf.build/community/neoeinstein-tonic:v0.4.0
     out: ../packages/dipstick-proto/src/_gen
+
+  # python
+  - remote: buf.build/grpc/python:v1.65.0
+    out: build/python
+  - remote: buf.build/protocolbuffers/python:v27.2
+    out: build/python
+  - remote: buf.build/protocolbuffers/pyi:v27.2
+    out: build/python

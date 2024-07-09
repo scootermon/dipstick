@@ -1,0 +1,83 @@
+syntax = "proto3";
+package dipstick.shadow.v1;
+
+import "dipstick/shadow/v1/shadow.proto";
+import "dipstick/shadow/v1/signal.proto";
+import "dipstick/shadow/v1/source.proto";
+
+// Shadow service
+service ShadowService {
+  rpc CreateShadow(CreateShadowRequest) returns (CreateShadowResponse);
+  rpc DestroyShadow(DestroyShadowRequest) returns (DestroyShadowResponse);
+  rpc ListShadows(ListShadowsRequest) returns (ListShadowsResponse);
+
+  rpc AddSignal(AddSignalRequest) returns (AddSignalResponse);
+  rpc RemoveSignal(RemoveSignalRequest) returns (RemoveSignalResponse);
+  rpc ListSignals(ListSignalsRequest) returns (ListSignalsResponse);
+
+  rpc SubscribeChanges(SubscribeChangesRequest) returns (stream SubscribeChangesResponse);
+}
+
+// CreateShadow request
+message CreateShadowRequest {}
+
+// CreateShadow response
+message CreateShadowResponse {
+  ShadowInfo shadow = 1;
+}
+
+// DestroyShadow request
+message DestroyShadowRequest {
+  uint64 shadow_id = 1;
+}
+
+// DestroyShadow response
+message DestroyShadowResponse {}
+
+// ListShadows request
+message ListShadowsRequest {}
+
+// ListShadows response
+message ListShadowsResponse {
+  repeated ShadowInfo shadows = 1;
+}
+
+// AddSignal request
+message AddSignalRequest {
+  uint64 shadow_id = 1;
+  Source source = 2;
+}
+
+// AddSignal response
+message AddSignalResponse {
+  SignalInfo signal = 1;
+}
+
+// RemoveSignal request
+message RemoveSignalRequest {
+  uint64 shadow_id = 1;
+  uint64 signal_id = 2;
+}
+
+// RemoveSignal response
+message RemoveSignalResponse {}
+
+// ListSignals request
+message ListSignalsRequest {
+  uint64 shadow_id = 1;
+}
+
+// ListSignals response
+message ListSignalsResponse {
+  repeated SignalInfo signals = 1;
+}
+
+// SubscribeChanges request
+message SubscribeChangesRequest {
+  uint64 shadow_id = 1;
+}
+
+// SubscribeChanges response
+message SubscribeChangesResponse {
+  SignalChange signal_change = 1;
+}

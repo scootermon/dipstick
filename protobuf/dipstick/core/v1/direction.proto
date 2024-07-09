@@ -1,12 +1,18 @@
 syntax = "proto3";
-package dipstick.core.v1;
+package dipstick.core;
 
-// Direction of the data flow.
-enum Direction {
-  // Unspecified direction.
-  DIRECTION_UNSPECIFIED = 0;
-  // Data was received.
-  DIRECTION_RECEIVE = 1;
-  // Data was transmitted.
-  DIRECTION_TRANSMIT = 2;
+enum IoDir {
+  IO_DIR_UNSPECIFIED = 0;
+  // Input direction
+  IO_DIR_IN = 1;
+  // Output direction
+  IO_DIR_OUT = 2;
+}
+
+enum FlowDir {
+  FLOW_DIR_UNSPECIFIED = 0;
+  // Receive direction
+  FLOW_DIR_RX = 1;
+  // Transmit direction
+  FLOW_DIR_TX = 2;
 }

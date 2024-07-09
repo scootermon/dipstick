@@ -1,0 +1,9 @@
+syntax = "proto3";
+package dipstick.shadow.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message ShadowInfo {
+  uint64 shadow_id = 1;
+  google.protobuf.Timestamp created_at = 2;
+}

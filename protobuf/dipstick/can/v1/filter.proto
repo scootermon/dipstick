@@ -1,0 +1,12 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+import "dipstick/can/v1/frame.proto";
+import "dipstick/core/v1/direction.proto";
+
+message Filter {
+  repeated Protocol protocol = 1;
+  dipstick.core.v1.Direction direction = 2;
+  bool include_error_frames = 3;
+  bool include_remote_frames = 4;
+}

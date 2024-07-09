@@ -1,5 +1,6 @@
 use std::sync::{Arc, RwLock};
 
+use futures::{Future, StreamExt};
 use rand::Rng;
 use tonic::Status;
 
@@ -35,5 +36,23 @@ impl<T> Registry<T> {
             return Err(Status::not_found(format!("id {id:?} not found")));
         };
         Ok(Arc::clone(entry))
+    }
+
+    pub fn for_each(&self, mut f: impl FnMut(u64, &Arc<T>)) {
+        let entries = self.entries.read().unwrap();
+        for (id, entry) in entries.iter() {
+            f(*id, entry);
+        }
+    }
+
+    pub async fn for_each_async<Fn, Fut>(&self, mut f: Fn)
+    where
+        Fn: FnMut(u64, Arc<T>) -> Fut,
+        Fut: Future<Output = ()>,
+    {
+        let entries = self.entries.read().unwrap();
+        futures::stream::iter(entries.iter())
+            .for_each(|(id, entry)| f(*id, Arc::clone(entry)))
+            .await;
     }
 }

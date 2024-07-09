@@ -214,6 +214,6 @@ pub mod isotp_service_server {
         }
     }
     impl<T: IsotpService> tonic::server::NamedService for IsotpServiceServer<T> {
-        const NAME: &'static str = "dipstick.isotp.v1.IsotpService";
+        const NAME: &'static str = "dipstick.can.isotp.v1.IsotpService";
     }
 }

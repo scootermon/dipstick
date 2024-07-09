@@ -178,6 +178,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "dipstick-can"
+version = "0.1.0"
+
+[[package]]
+name = "dipstick-core"
+version = "0.1.0"
+
+[[package]]
+name = "dipstick-gpio"
+version = "0.1.0"
+
+[[package]]
 name = "dipstick-proto"
 version = "0.1.0"
 dependencies = [
@@ -187,6 +199,14 @@ dependencies = [
  "protoc-wkt",
  "tonic",
 ]
+
+[[package]]
+name = "dipstick-spi"
+version = "0.1.0"
+
+[[package]]
+name = "dipstick-xcp"
+version = "0.1.0"
 
 [[package]]
 name = "either"

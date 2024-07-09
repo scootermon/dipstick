@@ -1,16 +1,19 @@
 use std::process::ExitCode;
+use std::sync::Arc;
 
 use anyhow::Context;
 use tokio::sync::mpsc;
 use tonic::transport::Server;
 
-use self::can::Can;
+use self::shadow::Shadow;
+use crate::can::Can;
 use crate::core::Core;
 use crate::xcp::Xcp;
 
 mod can;
 mod consts;
 mod core;
+mod shadow;
 mod xcp;
 
 async fn _main() -> anyhow::Result<()> {
@@ -32,6 +35,7 @@ async fn _main() -> anyhow::Result<()> {
 
     let core = Core::new(log_handle, shutdown_tx);
     let can = Can::new();
+    let shadow = Shadow::new();
     let xcp = Xcp::new();
 
     let reflection_server = reflection_server_builder()
@@ -45,7 +49,8 @@ async fn _main() -> anyhow::Result<()> {
         .add_service(tonic_web::enable(reflection_server))
         .add_service(tonic_web::enable(core.into_server()))
         .add_service(tonic_web::enable(can.into_server()))
-        .add_service(tonic_web::enable(xcp.into_server()))
+        .add_service(tonic_web::enable(shadow.into_server()))
+        .add_service(tonic_web::enable(Arc::clone(&xcp).into_server()))
         .serve_with_shutdown(addr, async {
             shutdown_rx.recv().await;
         })
@@ -55,6 +60,7 @@ async fn _main() -> anyhow::Result<()> {
     tracing::info!("shutting down");
 
     // TODO: wait for all tasks to finish
+    xcp.shutdown().await;
 
     res
 }
@@ -62,11 +68,13 @@ async fn _main() -> anyhow::Result<()> {
 fn reflection_server_builder() -> tonic_reflection::server::Builder<'static> {
     let mut builder = tonic_reflection::server::Builder::configure();
     for file_descriptor_set in &[
+        dipstick_proto::can::isotp::v1::FILE_DESCRIPTOR_SET,
         dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
         dipstick_proto::core::v1::FILE_DESCRIPTOR_SET,
-        dipstick_proto::isotp::v1::FILE_DESCRIPTOR_SET,
+        dipstick_proto::shadow::v1::FILE_DESCRIPTOR_SET,
         dipstick_proto::uds::v1::FILE_DESCRIPTOR_SET,
         dipstick_proto::wkt::FILE_DESCRIPTOR_SET,
+        dipstick_proto::xcp::a2l::v1::FILE_DESCRIPTOR_SET,
         dipstick_proto::xcp::v1::FILE_DESCRIPTOR_SET,
     ] {
         builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);

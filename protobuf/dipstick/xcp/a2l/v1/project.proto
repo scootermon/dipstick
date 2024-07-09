@@ -1,0 +1,17 @@
+syntax = "proto3";
+package dipstick.xcp.a2l.v1;
+
+import "dipstick/xcp/a2l/v1/module.proto";
+
+message Project {
+  string name = 1;
+  string long_identifier = 2;
+  Header header = 3;
+  repeated Module module = 4;
+}
+
+message Header {
+  string comment = 1;
+  string project_no = 2;
+  string version = 3;
+}

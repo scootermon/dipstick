@@ -3,37 +3,44 @@ package dipstick.xcp.v1;
 
 import "dipstick/xcp/v1/cto.proto";
 import "dipstick/xcp/v1/transport.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 // XCP service.
 service XcpService {
-  rpc Create(CreateRequest) returns (CreateResponse);
-  rpc Destroy(DestroyRequest) returns (DestroyResponse);
+  // rpc LoadA2l(LoadA2lRequest) returns (LoadA2lResponse);
+  // rpc UnloadA2l(UnloadA2lRequest) returns (UnloadA2lResponse);
+
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  rpc DestroySession(DestroySessionRequest) returns (DestroySessionResponse);
 
   rpc ConnectSession(ConnectSessionRequest) returns (ConnectSessionResponse);
 
   rpc Command(CommandRequest) returns (CommandResponse);
+
+  rpc PeriodicShortUpload(PeriodicShortUploadRequest) returns (stream PeriodicShortUploadResponse);
 }
 
-// Create request.
-message CreateRequest {
+// CreateSession request.
+message CreateSessionRequest {
   oneof transport {
     CanTransport can = 1;
   }
   optional bool disconnect_response_optional = 10;
 }
 
-// Create response.
-message CreateResponse {
+// CreateSession response.
+message CreateSessionResponse {
   uint64 session_id = 1;
 }
 
-// Destroy request.
-message DestroyRequest {
+// DestroySession request.
+message DestroySessionRequest {
   uint64 session_id = 1;
 }
 
-// Destroy response.
-message DestroyResponse {}
+// DestroySession response.
+message DestroySessionResponse {}
 
 // ConnectSession request.
 message ConnectSessionRequest {
@@ -54,4 +61,19 @@ message CommandRequest {
 // Command response.
 message CommandResponse {
   CtoResponse response = 1;
+}
+
+// PeriodicShortUpload request.
+message PeriodicShortUploadRequest {
+  uint64 session_id = 1;
+  ShortUploadCommand command = 2;
+  google.protobuf.Duration interval = 3;
+  bool ignore_interval_if_exists = 4;
+}
+
+// PeriodicShortUpload response.
+message PeriodicShortUploadResponse {
+  google.protobuf.Timestamp timestamp = 1;
+  bytes data = 2;
+  Error error = 3;
 }

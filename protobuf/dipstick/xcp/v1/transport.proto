@@ -1,7 +1,7 @@
 syntax = "proto3";
 package dipstick.xcp.v1;
 
-import "dipstick/can/v1/id.proto";
+import "dipstick/can/v1/frame.proto";
 
 message CanTransport {
   uint64 can_socket_id = 1;

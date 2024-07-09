@@ -159,6 +159,31 @@ pub mod can_service_client {
                 .insert(GrpcMethod::new("dipstick.can.v1.CanService", "SendFrame"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn receive_frame(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ReceiveFrameRequest>,
+        ) -> std::result::Result<
+            tonic::Response<tonic::codec::Streaming<super::ReceiveFrameResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.can.v1.CanService/ReceiveFrame",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "ReceiveFrame"));
+            self.inner.server_streaming(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -187,6 +212,19 @@ pub mod can_service_server {
             request: tonic::Request<super::SendFrameRequest>,
         ) -> std::result::Result<
             tonic::Response<super::SendFrameResponse>,
+            tonic::Status,
+        >;
+        /// Server streaming response type for the ReceiveFrame method.
+        type ReceiveFrameStream: tonic::codegen::tokio_stream::Stream<
+                Item = std::result::Result<super::ReceiveFrameResponse, tonic::Status>,
+            >
+            + Send
+            + 'static;
+        async fn receive_frame(
+            &self,
+            request: tonic::Request<super::ReceiveFrameRequest>,
+        ) -> std::result::Result<
+            tonic::Response<Self::ReceiveFrameStream>,
             tonic::Status,
         >;
     }
@@ -403,6 +441,53 @@ pub mod can_service_server {
                                 max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.can.v1.CanService/ReceiveFrame" => {
+                    #[allow(non_camel_case_types)]
+                    struct ReceiveFrameSvc<T: CanService>(pub Arc<T>);
+                    impl<
+                        T: CanService,
+                    > tonic::server::ServerStreamingService<super::ReceiveFrameRequest>
+                    for ReceiveFrameSvc<T> {
+                        type Response = super::ReceiveFrameResponse;
+                        type ResponseStream = T::ReceiveFrameStream;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::ResponseStream>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ReceiveFrameRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as CanService>::receive_frame(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ReceiveFrameSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.server_streaming(method, req).await;
                         Ok(res)
                     };
                     Box::pin(fut)

@@ -1,0 +1,9 @@
+syntax = "proto3";
+package dipstick.xcp.v1;
+
+message A2lMeasurementPointer {
+  uint64 a2l_id = 1;
+  string project = 2;
+  string module = 3;
+  string measurement = 4;
+}

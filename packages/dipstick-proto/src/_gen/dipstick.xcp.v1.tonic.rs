@@ -84,33 +84,11 @@ pub mod xcp_service_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        pub async fn create(
+        pub async fn create_session(
             &mut self,
-            request: impl tonic::IntoRequest<super::CreateRequest>,
-        ) -> std::result::Result<tonic::Response<super::CreateResponse>, tonic::Status> {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.xcp.v1.XcpService/Create",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "Create"));
-            self.inner.unary(req, path, codec).await
-        }
-        pub async fn destroy(
-            &mut self,
-            request: impl tonic::IntoRequest<super::DestroyRequest>,
+            request: impl tonic::IntoRequest<super::CreateSessionRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::DestroyResponse>,
+            tonic::Response<super::CreateSessionResponse>,
             tonic::Status,
         > {
             self.inner
@@ -124,11 +102,36 @@ pub mod xcp_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.xcp.v1.XcpService/Destroy",
+                "/dipstick.xcp.v1.XcpService/CreateSession",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "Destroy"));
+                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "CreateSession"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn destroy_session(
+            &mut self,
+            request: impl tonic::IntoRequest<super::DestroySessionRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DestroySessionResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.xcp.v1.XcpService/DestroySession",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "DestroySession"));
             self.inner.unary(req, path, codec).await
         }
         pub async fn connect_session(
@@ -181,6 +184,33 @@ pub mod xcp_service_client {
                 .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "Command"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn periodic_short_upload(
+            &mut self,
+            request: impl tonic::IntoRequest<super::PeriodicShortUploadRequest>,
+        ) -> std::result::Result<
+            tonic::Response<tonic::codec::Streaming<super::PeriodicShortUploadResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.xcp.v1.XcpService/PeriodicShortUpload",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dipstick.xcp.v1.XcpService", "PeriodicShortUpload"),
+                );
+            self.inner.server_streaming(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -190,14 +220,20 @@ pub mod xcp_service_server {
     /// Generated trait containing gRPC methods that should be implemented for use with XcpServiceServer.
     #[async_trait]
     pub trait XcpService: Send + Sync + 'static {
-        async fn create(
+        async fn create_session(
             &self,
-            request: tonic::Request<super::CreateRequest>,
-        ) -> std::result::Result<tonic::Response<super::CreateResponse>, tonic::Status>;
-        async fn destroy(
+            request: tonic::Request<super::CreateSessionRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::CreateSessionResponse>,
+            tonic::Status,
+        >;
+        async fn destroy_session(
             &self,
-            request: tonic::Request<super::DestroyRequest>,
-        ) -> std::result::Result<tonic::Response<super::DestroyResponse>, tonic::Status>;
+            request: tonic::Request<super::DestroySessionRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::DestroySessionResponse>,
+            tonic::Status,
+        >;
         async fn connect_session(
             &self,
             request: tonic::Request<super::ConnectSessionRequest>,
@@ -209,6 +245,22 @@ pub mod xcp_service_server {
             &self,
             request: tonic::Request<super::CommandRequest>,
         ) -> std::result::Result<tonic::Response<super::CommandResponse>, tonic::Status>;
+        /// Server streaming response type for the PeriodicShortUpload method.
+        type PeriodicShortUploadStream: tonic::codegen::tokio_stream::Stream<
+                Item = std::result::Result<
+                    super::PeriodicShortUploadResponse,
+                    tonic::Status,
+                >,
+            >
+            + Send
+            + 'static;
+        async fn periodic_short_upload(
+            &self,
+            request: tonic::Request<super::PeriodicShortUploadRequest>,
+        ) -> std::result::Result<
+            tonic::Response<Self::PeriodicShortUploadStream>,
+            tonic::Status,
+        >;
     }
     #[derive(Debug)]
     pub struct XcpServiceServer<T: XcpService> {
@@ -289,23 +341,25 @@ pub mod xcp_service_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/dipstick.xcp.v1.XcpService/Create" => {
+                "/dipstick.xcp.v1.XcpService/CreateSession" => {
                     #[allow(non_camel_case_types)]
-                    struct CreateSvc<T: XcpService>(pub Arc<T>);
-                    impl<T: XcpService> tonic::server::UnaryService<super::CreateRequest>
-                    for CreateSvc<T> {
-                        type Response = super::CreateResponse;
+                    struct CreateSessionSvc<T: XcpService>(pub Arc<T>);
+                    impl<
+                        T: XcpService,
+                    > tonic::server::UnaryService<super::CreateSessionRequest>
+                    for CreateSessionSvc<T> {
+                        type Response = super::CreateSessionResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::CreateRequest>,
+                            request: tonic::Request<super::CreateSessionRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as XcpService>::create(&inner, request).await
+                                <T as XcpService>::create_session(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -317,7 +371,7 @@ pub mod xcp_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = CreateSvc(inner);
+                        let method = CreateSessionSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -333,25 +387,25 @@ pub mod xcp_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.xcp.v1.XcpService/Destroy" => {
+                "/dipstick.xcp.v1.XcpService/DestroySession" => {
                     #[allow(non_camel_case_types)]
-                    struct DestroySvc<T: XcpService>(pub Arc<T>);
+                    struct DestroySessionSvc<T: XcpService>(pub Arc<T>);
                     impl<
                         T: XcpService,
-                    > tonic::server::UnaryService<super::DestroyRequest>
-                    for DestroySvc<T> {
-                        type Response = super::DestroyResponse;
+                    > tonic::server::UnaryService<super::DestroySessionRequest>
+                    for DestroySessionSvc<T> {
+                        type Response = super::DestroySessionResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::DestroyRequest>,
+                            request: tonic::Request<super::DestroySessionRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as XcpService>::destroy(&inner, request).await
+                                <T as XcpService>::destroy_session(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -363,7 +417,7 @@ pub mod xcp_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = DestroySvc(inner);
+                        let method = DestroySessionSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -467,6 +521,55 @@ pub mod xcp_service_server {
                                 max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.xcp.v1.XcpService/PeriodicShortUpload" => {
+                    #[allow(non_camel_case_types)]
+                    struct PeriodicShortUploadSvc<T: XcpService>(pub Arc<T>);
+                    impl<
+                        T: XcpService,
+                    > tonic::server::ServerStreamingService<
+                        super::PeriodicShortUploadRequest,
+                    > for PeriodicShortUploadSvc<T> {
+                        type Response = super::PeriodicShortUploadResponse;
+                        type ResponseStream = T::PeriodicShortUploadStream;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::ResponseStream>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::PeriodicShortUploadRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as XcpService>::periodic_short_upload(&inner, request)
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = PeriodicShortUploadSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.server_streaming(method, req).await;
                         Ok(res)
                     };
                     Box::pin(fut)

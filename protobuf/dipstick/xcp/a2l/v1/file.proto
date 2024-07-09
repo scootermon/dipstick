@@ -1,0 +1,24 @@
+syntax = "proto3";
+package dipstick.xcp.a2l.v1;
+
+import "dipstick/xcp/a2l/v1/project.proto";
+
+message File {
+  Asap2Version asap2_version = 1;
+  A2mlVersion a2ml_version = 2;
+  Project project = 3;
+}
+
+message Asap2Version {
+  // u16
+  uint32 version_no = 1;
+  // u16
+  uint32 upgrade_no = 2;
+}
+
+message A2mlVersion {
+  // u16
+  uint32 version_no = 1;
+  // u16
+  uint32 upgrade_no = 2;
+}

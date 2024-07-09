@@ -15,6 +15,8 @@ service CanService {
 
   // Sends a single CAN frame.
   rpc SendFrame(SendFrameRequest) returns (SendFrameResponse);
+
+  rpc ReceiveFrame(ReceiveFrameRequest) returns (stream ReceiveFrameResponse);
 }
 
 // ListDrivers request
@@ -48,3 +50,15 @@ message SendFrameRequest {
 
 // SendFrame response
 message SendFrameResponse {}
+
+// ReceiveFrame request
+message ReceiveFrameRequest {
+  // Socket id to send the frame to.
+  uint64 socket_id = 1;
+}
+
+// ReceiveFrame response
+message ReceiveFrameResponse {
+  // Received CAN frame.
+  Frame frame = 1;
+}

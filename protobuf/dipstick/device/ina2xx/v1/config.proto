@@ -1,0 +1,53 @@
+syntax = "proto3";
+package dipstick.device.ina2xx.v1;
+
+message Config {
+  oneof transport {
+    uint64 spi_device_id = 9;
+  }
+  // Ohm
+  optional float shunt_resistance = 1;
+  // Ampere
+  optional float max_current = 2;
+  optional AdcRange adc_range = 3;
+  optional AdcTime bus_voltage_conv_time = 4;
+  optional AdcTime shunt_voltage_conv_time = 5;
+  optional AdcTime temperature_conv_time = 6;
+  optional AdcAvgSamples adc_averaging = 7;
+  // Temperature coefficient (ppm/°C) of the shunt for temperature compensation
+  // correction. Only applicable to INA228 and INA229 devices. Zero value means
+  // no compensation is done.
+  //
+  // Defaults to 0. Integer from 0 to 16383.
+  optional uint32 temperature_coefficient = 8;
+}
+
+enum AdcRange {
+  ADC_RANGE_UNSPECIFIED = 0;
+  ADC_RANGE_0 = 1;
+  ADC_RANGE_1 = 2;
+}
+
+enum AdcTime {
+  ADC_TIME_UNSPECIFIED = 0;
+  ADC_TIME_50US = 1;
+  ADC_TIME_84US = 2;
+  ADC_TIME_150US = 3;
+  ADC_TIME_280US = 4;
+  ADC_TIME_540US = 5;
+  ADC_TIME_1052US = 6;
+  ADC_TIME_2074US = 7;
+  ADC_TIME_4120US = 8;
+}
+
+enum AdcAvgSamples {
+  ADC_AVG_SAMPLES_UNSPECIFIED = 0;
+  ADC_AVG_SAMPLES_1 = 1;
+  ADC_AVG_SAMPLES_4 = 2;
+  ADC_AVG_SAMPLES_16 = 3;
+  ADC_AVG_SAMPLES_64 = 4;
+  ADC_AVG_SAMPLES_128 = 5;
+  ADC_AVG_SAMPLES_256 = 6;
+  ADC_AVG_SAMPLES_512 = 7;
+  ADC_AVG_SAMPLES_1024 = 8;
+}
