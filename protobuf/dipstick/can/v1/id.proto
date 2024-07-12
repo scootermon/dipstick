@@ -1,0 +1,7 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+message Id {
+  uint32 id = 1;
+  bool extended = 2;
+}

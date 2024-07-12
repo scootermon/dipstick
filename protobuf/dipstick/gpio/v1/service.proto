@@ -1,0 +1,19 @@
+syntax = "proto3";
+package dipstick.gpio.v1;
+
+import "dipstick/gpio/v1/chip.proto";
+import "dipstick/core/v1/entity.proto";
+
+service GpioService {
+  rpc CreateChip(CreateChipRequest) returns (CreateChipResponse);
+
+  rpc GetChip(GetChipRequest) returns (GetChipResponse);
+}
+
+message CreateChipRequest { ChipEntity chip = 1; }
+
+message CreateChipResponse { ChipEntity chip = 1; }
+
+message GetChipRequest { dipstick.core.v1.EntitySelector chip = 1; }
+
+message GetChipResponse { ChipEntity chip = 1; }

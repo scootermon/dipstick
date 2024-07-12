@@ -1,0 +1,20 @@
+syntax = "proto3";
+package dipstick.gpio.v1;
+
+import "dipstick/core/v1/entity.proto";
+import "dipstick/gpio/v1/pin.proto";
+
+message ChipEntity {
+  dipstick.core.v1.EntityMeta meta = 1;
+  ChipSpec spec = 2;
+  ChipStatus status = 3;
+}
+
+message ChipSpec {
+  map<string, PinSpec> pins = 2;
+  oneof chip_spec_variant { LinuxChipSpec linux = 3; }
+}
+
+message LinuxChipSpec { string name = 1; }
+
+message ChipStatus { map<string, PinStatus> pins = 2; }

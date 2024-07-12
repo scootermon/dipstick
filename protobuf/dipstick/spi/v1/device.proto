@@ -1,0 +1,16 @@
+syntax = "proto3";
+package dipstick.spi.v1;
+
+import "dipstick/core/v1/entity.proto";
+
+message DeviceSpec {
+  dipstick.core.v1.EntityMeta meta = 1;
+  oneof device_spec_variant {
+    LinuxDeviceSpec linux = 2;
+  }
+}
+
+message LinuxDeviceSpec {
+  optional uint32 device = 1;
+  optional uint32 chipselect = 2;
+}

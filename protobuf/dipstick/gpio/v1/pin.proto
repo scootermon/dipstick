@@ -1,0 +1,21 @@
+syntax = "proto3";
+package dipstick.gpio.v1;
+
+import "dipstick/core/v1/direction.proto";
+import "google/protobuf/timestamp.proto";
+
+message PinSpec {
+  string line_name = 2;
+  dipstick.core.v1.IoDir direction = 3;
+}
+
+message PinStatus {
+  google.protobuf.Timestamp changed_at = 2;
+  Level logical = 1;
+}
+
+enum Level {
+  LEVEL_UNSPECIFIED = 0;
+  LEVEL_LOW = 1;
+  LEVEL_HIGH = 2;
+}

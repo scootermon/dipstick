@@ -11,3 +11,14 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+anyhow.workspace = true
+async-trait.workspace = true
+dipstick-proto.workspace = true
+futures.workspace = true
+percent-encoding.workspace = true
+rand.workspace = true
+tokio-stream.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tracing-subscriber.workspace = true
+tracing.workspace = true

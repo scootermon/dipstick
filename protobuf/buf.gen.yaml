@@ -6,9 +6,10 @@ plugins:
   - remote: buf.build/community/neoeinstein-prost:v0.3.1
     out: ../packages/dipstick-proto/src/_gen
     opt:
+      - enable_type_names
       - file_descriptor_set
       - bytes=.
-      - type_attribute=ShortUploadCommand=#[derive(Eq\, PartialOrd\, Ord\, Hash)]
+
   - remote: buf.build/community/neoeinstein-tonic:v0.4.0
     out: ../packages/dipstick-proto/src/_gen
 

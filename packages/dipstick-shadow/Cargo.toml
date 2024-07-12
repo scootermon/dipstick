@@ -1,0 +1,21 @@
+[package]
+name = "dipstick-shadow"
+version = "0.1.0"
+authors.workspace = true
+categories.workspace = true
+edition.workspace = true
+homepage.workspace = true
+keywords.workspace = true
+license.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+dipstick-core.workspace = true
+dipstick-proto.workspace = true
+futures.workspace = true
+tokio.workspace = true
+tonic-types.workspace = true
+tonic.workspace = true
+tracing.workspace = true

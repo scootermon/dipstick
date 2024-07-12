@@ -1,14 +1,111 @@
-pub fn add(left: usize, right: usize) -> usize {
-    left + right
+use std::sync::Arc;
+
+use dipstick_proto::core::v1::{
+    CoreService,
+    CoreServiceServer,
+    LogConfigRequest,
+    LogConfigResponse,
+    LogSubscribeRequest,
+    LogSubscribeResponse,
+    ShutdownRequest,
+    ShutdownResponse,
+    VersionRequest,
+    VersionResponse,
+};
+use futures::stream::BoxStream;
+use futures::StreamExt;
+use tokio::sync::mpsc;
+use tokio_stream::wrappers::BroadcastStream;
+use tonic::{Request, Response};
+
+pub use self::entity::{Entity, EntityMeta, EntitySelector, IdContext, QualifiedId, UniqueId};
+pub use self::registry::Registry;
+
+mod consts;
+mod entity;
+pub mod logging;
+mod registry;
+
+pub struct Core {
+    registry: Arc<Registry>,
+    log_handle: logging::LoggingHandle,
+    shutdown_tx: mpsc::Sender<()>,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl Core {
+    pub fn new(log_handle: logging::LoggingHandle, shutdown_tx: mpsc::Sender<()>) -> Arc<Self> {
+        let registry = Arc::new(Registry::new());
+        Arc::new(Self {
+            registry,
+            log_handle,
+            shutdown_tx,
+        })
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    pub fn into_server(self: Arc<Self>) -> CoreServiceServer<Self> {
+        CoreServiceServer::from_arc(self)
+    }
+
+    pub fn registry(&self) -> Arc<Registry> {
+        Arc::clone(&self.registry)
+    }
+}
+
+#[async_trait::async_trait]
+impl CoreService for Core {
+    async fn shutdown(
+        &self,
+        _request: Request<ShutdownRequest>,
+    ) -> tonic::Result<Response<ShutdownResponse>> {
+        tracing::info!("received shutdown request");
+        let _ = self.shutdown_tx.send(()).await;
+        Ok(Response::new(ShutdownResponse {}))
+    }
+
+    async fn version(
+        &self,
+        _request: Request<VersionRequest>,
+    ) -> tonic::Result<Response<VersionResponse>> {
+        Ok(Response::new(VersionResponse {
+            version: crate::consts::VERSION.to_owned(),
+        }))
+    }
+
+    async fn log_config(
+        &self,
+        request: Request<LogConfigRequest>,
+    ) -> tonic::Result<Response<LogConfigResponse>> {
+        let LogConfigRequest { config } = request.into_inner();
+        if let Some(config) = config {
+            // update config
+            self.log_handle
+                .set_log_config(config)
+                .map_err(|err| tonic::Status::internal(err.to_string()))?;
+        }
+
+        let Some(config) = self.log_handle.log_config() else {
+            return Err(tonic::Status::internal("subscriber dropped"));
+        };
+        Ok(Response::new(LogConfigResponse {
+            config: Some(config),
+        }))
+    }
+
+    type LogSubscribeStream = BoxStream<'static, tonic::Result<LogSubscribeResponse>>;
+
+    async fn log_subscribe(
+        &self,
+        _request: Request<LogSubscribeRequest>,
+    ) -> tonic::Result<Response<Self::LogSubscribeStream>> {
+        let stream = BroadcastStream::new(self.log_handle.logs_tx.subscribe())
+            .filter_map(|item| {
+                std::future::ready(match item {
+                    Ok(event) => Some(Ok(LogSubscribeResponse { event: Some(event) })),
+                    _ => None,
+                })
+            })
+            .boxed();
+
+        Ok(Response::new(stream))
     }
 }

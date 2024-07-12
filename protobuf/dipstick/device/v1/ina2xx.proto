@@ -1,0 +1,13 @@
+syntax = "proto3";
+package dipstick.device.v1;
+
+import "dipstick/core/v1/entity.proto";
+
+message Ina2xxSpec {
+  dipstick.core.v1.EntityMeta meta = 1;
+  optional float shunt_resistance = 2;
+  optional float max_current = 3;
+  oneof ina2xx_transport_spec {
+    dipstick.core.v1.EntitySelector spi = 5;
+  }
+}

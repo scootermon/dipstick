@@ -5,7 +5,7 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/workspaces.html
 
 [workspace.package]
-authors = ["Simon Berger <simon.berger@inomotech.com>"]
+authors = ["Simon Berger <simon.berger@b-on.com>"]
 categories = []
 edition = "2021"
 homepage = "https://github.com/inomotech-foss/dipstick"
@@ -15,24 +15,33 @@ repository = "https://github.com/inomotech-foss/dipstick"
 rust-version = "1.79"
 
 [workspace.dependencies]
+dipstick-core = { path = "packages/dipstick-core" }
+dipstick-gpio = { path = "packages/dipstick-gpio" }
 dipstick-proto = { path = "packages/dipstick-proto" }
 
 anyhow = "1"
 async-trait = "0.1"
 bytes = "1"
 futures = "0.3"
-prost = "0.12"
-prost-types = "0.12"
+gpiocdev = { version = "0.7", features = ["async_tokio"] }
+percent-encoding = "2"
+prost = "0.13"
+prost-types = "0.13"
 protoc-wkt = "1"
 rand = "0.8"
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1", features = ["full"] }
-tonic = "0.11"
-tonic-build = "0.11"
-tonic-reflection = "0.11"
-tonic-web = "0.11"
+tokio-util = { version = "0.7", features = ["full"] }
+tonic = "0.12"
+tonic-build = "0.12"
+tonic-reflection = "0.12"
+tonic-types = "0.12"
+tonic-web = "0.12"
 tracing = "0.1"
 tracing-subscriber = "0.3"
+
+[profile.dev]
+split-debuginfo = "packed"
 
 [profile.release]
 lto = true

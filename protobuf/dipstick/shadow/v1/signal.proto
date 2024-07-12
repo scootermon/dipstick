@@ -1,22 +1,30 @@
 syntax = "proto3";
 package dipstick.shadow.v1;
 
-import "google/protobuf/struct.proto";
-import "google/protobuf/timestamp.proto";
+import "dipstick/core/v1/entity.proto";
+import "google/protobuf/duration.proto";
 
-message SignalChange {
-  uint64 signal_id = 1;
-  SignalValue current = 2;
-  SignalValue previous = 3;
+message SignalSpec {
+  dipstick.core.v1.EntityMeta meta = 1;
+  oneof signal_spec_variant {
+    A2lMeasurementSignalSpec a2l_measurement = 3;
+    DeviceSensorSignalSpec device_sensor = 2;
+    GpioSignalSpec gpio = 4;
+  }
 }
 
-message SignalValue {
-  google.protobuf.Timestamp timestamp = 2;
-  google.protobuf.Value value = 3;
+message A2lMeasurementSignalSpec {
+  dipstick.core.v1.EntitySelector a2l = 1;
+  string measurement = 2;
 }
 
-message SignalInfo {
-  uint64 signal_id = 1;
-  google.protobuf.Timestamp created_at = 2;
-  SignalValue value = 3;
+message DeviceSensorSignalSpec {
+  dipstick.core.v1.EntitySelector device = 1;
+  string sensor = 2;
+  google.protobuf.Duration poll_interval = 3;
+}
+
+message GpioSignalSpec {
+  dipstick.core.v1.EntitySelector chip = 1;
+  string pin = 2;
 }

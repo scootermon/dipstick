@@ -11,3 +11,8 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+dipstick-proto.workspace = true
+futures.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tracing.workspace = true

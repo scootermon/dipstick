@@ -1,0 +1,10 @@
+syntax = "proto3";
+package dipstick.xcp.v1;
+
+import "dipstick/core/v1/entity.proto";
+import "dipstick/core/v1/file.proto";
+
+message A2lSpec {
+  dipstick.core.v1.EntityMeta meta = 1;
+  dipstick.core.v1.File file = 2;
+}

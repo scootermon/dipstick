@@ -1,0 +1,18 @@
+syntax = "proto3";
+package dipstick.core.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message EntityMeta {
+  uint32 unique_id = 1;
+  string id = 2;
+  google.protobuf.Timestamp created_at = 4;
+  map<string, string> annotations = 3;
+}
+
+message EntitySelector {
+  oneof entity_selector_variant {
+    uint32 unique_id = 1;
+    string id = 2;
+  }
+}

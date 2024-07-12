@@ -1,8 +1,0 @@
-syntax = "proto3";
-package dipstick.device.v1;
-
-// Device service.
-service DeviceService {
-  //   rpc CreateDevice(CreateDeviceRequest) returns (CrateDeviceResponse);
-  //   rpc DestroyDevice(DestroyDeviceRequest) returns (DestroyDeviceResponse);
-}

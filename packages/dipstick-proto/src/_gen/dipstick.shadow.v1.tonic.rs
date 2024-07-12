@@ -111,11 +111,11 @@ pub mod shadow_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
-        pub async fn destroy_shadow(
+        pub async fn shadow_signal_events(
             &mut self,
-            request: impl tonic::IntoRequest<super::DestroyShadowRequest>,
+            request: impl tonic::IntoRequest<super::ShadowSignalEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::DestroyShadowResponse>,
+            tonic::Response<tonic::codec::Streaming<super::ShadowSignalEventsResponse>>,
             tonic::Status,
         > {
             self.inner
@@ -129,149 +129,14 @@ pub mod shadow_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.shadow.v1.ShadowService/DestroyShadow",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dipstick.shadow.v1.ShadowService", "DestroyShadow"),
-                );
-            self.inner.unary(req, path, codec).await
-        }
-        pub async fn list_shadows(
-            &mut self,
-            request: impl tonic::IntoRequest<super::ListShadowsRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListShadowsResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.shadow.v1.ShadowService/ListShadows",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dipstick.shadow.v1.ShadowService", "ListShadows"),
-                );
-            self.inner.unary(req, path, codec).await
-        }
-        pub async fn add_signal(
-            &mut self,
-            request: impl tonic::IntoRequest<super::AddSignalRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::AddSignalResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.shadow.v1.ShadowService/AddSignal",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dipstick.shadow.v1.ShadowService", "AddSignal"),
-                );
-            self.inner.unary(req, path, codec).await
-        }
-        pub async fn remove_signal(
-            &mut self,
-            request: impl tonic::IntoRequest<super::RemoveSignalRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::RemoveSignalResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.shadow.v1.ShadowService/RemoveSignal",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dipstick.shadow.v1.ShadowService", "RemoveSignal"),
-                );
-            self.inner.unary(req, path, codec).await
-        }
-        pub async fn list_signals(
-            &mut self,
-            request: impl tonic::IntoRequest<super::ListSignalsRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListSignalsResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.shadow.v1.ShadowService/ListSignals",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(
-                    GrpcMethod::new("dipstick.shadow.v1.ShadowService", "ListSignals"),
-                );
-            self.inner.unary(req, path, codec).await
-        }
-        pub async fn subscribe_changes(
-            &mut self,
-            request: impl tonic::IntoRequest<super::SubscribeChangesRequest>,
-        ) -> std::result::Result<
-            tonic::Response<tonic::codec::Streaming<super::SubscribeChangesResponse>>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.shadow.v1.ShadowService/SubscribeChanges",
+                "/dipstick.shadow.v1.ShadowService/ShadowSignalEvents",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
                     GrpcMethod::new(
                         "dipstick.shadow.v1.ShadowService",
-                        "SubscribeChanges",
+                        "ShadowSignalEvents",
                     ),
                 );
             self.inner.server_streaming(req, path, codec).await
@@ -292,55 +157,20 @@ pub mod shadow_service_server {
             tonic::Response<super::CreateShadowResponse>,
             tonic::Status,
         >;
-        async fn destroy_shadow(
-            &self,
-            request: tonic::Request<super::DestroyShadowRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::DestroyShadowResponse>,
-            tonic::Status,
-        >;
-        async fn list_shadows(
-            &self,
-            request: tonic::Request<super::ListShadowsRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListShadowsResponse>,
-            tonic::Status,
-        >;
-        async fn add_signal(
-            &self,
-            request: tonic::Request<super::AddSignalRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::AddSignalResponse>,
-            tonic::Status,
-        >;
-        async fn remove_signal(
-            &self,
-            request: tonic::Request<super::RemoveSignalRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::RemoveSignalResponse>,
-            tonic::Status,
-        >;
-        async fn list_signals(
-            &self,
-            request: tonic::Request<super::ListSignalsRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListSignalsResponse>,
-            tonic::Status,
-        >;
-        /// Server streaming response type for the SubscribeChanges method.
-        type SubscribeChangesStream: tonic::codegen::tokio_stream::Stream<
+        /// Server streaming response type for the ShadowSignalEvents method.
+        type ShadowSignalEventsStream: tonic::codegen::tokio_stream::Stream<
                 Item = std::result::Result<
-                    super::SubscribeChangesResponse,
+                    super::ShadowSignalEventsResponse,
                     tonic::Status,
                 >,
             >
             + Send
             + 'static;
-        async fn subscribe_changes(
+        async fn shadow_signal_events(
             &self,
-            request: tonic::Request<super::SubscribeChangesRequest>,
+            request: tonic::Request<super::ShadowSignalEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<Self::SubscribeChangesStream>,
+            tonic::Response<Self::ShadowSignalEventsStream>,
             tonic::Status,
         >;
     }
@@ -469,257 +299,27 @@ pub mod shadow_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.shadow.v1.ShadowService/DestroyShadow" => {
+                "/dipstick.shadow.v1.ShadowService/ShadowSignalEvents" => {
                     #[allow(non_camel_case_types)]
-                    struct DestroyShadowSvc<T: ShadowService>(pub Arc<T>);
-                    impl<
-                        T: ShadowService,
-                    > tonic::server::UnaryService<super::DestroyShadowRequest>
-                    for DestroyShadowSvc<T> {
-                        type Response = super::DestroyShadowResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<super::DestroyShadowRequest>,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as ShadowService>::destroy_shadow(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = DestroyShadowSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/dipstick.shadow.v1.ShadowService/ListShadows" => {
-                    #[allow(non_camel_case_types)]
-                    struct ListShadowsSvc<T: ShadowService>(pub Arc<T>);
-                    impl<
-                        T: ShadowService,
-                    > tonic::server::UnaryService<super::ListShadowsRequest>
-                    for ListShadowsSvc<T> {
-                        type Response = super::ListShadowsResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<super::ListShadowsRequest>,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as ShadowService>::list_shadows(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = ListShadowsSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/dipstick.shadow.v1.ShadowService/AddSignal" => {
-                    #[allow(non_camel_case_types)]
-                    struct AddSignalSvc<T: ShadowService>(pub Arc<T>);
-                    impl<
-                        T: ShadowService,
-                    > tonic::server::UnaryService<super::AddSignalRequest>
-                    for AddSignalSvc<T> {
-                        type Response = super::AddSignalResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<super::AddSignalRequest>,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as ShadowService>::add_signal(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = AddSignalSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/dipstick.shadow.v1.ShadowService/RemoveSignal" => {
-                    #[allow(non_camel_case_types)]
-                    struct RemoveSignalSvc<T: ShadowService>(pub Arc<T>);
-                    impl<
-                        T: ShadowService,
-                    > tonic::server::UnaryService<super::RemoveSignalRequest>
-                    for RemoveSignalSvc<T> {
-                        type Response = super::RemoveSignalResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<super::RemoveSignalRequest>,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as ShadowService>::remove_signal(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = RemoveSignalSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/dipstick.shadow.v1.ShadowService/ListSignals" => {
-                    #[allow(non_camel_case_types)]
-                    struct ListSignalsSvc<T: ShadowService>(pub Arc<T>);
-                    impl<
-                        T: ShadowService,
-                    > tonic::server::UnaryService<super::ListSignalsRequest>
-                    for ListSignalsSvc<T> {
-                        type Response = super::ListSignalsResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<super::ListSignalsRequest>,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as ShadowService>::list_signals(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = ListSignalsSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/dipstick.shadow.v1.ShadowService/SubscribeChanges" => {
-                    #[allow(non_camel_case_types)]
-                    struct SubscribeChangesSvc<T: ShadowService>(pub Arc<T>);
+                    struct ShadowSignalEventsSvc<T: ShadowService>(pub Arc<T>);
                     impl<
                         T: ShadowService,
                     > tonic::server::ServerStreamingService<
-                        super::SubscribeChangesRequest,
-                    > for SubscribeChangesSvc<T> {
-                        type Response = super::SubscribeChangesResponse;
-                        type ResponseStream = T::SubscribeChangesStream;
+                        super::ShadowSignalEventsRequest,
+                    > for ShadowSignalEventsSvc<T> {
+                        type Response = super::ShadowSignalEventsResponse;
+                        type ResponseStream = T::ShadowSignalEventsStream;
                         type Future = BoxFuture<
                             tonic::Response<Self::ResponseStream>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::SubscribeChangesRequest>,
+                            request: tonic::Request<super::ShadowSignalEventsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as ShadowService>::subscribe_changes(&inner, request)
+                                <T as ShadowService>::shadow_signal_events(&inner, request)
                                     .await
                             };
                             Box::pin(fut)
@@ -732,7 +332,7 @@ pub mod shadow_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = SubscribeChangesSvc(inner);
+                        let method = ShadowSignalEventsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

@@ -1,5 +1,5 @@
 syntax = "proto3";
-package dipstick.core;
+package dipstick.core.v1;
 
 enum IoDir {
   IO_DIR_UNSPECIFIED = 0;

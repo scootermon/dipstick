@@ -1,0 +1,16 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+import "dipstick/core/v1/entity.proto";
+
+message BusSpec {
+  dipstick.core.v1.EntityMeta meta = 1;
+  oneof bus_spec_variant {
+    LinuxBusSpec linux = 2;
+  }
+}
+
+message LinuxBusSpec {
+  string device = 1;
+  optional uint32 bitrate = 2;
+}

@@ -1,0 +1,8 @@
+syntax = "proto3";
+package dipstick.core.v1;
+
+message File {
+  oneof file_variant {
+    string server_path = 1;
+  }
+}
