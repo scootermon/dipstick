@@ -12,9 +12,15 @@ message ChipEntity {
 
 message ChipSpec {
   map<string, PinSpec> pins = 2;
-  oneof chip_spec_variant { LinuxChipSpec linux = 3; }
+  oneof chip_spec_variant {
+    LinuxChipSpec linux = 3;
+  }
 }
 
-message LinuxChipSpec { string name = 1; }
+message LinuxChipSpec {
+  string name = 1;
+}
 
-message ChipStatus { map<string, PinStatus> pins = 2; }
+message ChipStatus {
+  map<string, PinStatus> pins = 2;
+}

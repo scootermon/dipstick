@@ -4,13 +4,10 @@ use std::time::SystemTime;
 
 use dipstick_core::{Entity, EntityMeta, IdContext, QualifiedId};
 use dipstick_proto::gpio::v1::{
-    ChipEntity,
-    ChipSpec,
-    ChipSpecVariant,
-    ChipStatus,
-    Level,
-    PinStatus,
+    ChipEntity, ChipSpec, ChipSpecVariant, ChipStatus, Level, PinStatus, SubscribeChipResponse,
 };
+use tokio::sync::broadcast;
+use tokio_stream::wrappers::BroadcastStream;
 use tokio_util::sync::{CancellationToken, DropGuard};
 use tokio_util::task::TaskTracker;
 
@@ -27,7 +24,7 @@ pub struct Chip {
 }
 
 impl Chip {
-    pub async fn new(id: QualifiedId<'static>, spec: ChipSpec) -> anyhow::Result<Self> {
+    pub async fn new(id: Option<QualifiedId<'static>>, spec: ChipSpec) -> anyhow::Result<Self> {
         let tracker = TaskTracker::new();
         let cancel_token = CancellationToken::new();
         let pins = Arc::new(PinMap::new());
@@ -65,6 +62,16 @@ impl Chip {
             }),
         }
     }
+
+    pub async fn shutdown(self) {
+        drop(self.drop_guard);
+        self.tracker.close();
+        self.tracker.wait().await;
+    }
+
+    pub fn subscribe(&self) -> BroadcastStream<SubscribeChipResponse> {
+        BroadcastStream::new(self.pins.tx.subscribe())
+    }
 }
 
 impl Entity for Chip {
@@ -75,12 +82,15 @@ impl Entity for Chip {
 
 struct PinMap {
     pins: RwLock<HashMap<String, PinStatus>>,
+    tx: broadcast::Sender<SubscribeChipResponse>,
 }
 
 impl PinMap {
     fn new() -> Self {
+        let (tx, _) = broadcast::channel(16); // TODO
         Self {
             pins: RwLock::new(HashMap::new()),
+            tx,
         }
     }
 
@@ -89,13 +99,16 @@ impl PinMap {
         if pins.contains_key(id) {
             return;
         }
-        pins.insert(id.to_owned(), PinStatus {
-            changed_at: None,
-            logical: Level::Unspecified as _,
-        });
+        pins.insert(
+            id.to_owned(),
+            PinStatus {
+                changed_at: None,
+                logical: Level::Unspecified as _,
+            },
+        );
     }
 
-    fn remove_pin(&self, id: &str) -> bool {
+    fn _remove_pin(&self, id: &str) -> bool {
         let mut pins = self.pins.write().unwrap();
         pins.remove(id).is_some()
     }
@@ -107,12 +120,22 @@ impl PinMap {
             status.set_logical(logical);
             if changed {
                 status.changed_at = Some(timestamp.into());
+                // avoid cloning if no one is listening
+                if self.tx.receiver_count() > 0 {
+                    let _ = self.tx.send(SubscribeChipResponse {
+                        pin_id: id.to_owned(),
+                        status: Some(status.clone()),
+                    });
+                }
             }
         } else {
-            pins.insert(id.to_owned(), PinStatus {
-                changed_at: Some(timestamp.into()),
-                logical: logical as _,
-            });
+            pins.insert(
+                id.to_owned(),
+                PinStatus {
+                    changed_at: Some(timestamp.into()),
+                    logical: logical as _,
+                },
+            );
         }
     }
 

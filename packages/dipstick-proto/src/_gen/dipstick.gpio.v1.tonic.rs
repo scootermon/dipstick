@@ -134,6 +134,33 @@ pub mod gpio_service_client {
                 .insert(GrpcMethod::new("dipstick.gpio.v1.GpioService", "GetChip"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn subscribe_chip(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SubscribeChipRequest>,
+        ) -> std::result::Result<
+            tonic::Response<tonic::codec::Streaming<super::SubscribeChipResponse>>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.gpio.v1.GpioService/SubscribeChip",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dipstick.gpio.v1.GpioService", "SubscribeChip"),
+                );
+            self.inner.server_streaming(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -154,6 +181,19 @@ pub mod gpio_service_server {
             &self,
             request: tonic::Request<super::GetChipRequest>,
         ) -> std::result::Result<tonic::Response<super::GetChipResponse>, tonic::Status>;
+        /// Server streaming response type for the SubscribeChip method.
+        type SubscribeChipStream: tonic::codegen::tokio_stream::Stream<
+                Item = std::result::Result<super::SubscribeChipResponse, tonic::Status>,
+            >
+            + Send
+            + 'static;
+        async fn subscribe_chip(
+            &self,
+            request: tonic::Request<super::SubscribeChipRequest>,
+        ) -> std::result::Result<
+            tonic::Response<Self::SubscribeChipStream>,
+            tonic::Status,
+        >;
     }
     #[derive(Debug)]
     pub struct GpioServiceServer<T: GpioService> {
@@ -322,6 +362,53 @@ pub mod gpio_service_server {
                                 max_encoding_message_size,
                             );
                         let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.gpio.v1.GpioService/SubscribeChip" => {
+                    #[allow(non_camel_case_types)]
+                    struct SubscribeChipSvc<T: GpioService>(pub Arc<T>);
+                    impl<
+                        T: GpioService,
+                    > tonic::server::ServerStreamingService<super::SubscribeChipRequest>
+                    for SubscribeChipSvc<T> {
+                        type Response = super::SubscribeChipResponse;
+                        type ResponseStream = T::SubscribeChipStream;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::ResponseStream>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::SubscribeChipRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as GpioService>::subscribe_chip(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = SubscribeChipSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.server_streaming(method, req).await;
                         Ok(res)
                     };
                     Box::pin(fut)

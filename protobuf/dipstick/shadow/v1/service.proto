@@ -7,13 +7,16 @@ import "dipstick/shadow/v1/shadow.proto";
 service ShadowService {
   rpc CreateShadow(CreateShadowRequest) returns (CreateShadowResponse);
 
-  rpc ShadowSignalEvents(ShadowSignalEventsRequest)
-      returns (stream ShadowSignalEventsResponse);
+  rpc ShadowSignalEvents(ShadowSignalEventsRequest) returns (stream ShadowSignalEventsResponse);
 }
 
-message CreateShadowRequest { ShadowSpec spec = 1; }
+message CreateShadowRequest {
+  ShadowSpec spec = 1;
+}
 
-message CreateShadowResponse { dipstick.core.v1.EntityMeta meta = 1; }
+message CreateShadowResponse {
+  dipstick.core.v1.EntityMeta meta = 1;
+}
 
 message ShadowSignalEventsRequest {
   dipstick.core.v1.EntitySelector entity = 1;

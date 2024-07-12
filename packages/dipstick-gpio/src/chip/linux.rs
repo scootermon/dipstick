@@ -44,6 +44,7 @@ fn apply_spec_blocking(
         .with_event_clock(EventClock::Realtime);
 
     let mut offset_to_id = OffsetMap::<String>::default();
+    // TODO: if pin_specs is empty we can completely skip spawning the worker
     for (id, pin) in pin_specs {
         let line_info = chip
             .find_line_info(&pin.line_name)

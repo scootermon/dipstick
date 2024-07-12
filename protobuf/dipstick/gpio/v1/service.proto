@@ -1,19 +1,40 @@
 syntax = "proto3";
 package dipstick.gpio.v1;
 
-import "dipstick/gpio/v1/chip.proto";
 import "dipstick/core/v1/entity.proto";
+import "dipstick/gpio/v1/chip.proto";
+import "dipstick/gpio/v1/pin.proto";
 
 service GpioService {
   rpc CreateChip(CreateChipRequest) returns (CreateChipResponse);
 
   rpc GetChip(GetChipRequest) returns (GetChipResponse);
+
+  rpc SubscribeChip(SubscribeChipRequest) returns (stream SubscribeChipResponse);
 }
 
-message CreateChipRequest { ChipEntity chip = 1; }
+message CreateChipRequest {
+  dipstick.core.v1.EntityMeta meta = 1;
+  ChipSpec spec = 2;
+}
 
-message CreateChipResponse { ChipEntity chip = 1; }
+message CreateChipResponse {
+  ChipEntity chip = 1;
+}
 
-message GetChipRequest { dipstick.core.v1.EntitySelector chip = 1; }
+message GetChipRequest {
+  dipstick.core.v1.EntitySelector chip = 1;
+}
 
-message GetChipResponse { ChipEntity chip = 1; }
+message GetChipResponse {
+  ChipEntity chip = 1;
+}
+
+message SubscribeChipRequest {
+  dipstick.core.v1.EntitySelector chip = 1;
+}
+
+message SubscribeChipResponse {
+  string pin_id = 1;
+  PinStatus status = 2;
+}

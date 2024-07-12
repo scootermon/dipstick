@@ -2,11 +2,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
 use dipstick_proto::xcp::v1::{
-    CtoCommand,
-    CtoCommandContent,
-    CtoResponse,
-    CtoResponseContent,
-    PeriodicShortUploadResponse,
+    CtoCommand, CtoCommandContent, CtoResponse, CtoResponseContent, PeriodicShortUploadResponse,
     ShortUploadCommand,
 };
 use futures::stream::BoxStream;

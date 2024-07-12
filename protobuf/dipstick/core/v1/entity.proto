@@ -4,7 +4,9 @@ package dipstick.core.v1;
 import "google/protobuf/timestamp.proto";
 
 message EntityMeta {
+  // zero means not set
   uint32 unique_id = 1;
+  // can be empty
   string id = 2;
   google.protobuf.Timestamp created_at = 4;
   map<string, string> annotations = 3;

@@ -1,16 +1,8 @@
 use std::sync::Arc;
 
 use dipstick_proto::core::v1::{
-    CoreService,
-    CoreServiceServer,
-    LogConfigRequest,
-    LogConfigResponse,
-    LogSubscribeRequest,
-    LogSubscribeResponse,
-    ShutdownRequest,
-    ShutdownResponse,
-    VersionRequest,
-    VersionResponse,
+    CoreService, CoreServiceServer, LogConfigRequest, LogConfigResponse, LogSubscribeRequest,
+    LogSubscribeResponse, ShutdownRequest, ShutdownResponse, VersionRequest, VersionResponse,
 };
 use futures::stream::BoxStream;
 use futures::StreamExt;

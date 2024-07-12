@@ -1,14 +1,7 @@
 use bytes::{Buf, BufMut};
 use dipstick_proto::xcp::v1::{
-    AddressGranularity,
-    ByteOrder,
-    CommModeBasic,
-    ConnectCommand,
-    ConnectResponse,
-    CtoCommandContent,
-    DisconnectCommand,
-    Resource,
-    ShortUploadCommand,
+    AddressGranularity, ByteOrder, CommModeBasic, ConnectCommand, ConnectResponse,
+    CtoCommandContent, DisconnectCommand, Resource, ShortUploadCommand,
 };
 use tonic::Status;
 

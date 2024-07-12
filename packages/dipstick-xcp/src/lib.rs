@@ -1,18 +1,9 @@
 use std::sync::Arc;
 
 use dipstick_proto::xcp::v1::{
-    CommandRequest,
-    CommandResponse,
-    ConnectSessionRequest,
-    ConnectSessionResponse,
-    CreateSessionRequest,
-    CreateSessionResponse,
-    DestroySessionRequest,
-    DestroySessionResponse,
-    PeriodicShortUploadRequest,
-    PeriodicShortUploadResponse,
-    XcpService,
-    XcpServiceServer,
+    CommandRequest, CommandResponse, ConnectSessionRequest, ConnectSessionResponse,
+    CreateSessionRequest, CreateSessionResponse, DestroySessionRequest, DestroySessionResponse,
+    PeriodicShortUploadRequest, PeriodicShortUploadResponse, XcpService, XcpServiceServer,
 };
 use futures::stream::BoxStream;
 use tonic::{Request, Response, Status};

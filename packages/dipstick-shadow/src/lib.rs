@@ -1,7 +1,5 @@
 use dipstick_proto::shadow::v1::{
-    CreateShadowRequest,
-    CreateShadowResponse,
-    ShadowSignalEventsRequest,
+    CreateShadowRequest, CreateShadowResponse, ShadowSignalEventsRequest,
     ShadowSignalEventsResponse,
 };
 use futures::future::BoxFuture;

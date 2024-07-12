@@ -4,12 +4,7 @@ use std::time::{Duration, SystemTime};
 
 use bytes::BytesMut;
 use dipstick_proto::xcp::v1::{
-    ByteOrder,
-    ConnectResponse,
-    CtoCommand,
-    CtoResponse,
-    Frame,
-    ShortUploadCommand,
+    ByteOrder, ConnectResponse, CtoCommand, CtoResponse, Frame, ShortUploadCommand,
 };
 use tokio::sync::broadcast;
 use tonic::Status;
