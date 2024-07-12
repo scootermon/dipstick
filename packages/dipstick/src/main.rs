@@ -24,15 +24,20 @@ async fn _main() -> anyhow::Result<()> {
     let core = dipstick_core::Core::new(log_handle, shutdown_tx);
     let gpio = dipstick_gpio::Gpio::new(core.registry());
 
-    let reflection_server = reflection_server_builder()
+    let reflection_v1_server = reflection_v1_server_builder()
         .build()
         .context("build reflection server")?;
+
+    let reflection_v1alpha_server = reflection_v1alpha_server_builder()
+        .build()
+        .context("build reflection v1alpha server")?;
 
     let addr = "0.0.0.0:3000".parse()?;
     tracing::debug!("starting server at {addr:?}");
     let res = Server::builder()
         .accept_http1(true)
-        .add_service(tonic_web::enable(reflection_server))
+        .add_service(tonic_web::enable(reflection_v1_server))
+        .add_service(tonic_web::enable(reflection_v1alpha_server))
         .add_service(tonic_web::enable(core.into_server()))
         .add_service(tonic_web::enable(gpio.into_server()))
         .serve_with_shutdown(addr, async {
@@ -46,19 +51,29 @@ async fn _main() -> anyhow::Result<()> {
     res
 }
 
-fn reflection_server_builder() -> tonic_reflection::server::Builder<'static> {
+const FILE_DESCRIPTORS: &[&[u8]] = &[
+    // dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
+    // dipstick_proto::device::v1::FILE_DESCRIPTOR_SET,
+    // dipstick_proto::shadow::v1::FILE_DESCRIPTOR_SET,
+    // dipstick_proto::spi::v1::FILE_DESCRIPTOR_SET,
+    // dipstick_proto::stack::v1::FILE_DESCRIPTOR_SET,
+    // dipstick_proto::xcp::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::core::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::gpio::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::wkt::FILE_DESCRIPTOR_SET,
+];
+
+fn reflection_v1_server_builder() -> tonic_reflection::server::Builder<'static> {
     let mut builder = tonic_reflection::server::Builder::configure();
-    for file_descriptor_set in &[
-        // dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
-        // dipstick_proto::device::v1::FILE_DESCRIPTOR_SET,
-        // dipstick_proto::shadow::v1::FILE_DESCRIPTOR_SET,
-        // dipstick_proto::spi::v1::FILE_DESCRIPTOR_SET,
-        // dipstick_proto::stack::v1::FILE_DESCRIPTOR_SET,
-        // dipstick_proto::xcp::v1::FILE_DESCRIPTOR_SET,
-        dipstick_proto::core::v1::FILE_DESCRIPTOR_SET,
-        dipstick_proto::gpio::v1::FILE_DESCRIPTOR_SET,
-        dipstick_proto::wkt::FILE_DESCRIPTOR_SET,
-    ] {
+    for file_descriptor_set in FILE_DESCRIPTORS {
+        builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);
+    }
+    builder
+}
+
+fn reflection_v1alpha_server_builder() -> tonic_reflection::server::v1alpha::Builder<'static> {
+    let mut builder = tonic_reflection::server::v1alpha::Builder::configure();
+    for file_descriptor_set in FILE_DESCRIPTORS {
         builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);
     }
     builder

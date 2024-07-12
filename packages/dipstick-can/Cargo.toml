@@ -11,3 +11,4 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+socketcan.workspace = true

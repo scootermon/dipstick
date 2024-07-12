@@ -1,0 +1,11 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+import "dipstick/can/v1/id.proto";
+import "google/protobuf/timestamp.proto";
+
+message Frame {
+  google.protobuf.Timestamp timestamp = 3;
+  Id id = 1;
+  bytes data = 2;
+}

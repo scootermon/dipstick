@@ -24,11 +24,11 @@ pub async fn spawn(
     pin_specs: &HashMap<String, PinSpec>,
 ) -> anyhow::Result<()> {
     tokio::task::block_in_place(|| {
-        apply_spec_blocking(tracker, cancel_token, pins, spec, pin_specs)
+        spawn_blocking(tracker, cancel_token, pins, spec, pin_specs)
     })
 }
 
-fn apply_spec_blocking(
+fn spawn_blocking(
     tracker: &TaskTracker,
     cancel_token: CancellationToken,
     pins: Arc<PinMap>,

@@ -1,14 +1,14 @@
 // @generated
 /// Generated client implementations.
-pub mod core_service_client {
+pub mod can_service_client {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
     #[derive(Debug, Clone)]
-    pub struct CoreServiceClient<T> {
+    pub struct CanServiceClient<T> {
         inner: tonic::client::Grpc<T>,
     }
-    impl CoreServiceClient<tonic::transport::Channel> {
+    impl CanServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
         where
@@ -19,7 +19,7 @@ pub mod core_service_client {
             Ok(Self::new(conn))
         }
     }
-    impl<T> CoreServiceClient<T>
+    impl<T> CanServiceClient<T>
     where
         T: tonic::client::GrpcService<tonic::body::BoxBody>,
         T::Error: Into<StdError>,
@@ -37,7 +37,7 @@ pub mod core_service_client {
         pub fn with_interceptor<F>(
             inner: T,
             interceptor: F,
-        ) -> CoreServiceClient<InterceptedService<T, F>>
+        ) -> CanServiceClient<InterceptedService<T, F>>
         where
             F: tonic::service::Interceptor,
             T::ResponseBody: Default,
@@ -51,7 +51,7 @@ pub mod core_service_client {
                 http::Request<tonic::body::BoxBody>,
             >>::Error: Into<StdError> + Send + Sync,
         {
-            CoreServiceClient::new(InterceptedService::new(inner, interceptor))
+            CanServiceClient::new(InterceptedService::new(inner, interceptor))
         }
         /// Compress requests with the given encoding.
         ///
@@ -84,11 +84,11 @@ pub mod core_service_client {
             self.inner = self.inner.max_encoding_message_size(limit);
             self
         }
-        pub async fn shutdown(
+        pub async fn create_bus(
             &mut self,
-            request: impl tonic::IntoRequest<super::ShutdownRequest>,
+            request: impl tonic::IntoRequest<super::CreateBusRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::ShutdownResponse>,
+            tonic::Response<super::CreateBusResponse>,
             tonic::Status,
         > {
             self.inner
@@ -102,20 +102,17 @@ pub mod core_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.core.v1.CoreService/Shutdown",
+                "/dipstick.can.v1.CanService/CreateBus",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "Shutdown"));
+                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "CreateBus"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn version(
+        pub async fn get_bus(
             &mut self,
-            request: impl tonic::IntoRequest<super::VersionRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::VersionResponse>,
-            tonic::Status,
-        > {
+            request: impl tonic::IntoRequest<super::GetBusRequest>,
+        ) -> std::result::Result<tonic::Response<super::GetBusResponse>, tonic::Status> {
             self.inner
                 .ready()
                 .await
@@ -127,18 +124,18 @@ pub mod core_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.core.v1.CoreService/Version",
+                "/dipstick.can.v1.CanService/GetBus",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "Version"));
+                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "GetBus"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn log_config(
+        pub async fn send_frame(
             &mut self,
-            request: impl tonic::IntoRequest<super::LogConfigRequest>,
+            request: impl tonic::IntoRequest<super::SendFrameRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::LogConfigResponse>,
+            tonic::Response<super::SendFrameResponse>,
             tonic::Status,
         > {
             self.inner
@@ -152,18 +149,18 @@ pub mod core_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.core.v1.CoreService/LogConfig",
+                "/dipstick.can.v1.CanService/SendFrame",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "LogConfig"));
+                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "SendFrame"));
             self.inner.unary(req, path, codec).await
         }
-        pub async fn log_subscribe(
+        pub async fn receive_frames(
             &mut self,
-            request: impl tonic::IntoRequest<super::LogSubscribeRequest>,
+            request: impl tonic::IntoRequest<super::ReceiveFramesRequest>,
         ) -> std::result::Result<
-            tonic::Response<tonic::codec::Streaming<super::LogSubscribeResponse>>,
+            tonic::Response<tonic::codec::Streaming<super::ReceiveFramesResponse>>,
             tonic::Status,
         > {
             self.inner
@@ -177,88 +174,56 @@ pub mod core_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.core.v1.CoreService/LogSubscribe",
+                "/dipstick.can.v1.CanService/ReceiveFrames",
             );
             let mut req = request.into_request();
             req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "LogSubscribe"));
+                .insert(GrpcMethod::new("dipstick.can.v1.CanService", "ReceiveFrames"));
             self.inner.server_streaming(req, path, codec).await
-        }
-        pub async fn list_entities(
-            &mut self,
-            request: impl tonic::IntoRequest<super::ListEntitiesRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListEntitiesResponse>,
-            tonic::Status,
-        > {
-            self.inner
-                .ready()
-                .await
-                .map_err(|e| {
-                    tonic::Status::new(
-                        tonic::Code::Unknown,
-                        format!("Service was not ready: {}", e.into()),
-                    )
-                })?;
-            let codec = tonic::codec::ProstCodec::default();
-            let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.core.v1.CoreService/ListEntities",
-            );
-            let mut req = request.into_request();
-            req.extensions_mut()
-                .insert(GrpcMethod::new("dipstick.core.v1.CoreService", "ListEntities"));
-            self.inner.unary(req, path, codec).await
         }
     }
 }
 /// Generated server implementations.
-pub mod core_service_server {
+pub mod can_service_server {
     #![allow(unused_variables, dead_code, missing_docs, clippy::let_unit_value)]
     use tonic::codegen::*;
-    /// Generated trait containing gRPC methods that should be implemented for use with CoreServiceServer.
+    /// Generated trait containing gRPC methods that should be implemented for use with CanServiceServer.
     #[async_trait]
-    pub trait CoreService: Send + Sync + 'static {
-        async fn shutdown(
+    pub trait CanService: Send + Sync + 'static {
+        async fn create_bus(
             &self,
-            request: tonic::Request<super::ShutdownRequest>,
+            request: tonic::Request<super::CreateBusRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::ShutdownResponse>,
+            tonic::Response<super::CreateBusResponse>,
             tonic::Status,
         >;
-        async fn version(
+        async fn get_bus(
             &self,
-            request: tonic::Request<super::VersionRequest>,
-        ) -> std::result::Result<tonic::Response<super::VersionResponse>, tonic::Status>;
-        async fn log_config(
+            request: tonic::Request<super::GetBusRequest>,
+        ) -> std::result::Result<tonic::Response<super::GetBusResponse>, tonic::Status>;
+        async fn send_frame(
             &self,
-            request: tonic::Request<super::LogConfigRequest>,
+            request: tonic::Request<super::SendFrameRequest>,
         ) -> std::result::Result<
-            tonic::Response<super::LogConfigResponse>,
+            tonic::Response<super::SendFrameResponse>,
             tonic::Status,
         >;
-        /// Server streaming response type for the LogSubscribe method.
-        type LogSubscribeStream: tonic::codegen::tokio_stream::Stream<
-                Item = std::result::Result<super::LogSubscribeResponse, tonic::Status>,
+        /// Server streaming response type for the ReceiveFrames method.
+        type ReceiveFramesStream: tonic::codegen::tokio_stream::Stream<
+                Item = std::result::Result<super::ReceiveFramesResponse, tonic::Status>,
             >
             + Send
             + 'static;
-        async fn log_subscribe(
+        async fn receive_frames(
             &self,
-            request: tonic::Request<super::LogSubscribeRequest>,
+            request: tonic::Request<super::ReceiveFramesRequest>,
         ) -> std::result::Result<
-            tonic::Response<Self::LogSubscribeStream>,
-            tonic::Status,
-        >;
-        async fn list_entities(
-            &self,
-            request: tonic::Request<super::ListEntitiesRequest>,
-        ) -> std::result::Result<
-            tonic::Response<super::ListEntitiesResponse>,
+            tonic::Response<Self::ReceiveFramesStream>,
             tonic::Status,
         >;
     }
     #[derive(Debug)]
-    pub struct CoreServiceServer<T: CoreService> {
+    pub struct CanServiceServer<T: CanService> {
         inner: _Inner<T>,
         accept_compression_encodings: EnabledCompressionEncodings,
         send_compression_encodings: EnabledCompressionEncodings,
@@ -266,7 +231,7 @@ pub mod core_service_server {
         max_encoding_message_size: Option<usize>,
     }
     struct _Inner<T>(Arc<T>);
-    impl<T: CoreService> CoreServiceServer<T> {
+    impl<T: CanService> CanServiceServer<T> {
         pub fn new(inner: T) -> Self {
             Self::from_arc(Arc::new(inner))
         }
@@ -318,9 +283,9 @@ pub mod core_service_server {
             self
         }
     }
-    impl<T, B> tonic::codegen::Service<http::Request<B>> for CoreServiceServer<T>
+    impl<T, B> tonic::codegen::Service<http::Request<B>> for CanServiceServer<T>
     where
-        T: CoreService,
+        T: CanService,
         B: Body + Send + 'static,
         B::Error: Into<StdError> + Send + 'static,
     {
@@ -336,25 +301,25 @@ pub mod core_service_server {
         fn call(&mut self, req: http::Request<B>) -> Self::Future {
             let inner = self.inner.clone();
             match req.uri().path() {
-                "/dipstick.core.v1.CoreService/Shutdown" => {
+                "/dipstick.can.v1.CanService/CreateBus" => {
                     #[allow(non_camel_case_types)]
-                    struct ShutdownSvc<T: CoreService>(pub Arc<T>);
+                    struct CreateBusSvc<T: CanService>(pub Arc<T>);
                     impl<
-                        T: CoreService,
-                    > tonic::server::UnaryService<super::ShutdownRequest>
-                    for ShutdownSvc<T> {
-                        type Response = super::ShutdownResponse;
+                        T: CanService,
+                    > tonic::server::UnaryService<super::CreateBusRequest>
+                    for CreateBusSvc<T> {
+                        type Response = super::CreateBusResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::ShutdownRequest>,
+                            request: tonic::Request<super::CreateBusRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as CoreService>::shutdown(&inner, request).await
+                                <T as CanService>::create_bus(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -366,7 +331,7 @@ pub mod core_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = ShutdownSvc(inner);
+                        let method = CreateBusSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -382,25 +347,23 @@ pub mod core_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.core.v1.CoreService/Version" => {
+                "/dipstick.can.v1.CanService/GetBus" => {
                     #[allow(non_camel_case_types)]
-                    struct VersionSvc<T: CoreService>(pub Arc<T>);
-                    impl<
-                        T: CoreService,
-                    > tonic::server::UnaryService<super::VersionRequest>
-                    for VersionSvc<T> {
-                        type Response = super::VersionResponse;
+                    struct GetBusSvc<T: CanService>(pub Arc<T>);
+                    impl<T: CanService> tonic::server::UnaryService<super::GetBusRequest>
+                    for GetBusSvc<T> {
+                        type Response = super::GetBusResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::VersionRequest>,
+                            request: tonic::Request<super::GetBusRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as CoreService>::version(&inner, request).await
+                                <T as CanService>::get_bus(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -412,7 +375,7 @@ pub mod core_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = VersionSvc(inner);
+                        let method = GetBusSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -428,25 +391,25 @@ pub mod core_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.core.v1.CoreService/LogConfig" => {
+                "/dipstick.can.v1.CanService/SendFrame" => {
                     #[allow(non_camel_case_types)]
-                    struct LogConfigSvc<T: CoreService>(pub Arc<T>);
+                    struct SendFrameSvc<T: CanService>(pub Arc<T>);
                     impl<
-                        T: CoreService,
-                    > tonic::server::UnaryService<super::LogConfigRequest>
-                    for LogConfigSvc<T> {
-                        type Response = super::LogConfigResponse;
+                        T: CanService,
+                    > tonic::server::UnaryService<super::SendFrameRequest>
+                    for SendFrameSvc<T> {
+                        type Response = super::SendFrameResponse;
                         type Future = BoxFuture<
                             tonic::Response<Self::Response>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::LogConfigRequest>,
+                            request: tonic::Request<super::SendFrameRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as CoreService>::log_config(&inner, request).await
+                                <T as CanService>::send_frame(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -458,7 +421,7 @@ pub mod core_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = LogConfigSvc(inner);
+                        let method = SendFrameSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -474,26 +437,26 @@ pub mod core_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.core.v1.CoreService/LogSubscribe" => {
+                "/dipstick.can.v1.CanService/ReceiveFrames" => {
                     #[allow(non_camel_case_types)]
-                    struct LogSubscribeSvc<T: CoreService>(pub Arc<T>);
+                    struct ReceiveFramesSvc<T: CanService>(pub Arc<T>);
                     impl<
-                        T: CoreService,
-                    > tonic::server::ServerStreamingService<super::LogSubscribeRequest>
-                    for LogSubscribeSvc<T> {
-                        type Response = super::LogSubscribeResponse;
-                        type ResponseStream = T::LogSubscribeStream;
+                        T: CanService,
+                    > tonic::server::ServerStreamingService<super::ReceiveFramesRequest>
+                    for ReceiveFramesSvc<T> {
+                        type Response = super::ReceiveFramesResponse;
+                        type ResponseStream = T::ReceiveFramesStream;
                         type Future = BoxFuture<
                             tonic::Response<Self::ResponseStream>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::LogSubscribeRequest>,
+                            request: tonic::Request<super::ReceiveFramesRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as CoreService>::log_subscribe(&inner, request).await
+                                <T as CanService>::receive_frames(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -505,7 +468,7 @@ pub mod core_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = LogSubscribeSvc(inner);
+                        let method = ReceiveFramesSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(
@@ -517,52 +480,6 @@ pub mod core_service_server {
                                 max_encoding_message_size,
                             );
                         let res = grpc.server_streaming(method, req).await;
-                        Ok(res)
-                    };
-                    Box::pin(fut)
-                }
-                "/dipstick.core.v1.CoreService/ListEntities" => {
-                    #[allow(non_camel_case_types)]
-                    struct ListEntitiesSvc<T: CoreService>(pub Arc<T>);
-                    impl<
-                        T: CoreService,
-                    > tonic::server::UnaryService<super::ListEntitiesRequest>
-                    for ListEntitiesSvc<T> {
-                        type Response = super::ListEntitiesResponse;
-                        type Future = BoxFuture<
-                            tonic::Response<Self::Response>,
-                            tonic::Status,
-                        >;
-                        fn call(
-                            &mut self,
-                            request: tonic::Request<super::ListEntitiesRequest>,
-                        ) -> Self::Future {
-                            let inner = Arc::clone(&self.0);
-                            let fut = async move {
-                                <T as CoreService>::list_entities(&inner, request).await
-                            };
-                            Box::pin(fut)
-                        }
-                    }
-                    let accept_compression_encodings = self.accept_compression_encodings;
-                    let send_compression_encodings = self.send_compression_encodings;
-                    let max_decoding_message_size = self.max_decoding_message_size;
-                    let max_encoding_message_size = self.max_encoding_message_size;
-                    let inner = self.inner.clone();
-                    let fut = async move {
-                        let inner = inner.0;
-                        let method = ListEntitiesSvc(inner);
-                        let codec = tonic::codec::ProstCodec::default();
-                        let mut grpc = tonic::server::Grpc::new(codec)
-                            .apply_compression_config(
-                                accept_compression_encodings,
-                                send_compression_encodings,
-                            )
-                            .apply_max_message_size_config(
-                                max_decoding_message_size,
-                                max_encoding_message_size,
-                            );
-                        let res = grpc.unary(method, req).await;
                         Ok(res)
                     };
                     Box::pin(fut)
@@ -582,7 +499,7 @@ pub mod core_service_server {
             }
         }
     }
-    impl<T: CoreService> Clone for CoreServiceServer<T> {
+    impl<T: CanService> Clone for CanServiceServer<T> {
         fn clone(&self) -> Self {
             let inner = self.inner.clone();
             Self {
@@ -594,7 +511,7 @@ pub mod core_service_server {
             }
         }
     }
-    impl<T: CoreService> Clone for _Inner<T> {
+    impl<T: CanService> Clone for _Inner<T> {
         fn clone(&self) -> Self {
             Self(Arc::clone(&self.0))
         }
@@ -604,7 +521,7 @@ pub mod core_service_server {
             write!(f, "{:?}", self.0)
         }
     }
-    impl<T: CoreService> tonic::server::NamedService for CoreServiceServer<T> {
-        const NAME: &'static str = "dipstick.core.v1.CoreService";
+    impl<T: CanService> tonic::server::NamedService for CanServiceServer<T> {
+        const NAME: &'static str = "dipstick.can.v1.CanService";
     }
 }

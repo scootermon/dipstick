@@ -1,6 +1,7 @@
 syntax = "proto3";
 package dipstick.core.v1;
 
+import "dipstick/core/v1/entity.proto";
 import "dipstick/core/v1/logging.proto";
 
 // Server control services.
@@ -15,6 +16,8 @@ service CoreService {
   rpc LogConfig(LogConfigRequest) returns (LogConfigResponse);
   // Subscribes to the server's logging.
   rpc LogSubscribe(LogSubscribeRequest) returns (stream LogSubscribeResponse);
+
+  rpc ListEntities(ListEntitiesRequest) returns (ListEntitiesResponse);
 }
 
 // Shutdown request
@@ -52,4 +55,13 @@ message LogSubscribeRequest {}
 message LogSubscribeResponse {
   // A log event.
   LogEvent event = 1;
+}
+
+// ListEntities request
+message ListEntitiesRequest {}
+
+// ListEntities response
+message ListEntitiesResponse {
+  // The list of entities.
+  repeated EntityMeta entities = 1;
 }

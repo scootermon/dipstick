@@ -1,0 +1,47 @@
+syntax = "proto3";
+package dipstick.can.v1;
+
+import "dipstick/can/v1/bus.proto";
+import "dipstick/can/v1/frame.proto";
+import "dipstick/core/v1/entity.proto";
+
+service CanService {
+  rpc CreateBus(CreateBusRequest) returns (CreateBusResponse);
+
+  rpc GetBus(GetBusRequest) returns (GetBusResponse);
+
+  rpc SendFrame(SendFrameRequest) returns (SendFrameResponse);
+  rpc ReceiveFrames(ReceiveFramesRequest) returns (stream ReceiveFramesResponse);
+}
+
+message CreateBusRequest {
+  dipstick.core.v1.EntityMeta meta = 1;
+  BusSpec spec = 2;
+}
+
+message CreateBusResponse {
+  BusEntity bus = 1;
+}
+
+message GetBusRequest {
+  dipstick.core.v1.EntitySelector bus = 1;
+}
+
+message GetBusResponse {
+  BusEntity bus = 1;
+}
+
+message SendFrameRequest {
+  dipstick.core.v1.EntitySelector bus = 1;
+  Frame frame = 2;
+}
+
+message SendFrameResponse {}
+
+message ReceiveFramesRequest {
+  dipstick.core.v1.EntitySelector bus = 1;
+}
+
+message ReceiveFramesResponse {
+  Frame frame = 1;
+}
