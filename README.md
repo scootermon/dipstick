@@ -21,3 +21,4 @@ Packages contain gRPC services and entity kinds.
 ## Ideas
 
 - CAN Frame should store frame kind (remote, error, classic, fd)
+- Create tracing spans for each request

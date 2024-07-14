@@ -11,3 +11,13 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+bytes.workspace = true
+dipstick-core.workspace = true
+dipstick-proto.workspace = true
+futures.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tracing.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+spidev.workspace = true

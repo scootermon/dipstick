@@ -206,6 +206,7 @@ dependencies = [
  "dipstick-core",
  "dipstick-gpio",
  "dipstick-proto",
+ "dipstick-spi",
  "futures",
  "rand",
  "tokio",
@@ -294,6 +295,16 @@ dependencies = [
 [[package]]
 name = "dipstick-spi"
 version = "0.1.0"
+dependencies = [
+ "bytes",
+ "dipstick-core",
+ "dipstick-proto",
+ "futures",
+ "spidev",
+ "tokio",
+ "tonic",
+ "tracing",
+]
 
 [[package]]
 name = "dipstick-stack"
@@ -1089,6 +1100,17 @@ dependencies = [
  "nix",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "spidev"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c2800c129338c77998c1dcb6d4200447e018beb7d29959eb104cba2d45f83c1a"
+dependencies = [
+ "bitflags 2.6.0",
+ "libc",
+ "nix",
 ]
 
 [[package]]

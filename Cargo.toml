@@ -19,6 +19,7 @@ dipstick-can = { path = "packages/dipstick-can" }
 dipstick-core = { path = "packages/dipstick-core" }
 dipstick-gpio = { path = "packages/dipstick-gpio" }
 dipstick-proto = { path = "packages/dipstick-proto" }
+dipstick-spi = { path = "packages/dipstick-spi" }
 
 anyhow = "1"
 bytes = "1"
@@ -30,6 +31,7 @@ prost-types = "0.13"
 protoc-wkt = "1"
 rand = "0.8"
 socketcan = { version = "3", features = ["tokio"] }
+spidev = "0.6"
 tokio = { version = "1", features = ["full"] }
 tokio-stream = { version = "0.1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["full"] }
