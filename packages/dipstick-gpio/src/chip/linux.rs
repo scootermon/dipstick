@@ -11,6 +11,7 @@ use gpiocdev::tokio::AsyncRequest;
 use gpiocdev::Request;
 use tokio_util::sync::CancellationToken;
 use tokio_util::task::TaskTracker;
+use tonic::{Result, Status};
 
 use super::PinMap;
 
@@ -20,11 +21,12 @@ pub async fn spawn(
     tracker: &TaskTracker,
     cancel_token: CancellationToken,
     pins: Arc<PinMap>,
-    spec: &LinuxChipSpec,
-    pin_specs: &HashMap<String, PinSpec>,
-) -> anyhow::Result<()> {
+    spec: &mut LinuxChipSpec,
+    pin_specs: &mut HashMap<String, PinSpec>,
+) -> Result<()> {
     tokio::task::block_in_place(|| {
         spawn_blocking(tracker, cancel_token, pins, spec, pin_specs)
+            .map_err(|err| Status::internal(format!("failed to create linux gpio chip: {err}")))
     })
 }
 
@@ -32,8 +34,8 @@ fn spawn_blocking(
     tracker: &TaskTracker,
     cancel_token: CancellationToken,
     pins: Arc<PinMap>,
-    spec: &LinuxChipSpec,
-    pin_specs: &HashMap<String, PinSpec>,
+    spec: &mut LinuxChipSpec,
+    pin_specs: &mut HashMap<String, PinSpec>,
 ) -> anyhow::Result<()> {
     let chip = gpiocdev::Chip::from_name(&spec.name)
         .with_context(|| format!("chip {:?} not found", spec.name))?;
@@ -55,7 +57,13 @@ fn spawn_blocking(
 
         builder.with_line(line_info.offset);
         match pin.direction() {
-            IoDir::Unspecified => builder.as_is(),
+            IoDir::Unspecified => {
+                pin.set_direction(match line_info.direction {
+                    gpiocdev::line::Direction::Input => IoDir::In,
+                    gpiocdev::line::Direction::Output => IoDir::Out,
+                });
+                builder.as_is()
+            }
             IoDir::In => builder.as_input(),
             IoDir::Out => builder.as_output(gpiocdev::line::Value::Active), /* TODO default value
                                                                              * from spec */

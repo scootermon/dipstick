@@ -6,7 +6,7 @@ use dipstick_proto::xcp::v1::{
     PeriodicShortUploadRequest, PeriodicShortUploadResponse, XcpService, XcpServiceServer,
 };
 use futures::stream::BoxStream;
-use tonic::{Request, Response, Status};
+use tonic::{Request, Response, Result, Status};
 
 use self::session::Session;
 use crate::core::registry::Registry;
@@ -47,7 +47,7 @@ impl XcpService for Xcp {
     async fn create_session(
         &self,
         request: Request<CreateSessionRequest>,
-    ) -> tonic::Result<Response<CreateSessionResponse>> {
+    ) -> Result<Response<CreateSessionResponse>> {
         let CreateSessionRequest {
             disconnect_response_optional,
             transport,
@@ -58,7 +58,7 @@ impl XcpService for Xcp {
     async fn destroy_session(
         &self,
         request: Request<DestroySessionRequest>,
-    ) -> tonic::Result<Response<DestroySessionResponse>> {
+    ) -> Result<Response<DestroySessionResponse>> {
         let DestroySessionRequest { session_id } = request.into_inner();
         todo!()
     }
@@ -66,15 +66,12 @@ impl XcpService for Xcp {
     async fn connect_session(
         &self,
         request: Request<ConnectSessionRequest>,
-    ) -> tonic::Result<Response<ConnectSessionResponse>> {
+    ) -> Result<Response<ConnectSessionResponse>> {
         let ConnectSessionRequest { session_id, mode } = request.into_inner();
         todo!()
     }
 
-    async fn command(
-        &self,
-        request: Request<CommandRequest>,
-    ) -> tonic::Result<Response<CommandResponse>> {
+    async fn command(&self, request: Request<CommandRequest>) -> Result<Response<CommandResponse>> {
         let CommandRequest {
             session_id,
             command,
@@ -92,7 +89,7 @@ impl XcpService for Xcp {
     async fn periodic_short_upload(
         &self,
         request: Request<PeriodicShortUploadRequest>,
-    ) -> tonic::Result<Response<Self::PeriodicShortUploadStream>> {
+    ) -> Result<Response<Self::PeriodicShortUploadStream>> {
         let PeriodicShortUploadRequest {
             session_id,
             command,

@@ -11,4 +11,14 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+anyhow.workspace = true
+bytes.workspace = true
+dipstick-core.workspace = true
+dipstick-proto.workspace = true
+futures.workspace = true
 socketcan.workspace = true
+tokio-stream.workspace = true
+tokio-util.workspace = true
+tokio.workspace = true
+tonic.workspace = true
+tracing.workspace = true

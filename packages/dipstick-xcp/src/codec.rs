@@ -3,7 +3,7 @@ use dipstick_proto::xcp::v1::{
     AddressGranularity, ByteOrder, CommModeBasic, ConnectCommand, ConnectResponse,
     CtoCommandContent, DisconnectCommand, Resource, ShortUploadCommand,
 };
-use tonic::Status;
+use tonic::{Result, Status};
 
 macro_rules! truncate {
     ($value:expr => $name:expr) => {
@@ -32,7 +32,7 @@ pub fn encode_command(
     command: &CtoCommandContent,
     is_be: bool,
     buf: &mut impl BufMut,
-) -> tonic::Result<()> {
+) -> Result<()> {
     match *command {
         CtoCommandContent::Connect(ConnectCommand { mode }) => {
             buf.put_u8(cmd::CONNECT);

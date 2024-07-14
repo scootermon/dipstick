@@ -10,7 +10,6 @@ message BusEntity {
 }
 
 message BusSpec {
-  dipstick.core.v1.EntityMeta meta = 1;
   oneof bus_spec_variant {
     LinuxBusSpec linux = 2;
   }

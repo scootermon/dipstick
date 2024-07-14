@@ -14,7 +14,7 @@ service GpioService {
 }
 
 message CreateChipRequest {
-  dipstick.core.v1.EntityMeta meta = 1;
+  dipstick.core.v1.EntityMetaSpec meta = 1;
   ChipSpec spec = 2;
 }
 

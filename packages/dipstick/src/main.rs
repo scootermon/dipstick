@@ -1,8 +1,11 @@
 use std::process::ExitCode;
+use std::sync::Arc;
 
 use anyhow::Context;
 use tokio::sync::mpsc;
 use tonic::transport::Server;
+
+mod consts;
 
 async fn _main() -> anyhow::Result<()> {
     let log_handle = dipstick_core::logging::init();
@@ -21,25 +24,27 @@ async fn _main() -> anyhow::Result<()> {
         }
     });
 
-    let core = dipstick_core::Core::new(log_handle, shutdown_tx);
-    let gpio = dipstick_gpio::Gpio::new(core.registry());
+    let core = dipstick_core::Core::new(consts::VERSION.to_owned(), log_handle, shutdown_tx);
+    let gpio = dipstick_gpio::Gpio::new(Arc::clone(&core));
+    let can = dipstick_can::Can::new(Arc::clone(&core));
 
     let reflection_v1_server = reflection_v1_server_builder()
         .build()
-        .context("build reflection server")?;
+        .context("failed to build reflection v1 server")?;
 
     let reflection_v1alpha_server = reflection_v1alpha_server_builder()
         .build()
-        .context("build reflection v1alpha server")?;
+        .context("failed to build reflection v1alpha server")?;
 
     let addr = "0.0.0.0:3000".parse()?;
-    tracing::debug!("starting server at {addr:?}");
+    tracing::info!("listening on {addr:?}");
     let res = Server::builder()
         .accept_http1(true)
         .add_service(tonic_web::enable(reflection_v1_server))
         .add_service(tonic_web::enable(reflection_v1alpha_server))
         .add_service(tonic_web::enable(core.into_server()))
         .add_service(tonic_web::enable(gpio.into_server()))
+        .add_service(tonic_web::enable(can.into_server()))
         .serve_with_shutdown(addr, async {
             shutdown_rx.recv().await;
         })
@@ -52,7 +57,7 @@ async fn _main() -> anyhow::Result<()> {
 }
 
 const FILE_DESCRIPTORS: &[&[u8]] = &[
-    // dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
     // dipstick_proto::device::v1::FILE_DESCRIPTOR_SET,
     // dipstick_proto::shadow::v1::FILE_DESCRIPTOR_SET,
     // dipstick_proto::spi::v1::FILE_DESCRIPTOR_SET,

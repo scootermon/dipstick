@@ -3,6 +3,7 @@ use std::sync::Arc;
 use bytes::Bytes;
 use dipstick_proto::can::v1::Frame as CanFrame;
 use dipstick_proto::xcp::v1::CanTransport;
+use tonic::Result;
 
 pub enum Transport {
     Can {
@@ -12,7 +13,7 @@ pub enum Transport {
 }
 
 impl Transport {
-    pub async fn send(&self, payload: Bytes) -> tonic::Result<()> {
+    pub async fn send(&self, payload: Bytes) -> Result<()> {
         match self {
             Self::Can { socket, config } => {
                 let frame = CanFrame::builder()

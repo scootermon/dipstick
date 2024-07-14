@@ -1,6 +1,23 @@
 # Dipstick
 
+## Design Philosophy
+
+### Entities
+
+Entities are the fundamental building block behind Dipstick.
+Every entity consists of the following parts:
+
+- "meta"
+- "spec" which contains the config of the entity.
+- "status"
+
+The contents of "spec" and "status" depend on the entity kind.
+
+### Packages
+
+APIs are structured into packages.
+Packages contain gRPC services and entity kinds.
+
 ## Ideas
 
-- Create EntityStatus to hold `created_at`. Store `referenced_by` in here as well to hold entities that depend on this one
-- Remove overly complicated id field and instead use `name`, `package`, and `kind` separately.
+- CAN Frame should store frame kind (remote, error, classic, fd)

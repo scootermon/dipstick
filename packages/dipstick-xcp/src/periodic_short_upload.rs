@@ -11,10 +11,11 @@ use tokio::sync::broadcast;
 use tokio::task::JoinHandle;
 use tokio::time::MissedTickBehavior;
 use tokio_stream::wrappers::BroadcastStream;
+use tonic::Result;
 
 use super::session::Session;
 
-pub type Stream = BoxStream<'static, tonic::Result<PeriodicShortUploadResponse>>;
+pub type Stream = BoxStream<'static, Result<PeriodicShortUploadResponse>>;
 
 pub struct Worker {
     created_at: SystemTime,

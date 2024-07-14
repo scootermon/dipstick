@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::SystemTime;
 
-use dipstick_core::{Entity, EntityMeta, IdContext, QualifiedId};
+use dipstick_core::{Entity, EntityKind, EntityMeta};
 use dipstick_proto::gpio::v1::{
     ChipEntity, ChipSpec, ChipSpecVariant, ChipStatus, Level, PinStatus, SubscribeChipResponse,
 };
@@ -10,10 +10,9 @@ use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
 use tokio_util::sync::{CancellationToken, DropGuard};
 use tokio_util::task::TaskTracker;
+use tonic::{Result, Status};
 
 mod linux;
-
-pub const ID_CONTEXT: IdContext = IdContext::full_ref(crate::PACKAGE, "Chip");
 
 pub struct Chip {
     meta: EntityMeta,
@@ -24,33 +23,32 @@ pub struct Chip {
 }
 
 impl Chip {
-    pub async fn new(id: Option<QualifiedId<'static>>, spec: ChipSpec) -> anyhow::Result<Self> {
+    pub async fn new(meta: EntityMeta, mut spec: ChipSpec) -> Result<Arc<Self>> {
         let tracker = TaskTracker::new();
         let cancel_token = CancellationToken::new();
         let pins = Arc::new(PinMap::new());
 
-        match &spec.chip_spec_variant {
+        match &mut spec.chip_spec_variant {
             Some(ChipSpecVariant::Linux(linux_spec)) => {
                 linux::spawn(
                     &tracker,
                     cancel_token.child_token(),
                     Arc::clone(&pins),
                     linux_spec,
-                    &spec.pins,
+                    &mut spec.pins,
                 )
                 .await?;
             }
-            None => anyhow::bail!("missing chip spec variant"),
+            None => return Err(Status::invalid_argument("missing chip spec variant")),
         }
 
-        let meta = EntityMeta::new(id);
-        Ok(Self {
+        Ok(Arc::new(Self {
             meta,
             spec,
             pins,
             tracker,
             drop_guard: cancel_token.drop_guard(),
-        })
+        }))
     }
 
     pub fn to_proto(&self) -> ChipEntity {
@@ -78,6 +76,11 @@ impl Entity for Chip {
     fn entity_meta(&self) -> &EntityMeta {
         &self.meta
     }
+}
+
+impl EntityKind for Chip {
+    const PACKAGE: &'static str = crate::PACKAGE;
+    const KIND: &'static str = "Chip";
 }
 
 struct PinMap {

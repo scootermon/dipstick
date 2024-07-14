@@ -15,7 +15,7 @@ service CanService {
 }
 
 message CreateBusRequest {
-  dipstick.core.v1.EntityMeta meta = 1;
+  dipstick.core.v1.EntityMetaSpec meta = 1;
   BusSpec spec = 2;
 }
 

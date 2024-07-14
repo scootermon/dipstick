@@ -7,7 +7,7 @@ use dipstick_proto::xcp::v1::{
     ByteOrder, ConnectResponse, CtoCommand, CtoResponse, Frame, ShortUploadCommand,
 };
 use tokio::sync::broadcast;
-use tonic::Status;
+use tonic::{Result, Status};
 
 use super::periodic_short_upload;
 use super::transport::Transport;
@@ -56,7 +56,7 @@ impl Session {
         self.byte_order() == ByteOrder::Big
     }
 
-    pub async fn raw_command(&self, mut command: CtoCommand) -> tonic::Result<CtoResponse> {
+    pub async fn raw_command(&self, mut command: CtoCommand) -> Result<CtoResponse> {
         let Some(payload) = &command.cto_command_content else {
             return Err(Status::invalid_argument("'command' is unspecified"));
         };
@@ -79,7 +79,7 @@ impl Session {
         command: ShortUploadCommand,
         interval: Duration,
         ignore_interval_if_exists: bool,
-    ) -> tonic::Result<periodic_short_upload::Stream> {
+    ) -> Result<periodic_short_upload::Stream> {
         let mut periodic_short_uploads = self.periodic_short_uploads.lock().unwrap();
         if let Some(worker) = periodic_short_uploads.get(&command) {
             if !ignore_interval_if_exists && worker.interval() != interval {

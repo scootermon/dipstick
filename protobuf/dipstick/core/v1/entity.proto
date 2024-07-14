@@ -4,17 +4,32 @@ package dipstick.core.v1;
 import "google/protobuf/timestamp.proto";
 
 message EntityMeta {
+  EntityMetaSpec spec = 1;
+  EntityMetaStatus status = 2;
+}
+
+message EntityMetaSpec {
   // zero means not set
   uint32 unique_id = 1;
-  // can be empty
-  string id = 2;
-  google.protobuf.Timestamp created_at = 4;
+  string package = 2;
+  string kind = 4;
+  optional string key = 5;
   map<string, string> annotations = 3;
+}
+
+message EntityMetaStatus {
+  google.protobuf.Timestamp created_at = 1;
+  repeated EntityDependent dependents = 2;
+}
+
+message EntityDependent {
+  uint32 unique_id = 1;
+  google.protobuf.Timestamp created_at = 2;
 }
 
 message EntitySelector {
   oneof entity_selector_variant {
     uint32 unique_id = 1;
-    string id = 2;
+    string key = 2;
   }
 }

@@ -1,13 +1,14 @@
 use std::any::TypeId;
 use std::collections::HashMap;
+use std::num::NonZeroU32;
 use std::sync::RwLock;
 use std::time::SystemTime;
 
-pub use self::id::{IdContext, QualifiedId, UniqueId};
-pub use self::selector::EntitySelector;
+use dipstick_proto::core::v1::{EntityMetaSpec, EntityMetaStatus};
 
-mod id;
-mod selector;
+use crate::QualifiedKey;
+
+pub type UniqueId = NonZeroU32;
 
 pub trait Entity: Send + Sync + 'static {
     fn entity_meta(&self) -> &EntityMeta;
@@ -17,20 +18,31 @@ pub trait Entity: Send + Sync + 'static {
     }
 }
 
+pub trait EntityKind {
+    const PACKAGE: &'static str;
+    const KIND: &'static str;
+}
+
 pub struct EntityMeta {
-    id: Option<QualifiedId<'static>>,
+    package: String,
+    kind: String,
+    key: Option<String>,
     unique_id: UniqueIdSlot,
     created_at: SystemTime,
     annotations: RwLock<HashMap<String, String>>,
 }
 
 impl EntityMeta {
-    pub fn new(id: Option<QualifiedId<'static>>) -> Self {
+    pub fn new(package: String, kind: String, spec: EntityMetaSpec) -> Self {
+        assert!(!package.is_empty() && !kind.is_empty());
+        let unique_id = UniqueId::new(spec.unique_id);
         Self {
-            id,
-            unique_id: UniqueIdSlot(RwLock::new(None)),
+            package,
+            kind,
+            key: spec.key,
+            unique_id: UniqueIdSlot::new(unique_id),
             created_at: SystemTime::now(),
-            annotations: RwLock::new(HashMap::new()),
+            annotations: RwLock::new(spec.annotations),
         }
     }
 
@@ -42,21 +54,46 @@ impl EntityMeta {
         self.unique_id.set(unique_id);
     }
 
-    pub fn id(&self) -> Option<&QualifiedId<'static>> {
-        self.id.as_ref()
+    pub(crate) fn unique_id(&self) -> Option<UniqueId> {
+        self.unique_id.get()
+    }
+
+    pub(crate) fn package(&self) -> &str {
+        &self.package
+    }
+
+    pub(crate) fn kind(&self) -> &str {
+        &self.kind
+    }
+
+    pub(crate) fn local_key(&self) -> Option<&str> {
+        self.key.as_deref()
+    }
+
+    pub(crate) fn qualified_key(&self) -> Option<QualifiedKey> {
+        Some(QualifiedKey {
+            package: self.package.clone(),
+            kind: self.kind.clone(),
+            key: self.key.clone()?,
+        })
     }
 
     pub fn to_proto(&self) -> dipstick_proto::core::v1::EntityMeta {
-        let id = self
-            .id
-            .as_ref()
-            .map_or_else(String::new, |id| id.to_string());
         let annotations = self.annotations.read().unwrap().clone();
-        dipstick_proto::core::v1::EntityMeta {
-            id,
+        let spec = EntityMetaSpec {
             unique_id: self.unique_id.get_proto(),
-            created_at: Some(self.created_at.into()),
+            package: self.package.clone(),
+            kind: self.kind.clone(),
+            key: self.key.clone(),
             annotations,
+        };
+        let status = EntityMetaStatus {
+            created_at: Some(self.created_at.into()),
+            dependents: Vec::new(), // TODO
+        };
+        dipstick_proto::core::v1::EntityMeta {
+            spec: Some(spec),
+            status: Some(status),
         }
     }
 }
@@ -64,6 +101,10 @@ impl EntityMeta {
 struct UniqueIdSlot(RwLock<Option<UniqueId>>);
 
 impl UniqueIdSlot {
+    fn new(unique_id: Option<UniqueId>) -> Self {
+        Self(RwLock::new(unique_id))
+    }
+
     fn set(&self, unique_id: UniqueId) {
         *self.0.write().unwrap() = Some(unique_id);
     }

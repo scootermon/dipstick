@@ -5,7 +5,7 @@ use dipstick_proto::shadow::v1::{
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use futures::FutureExt;
-use tonic::{Request, Response};
+use tonic::{Request, Response, Result};
 
 mod shadow;
 
@@ -15,16 +15,16 @@ impl dipstick_proto::shadow::v1::ShadowService for ShadowService {
     fn create_shadow<'s: 'fut, 'fut>(
         &'s self,
         request: Request<CreateShadowRequest>,
-    ) -> BoxFuture<'fut, tonic::Result<Response<CreateShadowResponse>>> {
+    ) -> BoxFuture<'fut, Result<Response<CreateShadowResponse>>> {
         async move { todo!() }.boxed()
     }
 
-    type ShadowSignalEventsStream = BoxStream<'static, tonic::Result<ShadowSignalEventsResponse>>;
+    type ShadowSignalEventsStream = BoxStream<'static, Result<ShadowSignalEventsResponse>>;
 
     fn shadow_signal_events<'s: 'fut, 'fut>(
         &'s self,
         request: Request<ShadowSignalEventsRequest>,
-    ) -> BoxFuture<'fut, tonic::Result<Response<Self::ShadowSignalEventsStream>>> {
+    ) -> BoxFuture<'fut, Result<Response<Self::ShadowSignalEventsStream>>> {
         async move { todo!() }.boxed()
     }
 }
