@@ -2,12 +2,12 @@
 set -euo pipefail
 
 TARGET="aarch64-unknown-linux-gnu"
-SSH_TARGET_DIR="~"
+SSH_TARGET_DIR="/tmp"
 PACKAGE_NAME="dipstick"
 
 ssh_host="${1:?}"
 
 cargo zigbuild --release -p "$PACKAGE_NAME" --target "$TARGET"
-ssh "${ssh_host}" "rm -rf $SSH_TARGET_DIR/$PACKAGE_NAME" &>/dev/null
-scp "target/$TARGET/release/$PACKAGE_NAME" "${ssh_host}:~"
-exec ssh -tt "${ssh_host}" "killall -9 $PACKAGE_NAME; sudo $SSH_TARGET_DIR/$PACKAGE_NAME"
+ssh "${ssh_host}" "killall -wq -9 $PACKAGE_NAME" || true
+scp "target/$TARGET/release/$PACKAGE_NAME" "${ssh_host}:$SSH_TARGET_DIR/$PACKAGE_NAME"
+exec ssh -tt "${ssh_host}" "sudo -E $SSH_TARGET_DIR/$PACKAGE_NAME"

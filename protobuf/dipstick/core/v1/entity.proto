@@ -19,10 +19,11 @@ message EntityMetaSpec {
 
 message EntityMetaStatus {
   google.protobuf.Timestamp created_at = 1;
-  repeated EntityDependent dependents = 2;
+  repeated EntityDependency dependents = 2;
+  repeated EntityDependency dependencies = 3;
 }
 
-message EntityDependent {
+message EntityDependency {
   uint32 unique_id = 1;
   google.protobuf.Timestamp created_at = 2;
 }

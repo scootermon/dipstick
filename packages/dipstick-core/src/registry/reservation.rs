@@ -4,9 +4,9 @@ use tonic::{Result, Status};
 
 use crate::{QualifiedKey, UniqueId};
 
-pub struct Reservations(Vec<Weak<Reservation>>);
+pub struct ReservationStorage(Vec<Weak<Reservation>>);
 
-impl Reservations {
+impl ReservationStorage {
     pub const fn new() -> Self {
         Self(Vec::new())
     }
@@ -60,11 +60,16 @@ impl Reservations {
     }
 }
 
+#[must_use]
 pub struct ReservationHandle(Arc<Reservation>);
 
 impl ReservationHandle {
     pub fn unique_id(&self) -> UniqueId {
         self.0.unique_id
+    }
+
+    pub(crate) fn qualified_key(&self) -> Option<&QualifiedKey> {
+        self.0.qualified_key.as_ref()
     }
 
     pub fn local_key(&self) -> Option<&str> {

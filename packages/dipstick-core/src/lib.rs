@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
 use dipstick_proto::core::v1::{
-    CoreService, CoreServiceServer, EntityMetaSpec, ListEntitiesRequest, ListEntitiesResponse,
-    LogConfigRequest, LogConfigResponse, LogSubscribeRequest, LogSubscribeResponse,
-    ShutdownRequest, ShutdownResponse, VersionRequest, VersionResponse,
+    CoreService, CoreServiceServer, EntityMetaSpec, EntitySelector, ListEntitiesRequest,
+    ListEntitiesResponse, LogConfigRequest, LogConfigResponse, LogSubscribeRequest,
+    LogSubscribeResponse, ShutdownRequest, ShutdownResponse, VersionRequest, VersionResponse,
 };
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
@@ -12,17 +12,17 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::BroadcastStream;
 use tonic::{Request, Response, Result};
 
-pub use self::entity::{Entity, EntityKind, EntityMeta, UniqueId};
-pub(crate) use self::qualified_key::QualifiedKey;
-pub use self::registry::{Registry, ReservationHandle};
+pub use self::dependency::DependencyHandle;
+pub use self::entity::{Entity, EntityKind, EntityMeta, QualifiedKey, UniqueId};
+pub use self::registry::ReservationHandle;
 
+mod dependency;
 mod entity;
 pub mod logging;
-mod qualified_key;
 mod registry;
 
 pub struct Core {
-    registry: Registry,
+    registry: registry::Registry,
     log_handle: logging::LoggingHandle,
     shutdown_tx: mpsc::Sender<()>,
     version: String,
@@ -34,7 +34,7 @@ impl Core {
         log_handle: logging::LoggingHandle,
         shutdown_tx: mpsc::Sender<()>,
     ) -> Arc<Self> {
-        let registry = Registry::new();
+        let registry = registry::Registry::new();
         Arc::new(Self {
             registry,
             log_handle,
@@ -47,25 +47,33 @@ impl Core {
         CoreServiceServer::from_arc(self)
     }
 
-    pub fn registry(&self) -> &Registry {
-        &self.registry
+    pub fn new_entity_meta<T: EntityKind>(
+        &self,
+        mut spec: EntityMetaSpec,
+    ) -> Result<(EntityMeta, ReservationHandle)> {
+        spec.package = T::PACKAGE.to_owned();
+        spec.kind = T::KIND.to_owned();
+        self.new_entity_meta_raw(spec)
     }
 
-    pub fn new_entity_meta<E: EntityKind>(
-        &self,
-        spec: EntityMetaSpec,
-    ) -> Result<(EntityMeta, ReservationHandle)> {
-        self.new_entity_meta_raw(E::PACKAGE.to_owned(), E::KIND.to_owned(), spec)
+    pub fn add_entity<T: Entity>(&self, reservation: ReservationHandle, entity: Arc<T>) {
+        self.registry.add_entity(reservation, entity);
     }
 
-    fn new_entity_meta_raw(
+    pub fn select_entity<T: EntityKind + Entity>(
         &self,
-        package: String,
-        kind: String,
-        spec: EntityMetaSpec,
-    ) -> Result<(EntityMeta, ReservationHandle)> {
-        let meta = EntityMeta::new(package, kind, spec);
-        let reservation = self.registry.reserve(&meta)?;
+        selector: &EntitySelector,
+    ) -> Result<Arc<T>> {
+        self.registry.select(selector)
+    }
+
+    fn new_entity_meta_raw(&self, spec: EntityMetaSpec) -> Result<(EntityMeta, ReservationHandle)> {
+        assert!(!spec.package.is_empty() && !spec.kind.is_empty());
+        let reservation = self.registry.reserve(
+            UniqueId::new(spec.unique_id),
+            QualifiedKey::from_spec(&spec),
+        )?;
+        let meta = EntityMeta::new(reservation.unique_id(), spec);
         Ok((meta, reservation))
     }
 }

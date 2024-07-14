@@ -1,14 +1,15 @@
 use std::sync::Arc;
 
 use dipstick_core::Core;
+use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::gpio::v1::{
-    CreateChipRequest, CreateChipResponse, GetChipRequest, GetChipResponse, GpioService,
+    ChipSpec, CreateChipRequest, CreateChipResponse, GetChipRequest, GetChipResponse, GpioService,
     GpioServiceServer, SubscribeChipRequest, SubscribeChipResponse,
 };
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use futures::{FutureExt, StreamExt};
-use tonic::{Code, Request, Response, Result, Status};
+use tonic::{Request, Response, Result, Status};
 
 pub use self::chip::Chip;
 
@@ -28,6 +29,17 @@ impl Gpio {
     pub fn into_server(self: Arc<Self>) -> GpioServiceServer<Self> {
         GpioServiceServer::from_arc(self)
     }
+
+    pub async fn create_chip_impl(
+        &self,
+        meta: EntityMetaSpec,
+        spec: ChipSpec,
+    ) -> Result<Arc<Chip>> {
+        let (meta, reservation) = self.core.new_entity_meta::<Chip>(meta)?;
+        let chip = Chip::new(meta, spec).await?;
+        self.core.add_entity(reservation, Arc::clone(&chip));
+        Ok(chip)
+    }
 }
 
 impl GpioService for Gpio {
@@ -37,16 +49,9 @@ impl GpioService for Gpio {
     ) -> BoxFuture<'fut, Result<Response<CreateChipResponse>>> {
         async move {
             let CreateChipRequest { meta, spec } = request.into_inner();
-            let meta = meta.unwrap_or_default();
-            let spec = spec.unwrap_or_default();
-
-            let (meta, reservation) = self.core.new_entity_meta::<Chip>(meta)?;
-            let chip = Chip::new(meta, spec).await.map_err(|err| {
-                Status::new(Code::Unknown, format!("failed to create chip: {err}"))
-            })?;
-            self.core
-                .registry()
-                .add_entity(reservation, Arc::clone(&chip));
+            let chip = self
+                .create_chip_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+                .await?;
             Ok(Response::new(CreateChipResponse {
                 chip: Some(chip.to_proto()),
             }))
@@ -61,7 +66,7 @@ impl GpioService for Gpio {
         async move {
             let GetChipRequest { chip: selector } = request.into_inner();
             let selector = selector.unwrap_or_default();
-            let chip = self.core.registry().select::<Chip>(&selector)?;
+            let chip = self.core.select_entity::<Chip>(&selector)?;
             Ok(Response::new(GetChipResponse {
                 chip: Some(chip.to_proto()),
             }))
@@ -78,7 +83,7 @@ impl GpioService for Gpio {
         async move {
             let SubscribeChipRequest { chip: selector } = request.into_inner();
             let selector = selector.unwrap_or_default();
-            let chip = self.core.registry().select::<Chip>(&selector)?;
+            let chip = self.core.select_entity::<Chip>(&selector)?;
             let stream: Self::SubscribeChipStream = chip
                 .subscribe()
                 .map(|res| match res {

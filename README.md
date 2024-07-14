@@ -22,3 +22,4 @@ Packages contain gRPC services and entity kinds.
 
 - CAN Frame should store frame kind (remote, error, classic, fd)
 - Create tracing spans for each request
+- Services should be called `{xyz}Service` instead of just `{xyz}`. This is already the case for ambiguous services like `Shadow` and `Stack`, which both contain entity kinds with the same name.

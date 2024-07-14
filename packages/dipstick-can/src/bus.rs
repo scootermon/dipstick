@@ -30,12 +30,19 @@ impl Bus {
         }))
     }
 
+    pub fn spec(&self) -> BusSpec {
+        self.spec.clone()
+    }
+
+    pub fn status(&self) -> BusStatus {
+        BusStatus {}
+    }
+
     pub fn to_proto(&self) -> BusEntity {
-        let status = BusStatus {};
         BusEntity {
             meta: Some(self.meta.to_proto()),
-            spec: Some(self.spec.clone()),
-            status: Some(status),
+            spec: Some(self.spec()),
+            status: Some(self.status()),
         }
     }
 

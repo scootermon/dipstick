@@ -6,35 +6,38 @@ use dipstick_proto::core::v1::{EntitySelector, EntitySelectorVariant};
 use tonic::{Result, Status};
 
 pub use self::reservation::ReservationHandle;
-use self::reservation::Reservations;
-use crate::{Entity, EntityKind, EntityMeta, QualifiedKey, UniqueId};
+use self::reservation::ReservationStorage;
+use crate::{Entity, EntityKind, QualifiedKey, UniqueId};
 
 mod reservation;
 
 pub struct Registry {
-    reservations: RwLock<Reservations>,
+    reservations: RwLock<ReservationStorage>,
     inner: RwLock<Inner>,
 }
 
 impl Registry {
     pub fn new() -> Self {
         Self {
-            reservations: RwLock::new(Reservations::new()),
+            reservations: RwLock::new(ReservationStorage::new()),
             inner: RwLock::new(Inner::new()),
         }
     }
 
-    pub fn reserve(&self, meta: &EntityMeta) -> Result<ReservationHandle> {
+    pub fn reserve(
+        &self,
+        unique_id: Option<UniqueId>,
+        qualified_key: Option<QualifiedKey>,
+    ) -> Result<ReservationHandle> {
         let inner = self.inner.read().unwrap();
         // make sure the entity is not already registered
-        if let Some(unique_id) = meta.unique_id() {
+        if let Some(unique_id) = unique_id {
             if inner.has_unique_id(unique_id) {
                 return Err(Status::already_exists(format!(
                     "unique id {unique_id} is already in use"
                 )));
             }
         }
-        let qualified_key = meta.qualified_key();
         if let Some(qualified_key) = &qualified_key {
             if inner.has_qualified_key(qualified_key) {
                 return Err(Status::already_exists(format!(
@@ -45,15 +48,15 @@ impl Registry {
         }
 
         let mut reservations = self.reservations.write().unwrap();
-        let unique_id = meta
-            .unique_id()
-            .unwrap_or_else(|| new_unique_id(&inner, &reservations));
-        reservations.reserve(unique_id, qualified_key)
+        let unique_id = unique_id.unwrap_or_else(|| new_unique_id(&inner, &reservations));
+        let handle = reservations.reserve(unique_id, qualified_key)?;
+        tracing::debug!(unique_id = ?handle.unique_id(), qualified_key = ?handle.qualified_key(), "reserved entity");
+        Ok(handle)
     }
 
     pub fn add_entity<T: Entity>(&self, reservation: ReservationHandle, entity: Arc<T>) {
-        assert!(reservation.local_key() == entity.entity_meta().local_key());
-        entity.entity_meta().set_unique_id(reservation.unique_id());
+        assert_eq!(reservation.unique_id(), entity.entity_meta().unique_id());
+        assert_eq!(reservation.local_key(), entity.entity_meta().local_key());
         let mut inner = self.inner.write().unwrap();
         inner.insert(entity);
     }
@@ -97,7 +100,7 @@ impl Registry {
     }
 }
 
-fn new_unique_id(inner: &Inner, reservations: &Reservations) -> UniqueId {
+fn new_unique_id(inner: &Inner, reservations: &ReservationStorage) -> UniqueId {
     loop {
         let candidate = rand::random();
         if inner.by_unique_id.contains_key(&candidate) {
@@ -125,17 +128,16 @@ impl Inner {
 
     fn insert(&mut self, entity: Arc<dyn Entity>) {
         let meta = entity.entity_meta();
-        // at this point we must have a unique_id
-        let unique_id = meta.unique_id().unwrap();
-        tracing::debug!(
+        tracing::info!(
             package = meta.package(),
             kind = meta.kind(),
             key = meta.local_key(),
-            unique_id,
+            unique_id = meta.unique_id(),
             "new entity registered"
         );
 
-        self.by_unique_id.insert(unique_id, Arc::clone(&entity));
+        self.by_unique_id
+            .insert(meta.unique_id(), Arc::clone(&entity));
         if let Some(key) = meta.qualified_key() {
             self.by_key.insert(key, Arc::clone(&entity));
         }
@@ -150,7 +152,7 @@ impl Inner {
     }
 
     fn get_by_unique_id(&self, unique_id: UniqueId) -> Option<Arc<dyn Entity>> {
-        self.by_unique_id.get(&unique_id).map(|e| Arc::clone(e))
+        self.by_unique_id.get(&unique_id).map(Arc::clone)
     }
 
     fn get_by_key(&self, package: &str, kind: &str, key: &str) -> Option<Arc<dyn Entity>> {
@@ -159,6 +161,6 @@ impl Inner {
             kind: kind.to_owned(),
             key: key.to_owned(),
         };
-        self.by_key.get(&qualified_key).map(|e| Arc::clone(e))
+        self.by_key.get(&qualified_key).map(Arc::clone)
     }
 }

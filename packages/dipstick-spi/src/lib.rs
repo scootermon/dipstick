@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
 use dipstick_core::Core;
+use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::spi::v1::{
-    CreateDeviceRequest, CreateDeviceResponse, GetDeviceRequest, GetDeviceResponse, SpiService,
-    SpiServiceServer, TransferRequest, TransferResponse,
+    CreateDeviceRequest, CreateDeviceResponse, DeviceSpec, GetDeviceRequest, GetDeviceResponse,
+    SpiService, SpiServiceServer, TransferRequest, TransferResponse,
 };
 use futures::future::BoxFuture;
 use futures::FutureExt;
@@ -27,6 +28,17 @@ impl Spi {
     pub fn into_server(self: Arc<Self>) -> SpiServiceServer<Self> {
         SpiServiceServer::from_arc(self)
     }
+
+    pub async fn create_device_impl(
+        &self,
+        meta: EntityMetaSpec,
+        spec: DeviceSpec,
+    ) -> Result<Arc<Device>> {
+        let (meta, reservation) = self.core.new_entity_meta::<Device>(meta)?;
+        let device = Device::new(meta, spec).await?;
+        self.core.add_entity(reservation, Arc::clone(&device));
+        Ok(device)
+    }
 }
 
 impl SpiService for Spi {
@@ -36,14 +48,9 @@ impl SpiService for Spi {
     ) -> BoxFuture<'fut, Result<Response<CreateDeviceResponse>>> {
         async move {
             let CreateDeviceRequest { meta, spec } = request.into_inner();
-            let meta = meta.unwrap_or_default();
-            let spec = spec.unwrap_or_default();
-
-            let (meta, reservation) = self.core.new_entity_meta::<Device>(meta)?;
-            let device = Device::new(meta, spec).await?;
-            self.core
-                .registry()
-                .add_entity(reservation, Arc::clone(&device));
+            let device = self
+                .create_device_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+                .await?;
             Ok(Response::new(CreateDeviceResponse {
                 device: Some(device.to_proto()),
             }))
@@ -58,7 +65,7 @@ impl SpiService for Spi {
         async move {
             let GetDeviceRequest { selector } = request.into_inner();
             let selector = selector.unwrap_or_default();
-            let device = self.core.registry().select::<Device>(&selector)?;
+            let device = self.core.select_entity::<Device>(&selector)?;
             Ok(Response::new(GetDeviceResponse {
                 device: Some(device.to_proto()),
             }))
@@ -73,7 +80,7 @@ impl SpiService for Spi {
         async move {
             let TransferRequest { selector, data } = request.into_inner();
             let selector = selector.unwrap_or_default();
-            let device = self.core.registry().select::<Device>(&selector)?;
+            let device = self.core.select_entity::<Device>(&selector)?;
             let rx_data = device.transfer(data).await?;
             Ok(Response::new(TransferResponse { data: rx_data }))
         }

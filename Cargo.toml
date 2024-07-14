@@ -20,6 +20,7 @@ dipstick-core = { path = "packages/dipstick-core" }
 dipstick-gpio = { path = "packages/dipstick-gpio" }
 dipstick-proto = { path = "packages/dipstick-proto" }
 dipstick-spi = { path = "packages/dipstick-spi" }
+dipstick-stack = { path = "packages/dipstick-stack" }
 
 anyhow = "1"
 bytes = "1"

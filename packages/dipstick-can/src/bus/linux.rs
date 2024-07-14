@@ -53,7 +53,7 @@ impl Bus {
                     err = &err as &dyn std::error::Error,
                     "failed to send frame"
                 );
-                return Err(Status::internal(format!("failed to send frame: {err}")));
+                Err(Status::internal(format!("failed to send frame: {err}")))
             }
         }
     }

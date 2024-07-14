@@ -2,10 +2,11 @@ use std::sync::Arc;
 
 use dipstick_core::Core;
 use dipstick_proto::can::v1::{
-    CanService, CanServiceServer, CreateBusRequest, CreateBusResponse, GetBusRequest,
+    BusSpec, CanService, CanServiceServer, CreateBusRequest, CreateBusResponse, GetBusRequest,
     GetBusResponse, ReceiveFramesRequest, ReceiveFramesResponse, SendFrameRequest,
     SendFrameResponse,
 };
+use dipstick_proto::core::v1::EntityMetaSpec;
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use futures::{FutureExt, StreamExt};
@@ -29,6 +30,13 @@ impl Can {
     pub fn into_server(self: Arc<Self>) -> CanServiceServer<Self> {
         CanServiceServer::from_arc(self)
     }
+
+    pub async fn create_bus_impl(&self, meta: EntityMetaSpec, spec: BusSpec) -> Result<Arc<Bus>> {
+        let (meta, reservation) = self.core.new_entity_meta::<Bus>(meta)?;
+        let bus = Bus::new(meta, spec).await?;
+        self.core.add_entity(reservation, Arc::clone(&bus));
+        Ok(bus)
+    }
 }
 
 impl CanService for Can {
@@ -38,14 +46,9 @@ impl CanService for Can {
     ) -> BoxFuture<'fut, Result<Response<CreateBusResponse>>> {
         async move {
             let CreateBusRequest { meta, spec } = request.into_inner();
-            let meta = meta.unwrap_or_default();
-            let spec = spec.unwrap_or_default();
-
-            let (meta, reservation) = self.core.new_entity_meta::<Bus>(meta)?;
-            let bus = Bus::new(meta, spec).await?;
-            self.core
-                .registry()
-                .add_entity(reservation, Arc::clone(&bus));
+            let bus = self
+                .create_bus_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+                .await?;
             Ok(Response::new(CreateBusResponse {
                 bus: Some(bus.to_proto()),
             }))
@@ -60,7 +63,7 @@ impl CanService for Can {
         async move {
             let GetBusRequest { bus: selector } = request.into_inner();
             let selector = selector.unwrap_or_default();
-            let bus = self.core.registry().select::<Bus>(&selector)?;
+            let bus = self.core.select_entity::<Bus>(&selector)?;
             Ok(Response::new(GetBusResponse {
                 bus: Some(bus.to_proto()),
             }))
@@ -79,7 +82,7 @@ impl CanService for Can {
             } = request.into_inner();
             let selector = selector.unwrap_or_default();
             let frame = frame.unwrap_or_default();
-            let bus = self.core.registry().select::<Bus>(&selector)?;
+            let bus = self.core.select_entity::<Bus>(&selector)?;
             bus.send_frame(&frame).await?;
             Ok(Response::new(SendFrameResponse {}))
         }
@@ -95,7 +98,7 @@ impl CanService for Can {
         async move {
             let ReceiveFramesRequest { bus: selector } = request.into_inner();
             let selector = selector.unwrap_or_default();
-            let bus = self.core.registry().select::<Bus>(&selector)?;
+            let bus = self.core.select_entity::<Bus>(&selector)?;
 
             let stream: Self::ReceiveFramesStream = bus
                 .subscribe()

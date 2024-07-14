@@ -1,0 +1,27 @@
+syntax = "proto3";
+package dipstick.stack.v1;
+
+import "dipstick/core/v1/entity.proto";
+import "dipstick/stack/v1/stack.proto";
+
+service StackService {
+  rpc CreateStack(CreateStackRequest) returns (CreateStackResponse);
+  rpc GetStack(GetStackRequest) returns (GetStackResponse);
+}
+
+message CreateStackRequest {
+  dipstick.core.v1.EntityMetaSpec meta = 1;
+  StackSpec spec = 2;
+}
+
+message CreateStackResponse {
+  StackEntity stack = 1;
+}
+
+message GetStackRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+}
+
+message GetStackResponse {
+  StackEntity stack = 1;
+}

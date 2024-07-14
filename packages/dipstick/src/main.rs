@@ -28,6 +28,12 @@ async fn _main() -> anyhow::Result<()> {
     let gpio = dipstick_gpio::Gpio::new(Arc::clone(&core));
     let can = dipstick_can::Can::new(Arc::clone(&core));
     let spi = dipstick_spi::Spi::new(Arc::clone(&core));
+    let stack_service = dipstick_stack::StackService::new(
+        Arc::clone(&core),
+        Arc::clone(&can),
+        Arc::clone(&gpio),
+        Arc::clone(&spi),
+    );
 
     let reflection_v1_server = reflection_v1_server_builder()
         .build()
@@ -47,6 +53,7 @@ async fn _main() -> anyhow::Result<()> {
         .add_service(tonic_web::enable(gpio.into_server()))
         .add_service(tonic_web::enable(can.into_server()))
         .add_service(tonic_web::enable(spi.into_server()))
+        .add_service(tonic_web::enable(stack_service.into_server()))
         .serve_with_shutdown(addr, async {
             shutdown_rx.recv().await;
         })
@@ -60,14 +67,14 @@ async fn _main() -> anyhow::Result<()> {
 
 const FILE_DESCRIPTORS: &[&[u8]] = &[
     dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
-    // dipstick_proto::device::v1::FILE_DESCRIPTOR_SET,
-    // dipstick_proto::shadow::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::spi::v1::FILE_DESCRIPTOR_SET,
-    // dipstick_proto::stack::v1::FILE_DESCRIPTOR_SET,
-    // dipstick_proto::xcp::v1::FILE_DESCRIPTOR_SET,
     dipstick_proto::core::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::device::v1::FILE_DESCRIPTOR_SET,
     dipstick_proto::gpio::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::shadow::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::spi::v1::FILE_DESCRIPTOR_SET,
+    dipstick_proto::stack::v1::FILE_DESCRIPTOR_SET,
     dipstick_proto::wkt::FILE_DESCRIPTOR_SET,
+    dipstick_proto::xcp::v1::FILE_DESCRIPTOR_SET,
 ];
 
 fn reflection_v1_server_builder() -> tonic_reflection::server::Builder<'static> {

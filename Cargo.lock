@@ -207,6 +207,7 @@ dependencies = [
  "dipstick-gpio",
  "dipstick-proto",
  "dipstick-spi",
+ "dipstick-stack",
  "futures",
  "rand",
  "tokio",
@@ -309,6 +310,15 @@ dependencies = [
 [[package]]
 name = "dipstick-stack"
 version = "0.1.0"
+dependencies = [
+ "dipstick-can",
+ "dipstick-core",
+ "dipstick-gpio",
+ "dipstick-proto",
+ "dipstick-spi",
+ "futures",
+ "tonic",
+]
 
 [[package]]
 name = "dipstick-xcp"

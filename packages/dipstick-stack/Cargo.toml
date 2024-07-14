@@ -11,3 +11,10 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+dipstick-can.workspace = true
+dipstick-core.workspace = true
+dipstick-gpio.workspace = true
+dipstick-proto.workspace = true
+dipstick-spi.workspace = true
+futures.workspace = true
+tonic.workspace = true

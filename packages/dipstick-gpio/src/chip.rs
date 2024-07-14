@@ -51,13 +51,21 @@ impl Chip {
         }))
     }
 
+    pub fn spec(&self) -> ChipSpec {
+        self.spec.clone()
+    }
+
+    pub fn status(&self) -> ChipStatus {
+        ChipStatus {
+            pins: self.pins.to_proto(),
+        }
+    }
+
     pub fn to_proto(&self) -> ChipEntity {
         ChipEntity {
             meta: Some(self.meta.to_proto()),
-            spec: Some(self.spec.clone()),
-            status: Some(ChipStatus {
-                pins: self.pins.to_proto(),
-            }),
+            spec: Some(self.spec()),
+            status: Some(self.status()),
         }
     }
 
