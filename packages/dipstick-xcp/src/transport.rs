@@ -1,27 +1,28 @@
 use std::sync::Arc;
 
-use bytes::Bytes;
-use dipstick_proto::can::v1::Frame as CanFrame;
-use dipstick_proto::xcp::v1::CanTransport;
+use dipstick_can::Bus;
+use dipstick_proto::xcp::v1::{CanTransportSpec, XcpTransportSpec};
 use tonic::Result;
 
 pub enum Transport {
-    Can {
-        socket: Arc<crate::can::Socket>,
-        config: CanTransport,
-    },
+    Can(CanTransport),
 }
 
 impl Transport {
-    pub async fn send(&self, payload: Bytes) -> Result<()> {
-        match self {
-            Self::Can { socket, config } => {
-                let frame = CanFrame::builder()
-                    .id(config.server_id.unwrap_or_default())
-                    .data(payload)
-                    .build();
-                socket.send_frame(frame).await
-            }
+    pub async fn new(spec: &mut XcpTransportSpec) -> Result<Self> {
+        match spec {
+            XcpTransportSpec::Can(can) => CanTransport::new(can).await.map(Self::Can),
         }
+    }
+}
+
+struct CanTransport {
+    bus: Arc<Bus>,
+}
+
+impl CanTransport {
+    pub async fn new(spec: &mut CanTransportSpec) -> Result<Self> {
+        let bus = todo!(); // TODO
+        Ok(Self { bus })
     }
 }

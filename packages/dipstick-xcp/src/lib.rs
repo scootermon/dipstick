@@ -1,110 +1,92 @@
 use std::sync::Arc;
 
+use dipstick_core::Core;
+use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::xcp::v1::{
-    CommandRequest, CommandResponse, ConnectSessionRequest, ConnectSessionResponse,
-    CreateSessionRequest, CreateSessionResponse, DestroySessionRequest, DestroySessionResponse,
-    PeriodicShortUploadRequest, PeriodicShortUploadResponse, XcpService, XcpServiceServer,
+    A2lSpec, CreateA2lRequest, CreateA2lResponse, CreateSessionRequest, CreateSessionResponse,
+    GetA2lRequest, GetA2lResponse, GetSessionRequest, GetSessionResponse, XcpServiceServer,
 };
-use futures::stream::BoxStream;
-use tonic::{Request, Response, Result, Status};
+use futures::future::BoxFuture;
+use futures::FutureExt;
+use tonic::{Request, Response, Result};
 
-use self::session::Session;
-use crate::core::registry::Registry;
+pub use self::a2l::A2l;
+pub use self::session::Session;
 
-mod codec;
-mod periodic_short_upload;
+mod a2l;
 mod session;
 mod transport;
 
-pub struct Xcp {
-    sessions: Registry<Session>,
+pub const PACKAGE: &str = "xcp.v1";
+
+pub struct XcpService {
+    core: Arc<Core>,
 }
 
-impl Xcp {
-    pub fn new() -> Arc<Self> {
-        Arc::new(Self {
-            sessions: Registry::new(),
-        })
-    }
-
-    // TODO: someone needs to call this
-    pub fn cleanup(&self) {
-        self.sessions.for_each(|_, session| session.cleanup());
-    }
-
-    pub async fn shutdown(&self) {
-        self.sessions
-            .for_each_async(|_, session| async move { session.shutdown().await });
+impl XcpService {
+    pub fn new(core: Arc<Core>) -> Arc<Self> {
+        Arc::new(Self { core })
     }
 
     pub fn into_server(self: Arc<Self>) -> XcpServiceServer<Self> {
         XcpServiceServer::from_arc(self)
     }
+
+    pub async fn create_a2l_impl(&self, meta: EntityMetaSpec, spec: A2lSpec) -> Result<Arc<A2l>> {
+        let (meta, reservation) = self.core.new_entity_meta::<A2l>(meta)?;
+        let a2l = A2l::new(&self.core, meta, spec).await?;
+        self.core.add_entity(reservation, Arc::clone(&a2l));
+        Ok(a2l)
+    }
+
+    pub async fn create_session_impl(&self) -> Result<Arc<Session>> {
+        todo!()
+    }
 }
 
-#[async_trait::async_trait]
-impl XcpService for Xcp {
-    async fn create_session(
-        &self,
+impl dipstick_proto::xcp::v1::XcpService for XcpService {
+    fn create_a2l<'s: 'fut, 'fut>(
+        &'s self,
+        request: Request<CreateA2lRequest>,
+    ) -> BoxFuture<'fut, Result<Response<CreateA2lResponse>>> {
+        async move {
+            let CreateA2lRequest { meta, spec } = request.into_inner();
+            let a2l = self
+                .create_a2l_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+                .await?;
+            Ok(Response::new(CreateA2lResponse {
+                a2l: Some(a2l.to_proto()),
+            }))
+        }
+        .boxed()
+    }
+
+    fn get_a2l<'s: 'fut, 'fut>(
+        &'s self,
+        request: Request<GetA2lRequest>,
+    ) -> BoxFuture<'fut, Result<Response<GetA2lResponse>>> {
+        async move {
+            let GetA2lRequest { selector } = request.into_inner();
+            let selector = selector.unwrap_or_default();
+            let a2l = self.core.select_entity::<A2l>(&selector)?;
+            Ok(Response::new(GetA2lResponse {
+                a2l: Some(a2l.to_proto()),
+            }))
+        }
+        .boxed()
+    }
+
+    fn create_session<'s: 'fut, 'fut>(
+        &'s self,
         request: Request<CreateSessionRequest>,
-    ) -> Result<Response<CreateSessionResponse>> {
-        let CreateSessionRequest {
-            disconnect_response_optional,
-            transport,
-        } = request.into_inner();
-        todo!()
+    ) -> BoxFuture<'fut, Result<Response<CreateSessionResponse>>> {
+        async move { todo!() }.boxed()
     }
 
-    async fn destroy_session(
-        &self,
-        request: Request<DestroySessionRequest>,
-    ) -> Result<Response<DestroySessionResponse>> {
-        let DestroySessionRequest { session_id } = request.into_inner();
-        todo!()
-    }
-
-    async fn connect_session(
-        &self,
-        request: Request<ConnectSessionRequest>,
-    ) -> Result<Response<ConnectSessionResponse>> {
-        let ConnectSessionRequest { session_id, mode } = request.into_inner();
-        todo!()
-    }
-
-    async fn command(&self, request: Request<CommandRequest>) -> Result<Response<CommandResponse>> {
-        let CommandRequest {
-            session_id,
-            command,
-        } = request.into_inner();
-        let command = command.ok_or_else(|| Status::invalid_argument("'command' unspecified"))?;
-        let session = self.sessions.get(session_id)?;
-        let response = session.raw_command(command).await?;
-        Ok(Response::new(CommandResponse {
-            response: Some(response),
-        }))
-    }
-
-    type PeriodicShortUploadStream = periodic_short_upload::Stream;
-
-    async fn periodic_short_upload(
-        &self,
-        request: Request<PeriodicShortUploadRequest>,
-    ) -> Result<Response<Self::PeriodicShortUploadStream>> {
-        let PeriodicShortUploadRequest {
-            session_id,
-            command,
-            interval,
-            mut ignore_interval_if_exists,
-        } = request.into_inner();
-        let command = command.ok_or_else(|| Status::invalid_argument("'command' unspecified"))?;
-        // if no interval is specified, ignore_interval_if_exists is always true
-        ignore_interval_if_exists |= interval.is_none();
-        let interval = interval
-            .unwrap_or_default()
-            .try_into()
-            .map_err(|_| Status::invalid_argument("'interval' invalid"))?;
-        let session = self.sessions.get(session_id)?;
-        let stream = session.periodic_short_upload(command, interval, ignore_interval_if_exists)?;
-        Ok(Response::new(stream))
+    fn get_session<'s: 'fut, 'fut>(
+        &'s self,
+        request: Request<GetSessionRequest>,
+    ) -> BoxFuture<'fut, Result<Response<GetSessionResponse>>> {
+        async move { todo!() }.boxed()
     }
 }

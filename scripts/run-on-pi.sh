@@ -8,6 +8,6 @@ PACKAGE_NAME="dipstick"
 ssh_host="${1:?}"
 
 cargo zigbuild --release -p "$PACKAGE_NAME" --target "$TARGET"
-ssh "${ssh_host}" "killall -wq -9 $PACKAGE_NAME" || true
+ssh "${ssh_host}" "killall -wq -9 '$PACKAGE_NAME'" || true
 scp "target/$TARGET/release/$PACKAGE_NAME" "${ssh_host}:$SSH_TARGET_DIR/$PACKAGE_NAME"
-exec ssh -tt "${ssh_host}" "sudo -E $SSH_TARGET_DIR/$PACKAGE_NAME"
+exec ssh -tt "${ssh_host}" "cd '$SSH_TARGET_DIR' && sudo -E '$SSH_TARGET_DIR/$PACKAGE_NAME'"

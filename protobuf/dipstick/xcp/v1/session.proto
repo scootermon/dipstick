@@ -4,8 +4,15 @@ package dipstick.xcp.v1;
 import "dipstick/can/v1/id.proto";
 import "dipstick/core/v1/entity.proto";
 
-message SessionSpec {
+message SessionEntity {
   dipstick.core.v1.EntityMeta meta = 1;
+  SessionSpec spec = 2;
+  SessionStatus status = 3;
+}
+
+message SessionStatus {}
+
+message SessionSpec {
   oneof xcp_transport_spec {
     CanTransportSpec can = 2;
   }

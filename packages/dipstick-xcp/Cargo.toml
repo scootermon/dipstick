@@ -11,6 +11,9 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+a2lfile.workspace = true
+dipstick-can.workspace = true
+dipstick-core.workspace = true
 dipstick-proto.workspace = true
 futures.workspace = true
 tokio.workspace = true

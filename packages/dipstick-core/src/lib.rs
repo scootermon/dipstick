@@ -1,16 +1,17 @@
 use std::sync::Arc;
 
 use dipstick_proto::core::v1::{
-    CoreService, CoreServiceServer, EntityMetaSpec, EntitySelector, ListEntitiesRequest,
-    ListEntitiesResponse, LogConfigRequest, LogConfigResponse, LogSubscribeRequest,
-    LogSubscribeResponse, ShutdownRequest, ShutdownResponse, VersionRequest, VersionResponse,
+    CoreService, CoreServiceServer, EntityMetaSpec, EntitySelector, File, FileVariant,
+    ListEntitiesRequest, ListEntitiesResponse, LogConfigRequest, LogConfigResponse,
+    LogSubscribeRequest, LogSubscribeResponse, ShutdownRequest, ShutdownResponse, VersionRequest,
+    VersionResponse,
 };
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use futures::{FutureExt, StreamExt};
 use tokio::sync::mpsc;
 use tokio_stream::wrappers::BroadcastStream;
-use tonic::{Request, Response, Result};
+use tonic::{Request, Response, Result, Status};
 
 pub use self::dependency::DependencyHandle;
 pub use self::entity::{Entity, EntityKind, EntityMeta, QualifiedKey, UniqueId};
@@ -76,6 +77,22 @@ impl Core {
         let meta = EntityMeta::new(reservation.unique_id(), spec);
         Ok((meta, reservation))
     }
+
+    pub async fn read_file_to_string(&self, file: &File) -> Result<String> {
+        match &file.file_variant {
+            Some(FileVariant::ServerPath(path)) => {
+                let current_dir = std::env::current_dir()?; // TODO
+                let path = current_dir.join(path).canonicalize()?;
+                if !path.starts_with(current_dir) {
+                    return Err(Status::invalid_argument("invalid server path"));
+                }
+                tracing::debug!(?path, "loading server path file");
+                let content = tokio::fs::read_to_string(path).await?;
+                Ok(content)
+            }
+            None => Err(Status::invalid_argument("missing file variant")),
+        }
+    }
 }
 
 impl CoreService for Core {
@@ -113,11 +130,11 @@ impl CoreService for Core {
                 // update config
                 self.log_handle
                     .set_log_config(config)
-                    .map_err(|err| tonic::Status::internal(err.to_string()))?;
+                    .map_err(|err| Status::internal(err.to_string()))?;
             }
 
             let Some(config) = self.log_handle.log_config() else {
-                return Err(tonic::Status::internal("subscriber dropped"));
+                return Err(Status::internal("subscriber dropped"));
             };
             Ok(Response::new(LogConfigResponse {
                 config: Some(config),

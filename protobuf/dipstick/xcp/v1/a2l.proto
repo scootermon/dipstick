@@ -4,7 +4,55 @@ package dipstick.xcp.v1;
 import "dipstick/core/v1/entity.proto";
 import "dipstick/core/v1/file.proto";
 
-message A2lSpec {
+message A2lEntity {
   dipstick.core.v1.EntityMeta meta = 1;
+  A2lSpec spec = 2;
+  A2lStatus status = 3;
+}
+
+message A2lStatus {
+  A2lFile file = 2;
+  repeated string warnings = 1;
+}
+
+message A2lSpec {
   dipstick.core.v1.File file = 2;
+  optional string a2ml_spec = 1;
+  optional bool strict_parsing = 3;
+}
+
+message A2lFile {
+  A2lProject project = 1;
+}
+
+message A2lProject {
+  repeated A2lModule module = 1;
+}
+
+message A2lModule {
+  repeated A2lMeasurement measurement = 1;
+}
+
+message A2lMeasurement {
+  string name = 1;
+  string long_identifier = 2;
+  A2lDataType datatype = 3;
+  optional uint32 ecu_address = 4;
+  // i16
+  optional int32 ecu_address_extension = 5;
+}
+
+enum A2lDataType {
+  A2L_DATA_TYPE_UNSPECIFIED = 0;
+  A2L_DATA_TYPE_UBYTE = 1;
+  A2L_DATA_TYPE_SBYTE = 2;
+  A2L_DATA_TYPE_UWORD = 3;
+  A2L_DATA_TYPE_SWORD = 4;
+  A2L_DATA_TYPE_ULONG = 5;
+  A2L_DATA_TYPE_SLONG = 6;
+  A2L_DATA_TYPE_A_UINT64 = 7;
+  A2L_DATA_TYPE_A_INT64 = 8;
+  A2L_DATA_TYPE_F16_IEEE = 9;
+  A2L_DATA_TYPE_F32_IEEE = 10;
+  A2L_DATA_TYPE_F64_IEEE = 11;
 }

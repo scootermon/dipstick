@@ -21,6 +21,7 @@ dipstick-proto.workspace = true
 dipstick-shadow.workspace = true
 dipstick-spi.workspace = true
 dipstick-stack.workspace = true
+dipstick-xcp.workspace = true
 futures.workspace = true
 rand.workspace = true
 tokio-stream.workspace = true

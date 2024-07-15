@@ -22,7 +22,9 @@ dipstick-proto = { path = "packages/dipstick-proto" }
 dipstick-shadow = { path = "packages/dipstick-shadow" }
 dipstick-spi = { path = "packages/dipstick-spi" }
 dipstick-stack = { path = "packages/dipstick-stack" }
+dipstick-xcp = { path = "packages/dipstick-xcp" }
 
+a2lfile = "2"
 anyhow = "1"
 bytes = "1"
 futures = "0.3"

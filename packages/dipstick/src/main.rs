@@ -24,10 +24,18 @@ async fn _main() -> anyhow::Result<()> {
         }
     });
 
+    let reflection_v1_server = reflection_v1_server_builder()
+        .build()
+        .context("failed to build reflection v1 server")?;
+    let reflection_v1alpha_server = reflection_v1alpha_server_builder()
+        .build()
+        .context("failed to build reflection v1alpha server")?;
+
     let core = dipstick_core::Core::new(consts::VERSION.to_owned(), log_handle, shutdown_tx);
     let gpio = dipstick_gpio::Gpio::new(Arc::clone(&core));
     let can = dipstick_can::Can::new(Arc::clone(&core));
     let spi = dipstick_spi::Spi::new(Arc::clone(&core));
+    let xcp_service = dipstick_xcp::XcpService::new(Arc::clone(&core));
     let shadow_service = dipstick_shadow::ShadowService::new(Arc::clone(&core));
     let stack_service = dipstick_stack::StackService::new(
         Arc::clone(&core),
@@ -37,26 +45,19 @@ async fn _main() -> anyhow::Result<()> {
         Arc::clone(&shadow_service),
     );
 
-    let reflection_v1_server = reflection_v1_server_builder()
-        .build()
-        .context("failed to build reflection v1 server")?;
-
-    let reflection_v1alpha_server = reflection_v1alpha_server_builder()
-        .build()
-        .context("failed to build reflection v1alpha server")?;
-
     let addr = "0.0.0.0:3000".parse()?;
     tracing::info!("listening on {addr:?}");
     let res = Server::builder()
         .accept_http1(true)
-        .add_service(tonic_web::enable(reflection_v1_server))
-        .add_service(tonic_web::enable(reflection_v1alpha_server))
+        .add_service(tonic_web::enable(can.into_server()))
         .add_service(tonic_web::enable(core.into_server()))
         .add_service(tonic_web::enable(gpio.into_server()))
-        .add_service(tonic_web::enable(can.into_server()))
-        .add_service(tonic_web::enable(spi.into_server()))
+        .add_service(tonic_web::enable(reflection_v1_server))
+        .add_service(tonic_web::enable(reflection_v1alpha_server))
         .add_service(tonic_web::enable(shadow_service.into_server()))
+        .add_service(tonic_web::enable(spi.into_server()))
         .add_service(tonic_web::enable(stack_service.into_server()))
+        .add_service(tonic_web::enable(xcp_service.into_server()))
         .serve_with_shutdown(addr, async {
             shutdown_rx.recv().await;
         })

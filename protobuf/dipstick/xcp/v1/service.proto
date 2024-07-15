@@ -1,0 +1,48 @@
+syntax = "proto3";
+package dipstick.xcp.v1;
+
+import "dipstick/core/v1/entity.proto";
+import "dipstick/xcp/v1/a2l.proto";
+import "dipstick/xcp/v1/session.proto";
+
+service XcpService {
+  rpc CreateA2l(CreateA2lRequest) returns (CreateA2lResponse);
+  rpc GetA2l(GetA2lRequest) returns (GetA2lResponse);
+
+  rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
+  rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+}
+
+message CreateA2lRequest {
+  dipstick.core.v1.EntityMetaSpec meta = 1;
+  A2lSpec spec = 2;
+}
+
+message CreateA2lResponse {
+  A2lEntity a2l = 1;
+}
+
+message GetA2lRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+}
+
+message GetA2lResponse {
+  A2lEntity a2l = 1;
+}
+
+message CreateSessionRequest {
+  dipstick.core.v1.EntityMetaSpec meta = 1;
+  SessionSpec spec = 2;
+}
+
+message CreateSessionResponse {
+  SessionEntity session = 1;
+}
+
+message GetSessionRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+}
+
+message GetSessionResponse {
+  SessionEntity session = 1;
+}

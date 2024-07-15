@@ -3,6 +3,26 @@
 version = 3
 
 [[package]]
+name = "a2lfile"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "5f0dcb1641dbf0cf926cdecf0e064cce624b785d5983f6c70224eaca8db4c29f"
+dependencies = [
+ "a2lmacros",
+ "thiserror",
+]
+
+[[package]]
+name = "a2lmacros"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c150cec756a8899eebfe087e9573f5613fb4e000496d5cc462e2aa6d00394753"
+dependencies = [
+ "proc-macro2",
+ "quote",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.22.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -209,6 +229,7 @@ dependencies = [
  "dipstick-shadow",
  "dipstick-spi",
  "dipstick-stack",
+ "dipstick-xcp",
  "futures",
  "rand",
  "tokio",
@@ -328,6 +349,9 @@ dependencies = [
 name = "dipstick-xcp"
 version = "0.1.0"
 dependencies = [
+ "a2lfile",
+ "dipstick-can",
+ "dipstick-core",
  "dipstick-proto",
  "futures",
  "tokio",
