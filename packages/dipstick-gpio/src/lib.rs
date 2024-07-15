@@ -15,7 +15,7 @@ pub use self::chip::Chip;
 
 mod chip;
 
-const PACKAGE: &str = "gpio.v1";
+pub const PACKAGE: &str = "gpio.v1";
 
 pub struct Gpio {
     core: Arc<Core>,

@@ -28,11 +28,13 @@ async fn _main() -> anyhow::Result<()> {
     let gpio = dipstick_gpio::Gpio::new(Arc::clone(&core));
     let can = dipstick_can::Can::new(Arc::clone(&core));
     let spi = dipstick_spi::Spi::new(Arc::clone(&core));
+    let shadow_service = dipstick_shadow::ShadowService::new(Arc::clone(&core));
     let stack_service = dipstick_stack::StackService::new(
         Arc::clone(&core),
         Arc::clone(&can),
         Arc::clone(&gpio),
         Arc::clone(&spi),
+        Arc::clone(&shadow_service),
     );
 
     let reflection_v1_server = reflection_v1_server_builder()
@@ -53,6 +55,7 @@ async fn _main() -> anyhow::Result<()> {
         .add_service(tonic_web::enable(gpio.into_server()))
         .add_service(tonic_web::enable(can.into_server()))
         .add_service(tonic_web::enable(spi.into_server()))
+        .add_service(tonic_web::enable(shadow_service.into_server()))
         .add_service(tonic_web::enable(stack_service.into_server()))
         .serve_with_shutdown(addr, async {
             shutdown_rx.recv().await;

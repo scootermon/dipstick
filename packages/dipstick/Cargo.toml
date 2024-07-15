@@ -18,6 +18,7 @@ dipstick-can.workspace = true
 dipstick-core.workspace = true
 dipstick-gpio.workspace = true
 dipstick-proto.workspace = true
+dipstick-shadow.workspace = true
 dipstick-spi.workspace = true
 dipstick-stack.workspace = true
 futures.workspace = true

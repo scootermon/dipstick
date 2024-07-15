@@ -16,7 +16,7 @@ pub use self::bus::Bus;
 
 mod bus;
 
-const PACKAGE: &str = "can.v1";
+pub const PACKAGE: &str = "can.v1";
 
 pub struct Can {
     core: Arc<Core>,

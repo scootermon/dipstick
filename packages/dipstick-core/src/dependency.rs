@@ -53,11 +53,13 @@ impl DependencyTracker {
 
     /// Adds `other` as a dependency of `self`.
     pub fn add_dependency(&self, other: &Self) -> DependencyHandle {
-        let created_at = SystemTime::now();
-
         let mut my_links = self.links.write().unwrap();
-        let mut other_links = other.links.write().unwrap();
+        if let Some(existing) = my_links.get(other.unique_id) {
+            return DependencyHandle(existing);
+        }
 
+        let created_at = SystemTime::now();
+        let mut other_links = other.links.write().unwrap();
         let link = Arc::new(Link {
             created_at,
             dependent: self.unique_id,
@@ -90,6 +92,10 @@ impl LinkStorage {
 
     fn iter(&self) -> impl Iterator<Item = Arc<Link>> + '_ {
         self.0.iter().filter_map(|weak| weak.upgrade())
+    }
+
+    fn get(&self, dependency: UniqueId) -> Option<Arc<Link>> {
+        self.iter().find(|link| link.dependency == dependency)
     }
 
     fn push(&mut self, link: &Arc<Link>) {

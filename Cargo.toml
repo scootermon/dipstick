@@ -19,6 +19,7 @@ dipstick-can = { path = "packages/dipstick-can" }
 dipstick-core = { path = "packages/dipstick-core" }
 dipstick-gpio = { path = "packages/dipstick-gpio" }
 dipstick-proto = { path = "packages/dipstick-proto" }
+dipstick-shadow = { path = "packages/dipstick-shadow" }
 dipstick-spi = { path = "packages/dipstick-spi" }
 dipstick-stack = { path = "packages/dipstick-stack" }
 

@@ -23,8 +23,8 @@ impl Stack {
             gpio,
             spi,
             device: _,
-            shadow: _,
             xcp: _,
+            shadow,
         } = &mut spec;
 
         let mut dependency_handles = DependencyHandles::new();
@@ -60,6 +60,20 @@ impl Stack {
         if let Some(can) = can {
             for spec in &mut can.bus {
                 add_can_bus(
+                    Context {
+                        packages,
+                        meta: &meta,
+                        dependency_handles: &mut dependency_handles,
+                    },
+                    spec,
+                )
+                .await?;
+            }
+        }
+
+        if let Some(shadow) = shadow {
+            for spec in &mut shadow.shadow {
+                add_shadow(
                     Context {
                         packages,
                         meta: &meta,
@@ -170,6 +184,23 @@ async fn add_can_bus(
         ctx.packages
             .can
             .create_bus_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+            .await?
+    };
+    ctx.add_dependency(bus.entity_meta());
+    spec.meta = Some(bus.entity_meta().spec());
+    spec.spec = Some(bus.spec());
+    Ok(())
+}
+
+async fn add_shadow(
+    mut ctx: Context<'_>,
+    spec: &mut dipstick_proto::shadow::v1::CreateShadowRequest,
+) -> Result<()> {
+    let bus = {
+        let dipstick_proto::shadow::v1::CreateShadowRequest { meta, spec } = spec.clone();
+        ctx.packages
+            .shadow
+            .create_shadow_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };
     ctx.add_dependency(bus.entity_meta());

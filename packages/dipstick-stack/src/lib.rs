@@ -8,6 +8,7 @@ use dipstick_proto::stack::v1::{
     CreateStackRequest, CreateStackResponse, GetStackRequest, GetStackResponse, StackServiceServer,
     StackSpec,
 };
+use dipstick_shadow::ShadowService;
 use dipstick_spi::Spi;
 use futures::future::BoxFuture;
 use futures::FutureExt;
@@ -27,8 +28,19 @@ pub struct StackService {
 }
 
 impl StackService {
-    pub fn new(core: Arc<Core>, can: Arc<Can>, gpio: Arc<Gpio>, spi: Arc<Spi>) -> Arc<Self> {
-        let packages = Packages { can, gpio, spi };
+    pub fn new(
+        core: Arc<Core>,
+        can: Arc<Can>,
+        gpio: Arc<Gpio>,
+        spi: Arc<Spi>,
+        shadow: Arc<ShadowService>,
+    ) -> Arc<Self> {
+        let packages = Packages {
+            can,
+            gpio,
+            spi,
+            shadow,
+        };
         Arc::new(Self { core, packages })
     }
 
