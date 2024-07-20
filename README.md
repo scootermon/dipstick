@@ -23,3 +23,4 @@ Packages contain gRPC services and entity kinds.
 - CAN Frame should store frame kind (remote, error, classic, fd)
 - Create tracing spans for each request
 - Packages should also be stored in a registry so that they can be looked up from core.
+- Core should expose a `Dep<T>` wrapper which acts like `Act<T>` but also holds the dependency handle.
