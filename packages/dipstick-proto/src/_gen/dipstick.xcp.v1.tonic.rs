@@ -131,6 +131,33 @@ pub mod xcp_service_client {
                 .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "GetA2l"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn get_a2l_measurement(
+            &mut self,
+            request: impl tonic::IntoRequest<super::GetA2lMeasurementRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetA2lMeasurementResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.xcp.v1.XcpService/GetA2lMeasurement",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dipstick.xcp.v1.XcpService", "GetA2lMeasurement"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
         pub async fn create_session(
             &mut self,
             request: impl tonic::IntoRequest<super::CreateSessionRequest>,
@@ -181,6 +208,58 @@ pub mod xcp_service_client {
                 .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "GetSession"));
             self.inner.unary(req, path, codec).await
         }
+        pub async fn command(
+            &mut self,
+            request: impl tonic::IntoRequest<super::CommandRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::CommandResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.xcp.v1.XcpService/Command",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.xcp.v1.XcpService", "Command"));
+            self.inner.unary(req, path, codec).await
+        }
+        pub async fn read_measurement(
+            &mut self,
+            request: impl tonic::IntoRequest<super::ReadMeasurementRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ReadMeasurementResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.xcp.v1.XcpService/ReadMeasurement",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(
+                    GrpcMethod::new("dipstick.xcp.v1.XcpService", "ReadMeasurement"),
+                );
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -201,6 +280,13 @@ pub mod xcp_service_server {
             &self,
             request: tonic::Request<super::GetA2lRequest>,
         ) -> std::result::Result<tonic::Response<super::GetA2lResponse>, tonic::Status>;
+        async fn get_a2l_measurement(
+            &self,
+            request: tonic::Request<super::GetA2lMeasurementRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::GetA2lMeasurementResponse>,
+            tonic::Status,
+        >;
         async fn create_session(
             &self,
             request: tonic::Request<super::CreateSessionRequest>,
@@ -213,6 +299,17 @@ pub mod xcp_service_server {
             request: tonic::Request<super::GetSessionRequest>,
         ) -> std::result::Result<
             tonic::Response<super::GetSessionResponse>,
+            tonic::Status,
+        >;
+        async fn command(
+            &self,
+            request: tonic::Request<super::CommandRequest>,
+        ) -> std::result::Result<tonic::Response<super::CommandResponse>, tonic::Status>;
+        async fn read_measurement(
+            &self,
+            request: tonic::Request<super::ReadMeasurementRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::ReadMeasurementResponse>,
             tonic::Status,
         >;
     }
@@ -385,6 +482,53 @@ pub mod xcp_service_server {
                     };
                     Box::pin(fut)
                 }
+                "/dipstick.xcp.v1.XcpService/GetA2lMeasurement" => {
+                    #[allow(non_camel_case_types)]
+                    struct GetA2lMeasurementSvc<T: XcpService>(pub Arc<T>);
+                    impl<
+                        T: XcpService,
+                    > tonic::server::UnaryService<super::GetA2lMeasurementRequest>
+                    for GetA2lMeasurementSvc<T> {
+                        type Response = super::GetA2lMeasurementResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::GetA2lMeasurementRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as XcpService>::get_a2l_measurement(&inner, request)
+                                    .await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = GetA2lMeasurementSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
                 "/dipstick.xcp.v1.XcpService/CreateSession" => {
                     #[allow(non_camel_case_types)]
                     struct CreateSessionSvc<T: XcpService>(pub Arc<T>);
@@ -462,6 +606,98 @@ pub mod xcp_service_server {
                     let fut = async move {
                         let inner = inner.0;
                         let method = GetSessionSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.xcp.v1.XcpService/Command" => {
+                    #[allow(non_camel_case_types)]
+                    struct CommandSvc<T: XcpService>(pub Arc<T>);
+                    impl<
+                        T: XcpService,
+                    > tonic::server::UnaryService<super::CommandRequest>
+                    for CommandSvc<T> {
+                        type Response = super::CommandResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::CommandRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as XcpService>::command(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = CommandSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.xcp.v1.XcpService/ReadMeasurement" => {
+                    #[allow(non_camel_case_types)]
+                    struct ReadMeasurementSvc<T: XcpService>(pub Arc<T>);
+                    impl<
+                        T: XcpService,
+                    > tonic::server::UnaryService<super::ReadMeasurementRequest>
+                    for ReadMeasurementSvc<T> {
+                        type Response = super::ReadMeasurementResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::ReadMeasurementRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as XcpService>::read_measurement(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let inner = inner.0;
+                        let method = ReadMeasurementSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

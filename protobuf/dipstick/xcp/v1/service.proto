@@ -3,14 +3,23 @@ package dipstick.xcp.v1;
 
 import "dipstick/core/v1/entity.proto";
 import "dipstick/xcp/v1/a2l.proto";
+import "dipstick/xcp/v1/protocol.proto";
 import "dipstick/xcp/v1/session.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
 
 service XcpService {
   rpc CreateA2l(CreateA2lRequest) returns (CreateA2lResponse);
   rpc GetA2l(GetA2lRequest) returns (GetA2lResponse);
 
+  rpc GetA2lMeasurement(GetA2lMeasurementRequest) returns (GetA2lMeasurementResponse);
+
   rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
   rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
+
+  rpc Command(CommandRequest) returns (CommandResponse);
+
+  rpc ReadMeasurement(ReadMeasurementRequest) returns (ReadMeasurementResponse);
 }
 
 message CreateA2lRequest {
@@ -30,6 +39,15 @@ message GetA2lResponse {
   A2lEntity a2l = 1;
 }
 
+message GetA2lMeasurementRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+  string measurement_name = 2;
+}
+
+message GetA2lMeasurementResponse {
+  A2lMeasurement measurement = 1;
+}
+
 message CreateSessionRequest {
   dipstick.core.v1.EntityMetaSpec meta = 1;
   SessionSpec spec = 2;
@@ -45,4 +63,24 @@ message GetSessionRequest {
 
 message GetSessionResponse {
   SessionEntity session = 1;
+}
+
+message CommandRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+  CtoReq request = 2;
+}
+
+message CommandResponse {
+  CtoResp response = 2;
+}
+
+message ReadMeasurementRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+  dipstick.core.v1.EntitySelector a2l_selector = 2;
+  string measurement_name = 3;
+}
+
+message ReadMeasurementResponse {
+  google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Value value = 2;
 }

@@ -1,9 +1,10 @@
 use std::sync::{Arc, Mutex};
 
+use bytes::{Buf, Bytes};
 use dipstick_core::{Core, Entity, EntityKind, EntityMeta};
 use dipstick_proto::xcp::v1::{
     A2lAddrType, A2lByteOrder, A2lCharacteristic, A2lDataType, A2lEntity, A2lFile, A2lFncValues,
-    A2lMeasurement, A2lModule, A2lProject, A2lRecordLayout, A2lSpec, A2lStatus,
+    A2lMeasurement, A2lModCommon, A2lModule, A2lProject, A2lRecordLayout, A2lSpec, A2lStatus,
 };
 use tonic::{Result, Status};
 
@@ -69,7 +70,18 @@ impl A2l {
             for module in &project.module {
                 for meas in &module.measurement {
                     if meas.name == measurement_name {
-                        return Some(meas.clone());
+                        let mut meas = meas.clone();
+                        if meas.byte_order() == A2lByteOrder::Unspecified {
+                            meas.set_byte_order(
+                                module
+                                    .mod_common
+                                    .as_ref()
+                                    .map_or(A2lByteOrder::Unspecified, |common| {
+                                        common.byte_order()
+                                    }),
+                            );
+                        }
+                        return Some(meas);
                     }
                 }
             }
@@ -87,6 +99,63 @@ impl Entity for A2l {
 impl EntityKind for A2l {
     const PACKAGE: &'static str = crate::PACKAGE;
     const KIND: &'static str = "A2l";
+}
+
+pub fn decode_a2l_data_type(
+    input: &mut Bytes,
+    data_type: A2lDataType,
+    byte_order: A2lByteOrder,
+) -> anyhow::Result<dipstick_proto::wkt::Value> {
+    use A2lByteOrder as E;
+    use A2lDataType as T;
+
+    let required_bytes = match data_type {
+        T::Unspecified => 0,
+        T::Ubyte | T::Sbyte => 1,
+        T::Uword | T::Sword | T::F16Ieee => 2,
+        T::Ulong | T::Slong | T::F32Ieee => 4,
+        T::AUint64 | T::AInt64 | T::F64Ieee => 8,
+    };
+    anyhow::ensure!(input.remaining() >= required_bytes, "not enough bytes");
+
+    // collapse byte order.
+    // TODO: This doesn't really make sense to me but the BMS reports MSB_LAST even though it's little endian and I didn't find a way to confirm it one way or the other.
+    let byte_order = match byte_order {
+        E::MsbFirst => E::BigEndian,
+        E::MsbLast => E::LittleEndian,
+        _ => byte_order,
+    };
+
+    let value = match (data_type, byte_order) {
+        // 8
+        (T::Ubyte, E::BigEndian | E::LittleEndian) => input.get_u8() as f64,
+        (T::Sbyte, E::BigEndian | E::LittleEndian) => input.get_i8() as f64,
+        // 16
+        (T::Uword, E::BigEndian) => input.get_u16() as f64,
+        (T::Uword, E::LittleEndian) => input.get_u16_le() as f64,
+        (T::Sword, E::BigEndian) => input.get_i16() as f64,
+        (T::Sword, E::LittleEndian) => input.get_i16_le() as f64,
+        // 32
+        (T::Ulong, E::BigEndian) => input.get_u32() as f64,
+        (T::Ulong, E::LittleEndian) => input.get_u32_le() as f64,
+        (T::Slong, E::BigEndian) => input.get_i32() as f64,
+        (T::Slong, E::LittleEndian) => input.get_i32_le() as f64,
+        // 64
+        (T::AUint64, E::BigEndian) => input.get_u64() as f64,
+        (T::AUint64, E::LittleEndian) => input.get_u64_le() as f64,
+        (T::AInt64, E::BigEndian) => input.get_i64() as f64,
+        (T::AInt64, E::LittleEndian) => input.get_i64_le() as f64,
+        // f32
+        (T::F32Ieee, E::BigEndian) => input.get_f32() as f64,
+        (T::F32Ieee, E::LittleEndian) => input.get_f32_le() as f64,
+        // f64
+        (T::F64Ieee, E::BigEndian) => input.get_f64(),
+        (T::F64Ieee, E::LittleEndian) => input.get_f64_le(),
+        _ => anyhow::bail!("unsupported data type / byte order combination"),
+    };
+    Ok(dipstick_proto::wkt::Value {
+        kind: Some(dipstick_proto::wkt::value::Kind::NumberValue(value)),
+    })
 }
 
 struct Storage {
@@ -130,11 +199,19 @@ fn map_module(module: a2lfile::Module) -> A2lModule {
             .into_iter()
             .map(map_measurement)
             .collect(),
+        mod_common: module.mod_common.map(map_mod_common),
         record_layout: module
             .record_layout
             .into_iter()
             .map(map_record_layout)
             .collect(),
+    }
+}
+
+fn map_mod_common(mod_common: a2lfile::ModCommon) -> A2lModCommon {
+    A2lModCommon {
+        comment: mod_common.comment,
+        byte_order: map_byte_order(mod_common.byte_order.map(|order| order.byte_order)) as _,
     }
 }
 
@@ -168,6 +245,7 @@ fn map_measurement(meas: a2lfile::Measurement) -> A2lMeasurement {
         long_identifier: meas.long_identifier,
         datatype: map_data_type(meas.datatype) as _,
         conversion: meas.conversion,
+        byte_order: map_byte_order(meas.byte_order.map(|order| order.byte_order)) as _,
         ecu_address: meas.ecu_address.map(|addr| addr.address),
         ecu_address_extension: meas
             .ecu_address_extension

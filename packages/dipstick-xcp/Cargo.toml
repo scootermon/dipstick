@@ -12,10 +12,13 @@ rust-version.workspace = true
 
 [dependencies]
 a2lfile.workspace = true
+anyhow.workspace = true
+bytes.workspace = true
 dipstick-can.workspace = true
 dipstick-core.workspace = true
 dipstick-proto.workspace = true
 futures.workspace = true
+tokio-stream.workspace = true
 tokio.workspace = true
 tonic.workspace = true
 tracing.workspace = true

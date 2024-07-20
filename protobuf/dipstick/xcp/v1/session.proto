@@ -3,6 +3,8 @@ package dipstick.xcp.v1;
 
 import "dipstick/can/v1/id.proto";
 import "dipstick/core/v1/entity.proto";
+import "dipstick/xcp/v1/protocol.proto";
+import "google/protobuf/duration.proto";
 
 message SessionEntity {
   dipstick.core.v1.EntityMeta meta = 1;
@@ -10,9 +12,14 @@ message SessionEntity {
   SessionStatus status = 3;
 }
 
-message SessionStatus {}
+message SessionStatus {
+  CtoConnectRespData connect_data = 1;
+}
 
 message SessionSpec {
+  optional bool no_auto_reconnect = 3;
+  // Defaults to 500ms
+  google.protobuf.Duration cto_timeout = 1;
   oneof xcp_transport_spec {
     CanTransportSpec can = 2;
   }

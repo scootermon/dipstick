@@ -1,0 +1,202 @@
+syntax = "proto3";
+package dipstick.xcp.v1;
+
+import "google/protobuf/timestamp.proto";
+
+message CtoRespPacket {
+  google.protobuf.Timestamp timestamp = 1;
+  CtoRespPid pid = 2;
+  // set if pid == XCP_PID_EV
+  CtoEventCode event = 4;
+  // set if pid == XCP_PID_ERR
+  CtoErrorCode error = 5;
+  // remaining data
+  bytes data = 3;
+}
+
+enum CtoReqPid {
+  CTO_REQ_PID_UNSPECIFIED = 0;
+  CTO_REQ_PID_CONNECT = 1;
+  CTO_REQ_PID_SET_MTA = 2;
+  CTO_REQ_PID_SHORT_UPLOAD = 3;
+  CTO_REQ_PID_SHORT_DOWNLOAD = 4;
+  CTO_REQ_PID_DOWNLOAD = 5;
+}
+
+enum CtoRespPid {
+  CTO_RESP_PID_UNSPECIFIED = 0;
+  CTO_RESP_PID_OK = 1;
+  CTO_RESP_PID_ERR = 2;
+  CTO_RESP_PID_EV = 3;
+  CTO_RESP_PID_SERV = 4;
+}
+
+enum CtoEventCode {
+  CTO_EVENT_CODE_UNSPECIFIED = 0;
+  CTO_EVENT_CODE_RESUME_MODE = 1;
+  CTO_EVENT_CODE_CLEAR_DAQ = 2;
+  CTO_EVENT_CODE_STORE_DAQ = 3;
+  CTO_EVENT_CODE_STORE_CAL = 4;
+  CTO_EVENT_CODE_CMD_PENDING = 5;
+  CTO_EVENT_CODE_DAQ_OVERLOAD = 6;
+  CTO_EVENT_CODE_SESSION_TERMINATED = 7;
+  CTO_EVENT_CODE_TIME_SYNC = 8;
+  CTO_EVENT_CODE_STIM_TIMEOUT = 9;
+  CTO_EVENT_CODE_SLEEP = 10;
+  CTO_EVENT_CODE_WAKE_UP = 11;
+  CTO_EVENT_CODE_USER = 12;
+  CTO_EVENT_CODE_TRANSPORT = 13;
+}
+
+enum CtoErrorCode {
+  CTO_ERROR_CODE_UNSPECIFIED = 0;
+  // Command processor synchronization. S0
+  CTO_ERROR_CODE_CMD_SYNCH = 1;
+  // Command was not executed. S2
+  CTO_ERROR_CODE_CMD_BUSY = 2;
+  // Command rejected because DAQ is running. S2
+  CTO_ERROR_CODE_DAQ_ACTIVE = 3;
+  // Command rejected because PGM is running. S2
+  CTO_ERROR_CODE_PGM_ACTIVE = 4;
+  // Unknown command or not implemented optional command. S2
+  CTO_ERROR_CODE_CMD_UNKNOWN = 5;
+  // Command syntax invalid. S2
+  CTO_ERROR_CODE_CMD_SYNTAX = 6;
+  // Command syntax valid but command parameter(s) out of range. S2
+  CTO_ERROR_CODE_OUT_OF_RANGE = 7;
+  // The memory location is write protected. S2
+  CTO_ERROR_CODE_WRITE_PROTECTED = 8;
+  // The memory location is not accessible. S2
+  CTO_ERROR_CODE_ACCESS_DENIED = 9;
+  // Access denied, Seed & Key is required. S2
+  CTO_ERROR_CODE_ACCESS_LOCKED = 10;
+  // Selected page not available. S2
+  CTO_ERROR_CODE_PAGE_NOT_VALID = 11;
+  // Selected page mode not available. S2
+  CTO_ERROR_CODE_MODE_NOT_VALID = 12;
+  // Selected segment not valid. S2
+  CTO_ERROR_CODE_SEGMENT_NOT_VALID = 13;
+  // Sequence error. S2
+  CTO_ERROR_CODE_SEQUENCE = 14;
+  // DAQ configuration not valid. S2
+  CTO_ERROR_CODE_DAQ_CONFIG = 15;
+  // Memory overflow error. S2
+  CTO_ERROR_CODE_MEMORY_OVERFLOW = 16;
+  // Generic error. S2
+  CTO_ERROR_CODE_GENERIC = 17;
+  // The slave internal program verify routine detects an error. S3 NEW IN 1.1
+  CTO_ERROR_CODE_VERIFY = 18;
+  // Access to the requested resource is temporary not possible. S3
+  CTO_ERROR_CODE_RESOURCE_TEMPORARY_NOT_ACCESSIBLE = 19;
+}
+
+message CtoReq {
+  oneof cto_req_data {
+    CtoConnectReqData connect = 1;
+    CtoShortUploadReqData short_upload = 2;
+    CtoShortDownloadReqData short_download = 3;
+    CtoSetMtaReqData set_mta = 4;
+    CtoDownloadReqData download = 5;
+  }
+}
+
+message CtoResp {
+  google.protobuf.Timestamp timestamp = 7;
+  oneof cto_resp_data {
+    CtoErrRespData error = 4;
+    CtoConnectRespData connect = 1;
+    CtoShortUploadRespData short_upload = 2;
+    CtoShortDownloadRespData short_download = 3;
+    CtoSetMtaRespData set_mta = 5;
+    CtoDownloadRespData download = 6;
+  }
+}
+
+message CtoErrRespData {
+  CtoErrorCode error = 1;
+  bytes data = 2;
+}
+
+message CtoConnectReqData {
+  uint32 mode = 1;
+}
+
+message CtoConnectRespData {
+  CtoResourceType resource = 1;
+  CtoCommModeBasic comm_mode_basic = 2;
+  // u8
+  uint32 max_cto = 3;
+  // u16
+  uint32 max_dto = 4;
+  // u8
+  uint32 protocol_layer_version = 5;
+  // u8
+  uint32 transport_layer_version = 6;
+}
+
+message CtoShortUploadReqData {
+  uint32 address = 1;
+  // u8
+  uint32 address_extension = 3;
+  // u8
+  uint32 length = 2;
+}
+
+message CtoShortUploadRespData {
+  bytes data = 1;
+}
+
+message CtoShortDownloadReqData {
+  uint32 address = 1;
+  // u8
+  uint32 address_extension = 2;
+  bytes data = 3;
+}
+
+message CtoShortDownloadRespData {}
+
+message CtoSetMtaReqData {
+  uint32 address = 1;
+  // u8
+  uint32 address_extension = 2;
+}
+
+message CtoSetMtaRespData {}
+
+message CtoDownloadReqData {
+  bytes data = 1;
+  // u8
+  uint32 block_mode_length = 2;
+  bool last = 3;
+}
+
+message CtoDownloadRespData {}
+
+message CtoResourceType {
+  bool dbg = 1;
+  bool pgm = 2;
+  bool stim = 3;
+  bool daq = 4;
+  bool calpag = 5;
+}
+
+message CtoCommModeBasic {
+  bool optional = 1;
+  bool server_block_mode = 2;
+  AddressGranularity address_granularity = 3;
+  ByteOrder byte_order = 4;
+}
+
+enum AddressGranularity {
+  ADDRESS_GRANULARITY_UNSPECIFIED = 0;
+  ADDRESS_GRANULARITY_BYTE = 1;
+  ADDRESS_GRANULARITY_WORD = 2;
+  ADDRESS_GRANULARITY_DWORD = 3;
+  ADDRESS_GRANULARITY_RESERVED = 4;
+}
+
+enum ByteOrder {
+  BYTE_ORDER_UNSPECIFIED = 0;
+  BYTE_ORDER_LITTLE_ENDIAN = 1;
+  BYTE_ORDER_BIG_ENDIAN = 2;
+}
