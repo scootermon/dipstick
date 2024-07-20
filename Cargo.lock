@@ -341,6 +341,7 @@ dependencies = [
  "dipstick-proto",
  "dipstick-shadow",
  "dipstick-spi",
+ "dipstick-xcp",
  "futures",
  "tonic",
 ]
@@ -350,11 +351,14 @@ name = "dipstick-xcp"
 version = "0.1.0"
 dependencies = [
  "a2lfile",
+ "anyhow",
+ "bytes",
  "dipstick-can",
  "dipstick-core",
  "dipstick-proto",
  "futures",
  "tokio",
+ "tokio-stream",
  "tonic",
  "tracing",
 ]

@@ -42,6 +42,7 @@ async fn _main() -> anyhow::Result<()> {
         Arc::clone(&can),
         Arc::clone(&gpio),
         Arc::clone(&spi),
+        Arc::clone(&xcp_service),
         Arc::clone(&shadow_service),
     );
 

@@ -10,6 +10,7 @@ use dipstick_proto::stack::v1::{
 };
 use dipstick_shadow::ShadowService;
 use dipstick_spi::Spi;
+use dipstick_xcp::XcpService;
 use futures::future::BoxFuture;
 use futures::FutureExt;
 use tonic::{Request, Response, Result};
@@ -33,12 +34,14 @@ impl StackService {
         can: Arc<Can>,
         gpio: Arc<Gpio>,
         spi: Arc<Spi>,
+        xcp: Arc<XcpService>,
         shadow: Arc<ShadowService>,
     ) -> Arc<Self> {
         let packages = Packages {
             can,
             gpio,
             spi,
+            xcp,
             shadow,
         };
         Arc::new(Self { core, packages })
