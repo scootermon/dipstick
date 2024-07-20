@@ -126,6 +126,7 @@ impl ReaderTask {
                     let timestamp = SystemTime::now();
 
                     let frame = conv::from_linux_frame(&frame, timestamp);
+                    tracing::trace!(?frame, "received frame");
                     let _ = self.tx.send(frame);
                 }
                 Some(Err(err)) => {

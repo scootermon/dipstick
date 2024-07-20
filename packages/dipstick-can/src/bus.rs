@@ -47,6 +47,7 @@ impl Bus {
     }
 
     pub async fn send_frame(&self, frame: &Frame) -> Result<()> {
+        tracing::trace!(?frame, "sending frame");
         self.linux.send(frame).await
     }
 
