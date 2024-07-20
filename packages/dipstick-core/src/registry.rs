@@ -55,8 +55,7 @@ impl Registry {
     }
 
     pub fn add_entity<T: Entity>(&self, reservation: ReservationHandle, entity: Arc<T>) {
-        assert_eq!(reservation.unique_id(), entity.entity_meta().unique_id());
-        assert_eq!(reservation.local_key(), entity.entity_meta().local_key());
+        reservation.assert_matches(entity.entity_meta());
         let mut inner = self.inner.write().unwrap();
         inner.insert(entity);
     }

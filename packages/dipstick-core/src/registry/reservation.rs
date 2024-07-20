@@ -2,7 +2,7 @@ use std::sync::{Arc, Weak};
 
 use tonic::{Result, Status};
 
-use crate::{QualifiedKey, UniqueId};
+use crate::{EntityMeta, QualifiedKey, UniqueId};
 
 pub struct ReservationStorage(Vec<Weak<Reservation>>);
 
@@ -64,6 +64,16 @@ impl ReservationStorage {
 pub struct ReservationHandle(Arc<Reservation>);
 
 impl ReservationHandle {
+    #[track_caller]
+    pub(crate) fn assert_matches(&self, meta: &EntityMeta) {
+        assert_eq!(self.unique_id(), meta.unique_id());
+        if let Some(qualified_key) = &self.0.qualified_key {
+            assert_eq!(&qualified_key.package, meta.package());
+            assert_eq!(&qualified_key.kind, meta.kind());
+            assert_eq!(Some(qualified_key.key.as_str()), meta.local_key());
+        }
+    }
+
     pub fn unique_id(&self) -> UniqueId {
         self.0.unique_id
     }
