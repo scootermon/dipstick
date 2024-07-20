@@ -1,7 +1,5 @@
-use std::{
-    sync::{Arc, RwLock},
-    time::Duration,
-};
+use std::sync::{Arc, RwLock};
+use std::time::Duration;
 
 use bytes::{Bytes, BytesMut};
 use dipstick_core::{Core, Entity, EntityKind, EntityMeta};
@@ -175,7 +173,7 @@ impl Session {
     async fn cto_command_raw(&self, byte_order: ByteOrder, req: &CtoReq) -> Result<CtoResp> {
         let mut buf = BytesMut::new();
         let req_pid = req.pid();
-        crate::protocol::encoder::cto_req(&mut buf, byte_order, &req)?;
+        crate::protocol::encoder::cto_req(&mut buf, byte_order, req)?;
         let mut packet_stream = self.transport.subscribe();
         self.transport.send(buf.freeze()).await?;
         crate::transport::get_response(&mut packet_stream, |mut input| {

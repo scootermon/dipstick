@@ -106,8 +106,7 @@ pub fn decode_a2l_data_type(
     data_type: A2lDataType,
     byte_order: A2lByteOrder,
 ) -> anyhow::Result<dipstick_proto::wkt::Value> {
-    use A2lByteOrder as E;
-    use A2lDataType as T;
+    use {A2lByteOrder as E, A2lDataType as T};
 
     let required_bytes = match data_type {
         T::Unspecified => 0,
@@ -119,7 +118,9 @@ pub fn decode_a2l_data_type(
     anyhow::ensure!(input.remaining() >= required_bytes, "not enough bytes");
 
     // collapse byte order.
-    // TODO: This doesn't really make sense to me but the BMS reports MSB_LAST even though it's little endian and I didn't find a way to confirm it one way or the other.
+    // TODO: This doesn't really make sense to me but the BMS reports MSB_LAST even
+    // though it's little endian and I didn't find a way to confirm it one way or
+    // the other.
     let byte_order = match byte_order {
         E::MsbFirst => E::BigEndian,
         E::MsbLast => E::LittleEndian,

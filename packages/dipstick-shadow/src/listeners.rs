@@ -17,7 +17,7 @@ pub struct Listeners {
 }
 
 impl Listeners {
-    pub fn builder<'a>(core: &'a Core, shadow: Arc<Shadow>) -> ListenersBuilder<'a> {
+    pub fn builder(core: &Core, shadow: Arc<Shadow>) -> ListenersBuilder<'_> {
         ListenersBuilder::new(core, shadow)
     }
 
