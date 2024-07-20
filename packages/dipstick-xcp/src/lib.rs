@@ -4,9 +4,11 @@ use dipstick_core::Core;
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::xcp::v1::{
     A2lSpec, CommandRequest, CommandResponse, CreateA2lRequest, CreateA2lResponse,
-    CreateSessionRequest, CreateSessionResponse, GetA2lMeasurementRequest,
-    GetA2lMeasurementResponse, GetA2lRequest, GetA2lResponse, GetSessionRequest,
-    GetSessionResponse, ReadMeasurementRequest, ReadMeasurementResponse, SessionSpec,
+    CreateSessionRequest, CreateSessionResponse, GetA2lCharacteristicRequest,
+    GetA2lCharacteristicResponse, GetA2lMeasurementRequest, GetA2lMeasurementResponse,
+    GetA2lRequest, GetA2lResponse, GetSessionRequest, GetSessionResponse,
+    ReadCharacteristicRequest, ReadCharacteristicResponse, ReadMeasurementRequest,
+    ReadMeasurementResponse, SessionSpec, WriteCharacteristicRequest, WriteCharacteristicResponse,
     XcpServiceServer,
 };
 use futures::future::BoxFuture;
@@ -78,8 +80,9 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
     ) -> BoxFuture<'fut, Result<Response<GetA2lResponse>>> {
         async move {
             let GetA2lRequest { selector } = request.into_inner();
-            let selector = selector.unwrap_or_default();
-            let a2l = self.core.select_entity::<A2l>(&selector)?;
+            let a2l = self
+                .core
+                .select_entity::<A2l>(selector.unwrap_or_default())?;
             Ok(Response::new(GetA2lResponse {
                 a2l: Some(a2l.to_proto()),
             }))
@@ -96,13 +99,34 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
                 selector,
                 measurement_name,
             } = request.into_inner();
-            let selector = selector.unwrap_or_default();
-            let a2l = self.core.select_entity::<A2l>(&selector)?;
+            let a2l = self
+                .core
+                .select_entity::<A2l>(selector.unwrap_or_default())?;
             let measurement = a2l
                 .get_measurement(&measurement_name)
                 .ok_or_else(|| Status::not_found("measurement not found"))?;
             Ok(Response::new(GetA2lMeasurementResponse {
                 measurement: Some(measurement),
+            }))
+        }
+        .boxed()
+    }
+
+    fn get_a2l_characteristic<'s: 'fut, 'fut>(
+        &'s self,
+        request: Request<GetA2lCharacteristicRequest>,
+    ) -> BoxFuture<'fut, Result<Response<GetA2lCharacteristicResponse>>> {
+        async move {
+            let GetA2lCharacteristicRequest {
+                selector,
+                characteristic_name,
+            } = request.into_inner();
+            let a2l = self
+                .core
+                .select_entity::<A2l>(selector.unwrap_or_default())?;
+            let characteristic = a2l.get_characteristic(&characteristic_name)?;
+            Ok(Response::new(GetA2lCharacteristicResponse {
+                characteristic: Some(characteristic),
             }))
         }
         .boxed()
@@ -130,8 +154,9 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
     ) -> BoxFuture<'fut, Result<Response<GetSessionResponse>>> {
         async move {
             let GetSessionRequest { selector } = request.into_inner();
-            let selector = selector.unwrap_or_default();
-            let session = self.core.select_entity::<Session>(&selector)?;
+            let session = self
+                .core
+                .select_entity::<Session>(selector.unwrap_or_default())?;
             Ok(Response::new(GetSessionResponse {
                 session: Some(session.to_proto()),
             }))
@@ -145,11 +170,11 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
     ) -> BoxFuture<'fut, Result<Response<CommandResponse>>> {
         async move {
             let CommandRequest { selector, request } = request.into_inner();
-            let selector = selector.unwrap_or_default();
-            let request = request.unwrap_or_default();
-            let session = self.core.select_entity::<Session>(&selector)?;
+            let session = self
+                .core
+                .select_entity::<Session>(selector.unwrap_or_default())?;
 
-            let response = session.cto_command(&request).await?;
+            let response = session.cto_command(&request.unwrap_or_default()).await?;
             Ok(Response::new(CommandResponse {
                 response: Some(response),
             }))
@@ -167,10 +192,12 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
                 a2l_selector,
                 measurement_name,
             } = request.into_inner();
-            let selector = selector.unwrap_or_default();
-            let session = self.core.select_entity::<Session>(&selector)?;
-            let a2l_selector = a2l_selector.unwrap_or_default();
-            let a2l = self.core.select_entity::<A2l>(&a2l_selector)?;
+            let session = self
+                .core
+                .select_entity::<Session>(selector.unwrap_or_default())?;
+            let a2l = self
+                .core
+                .select_entity::<A2l>(a2l_selector.unwrap_or_default())?;
 
             let measurement = a2l
                 .get_measurement(&measurement_name)
@@ -181,6 +208,60 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
                 timestamp: Some(timestamp),
                 value: Some(value),
             }))
+        }
+        .boxed()
+    }
+
+    fn read_characteristic<'s: 'fut, 'fut>(
+        &'s self,
+        request: Request<ReadCharacteristicRequest>,
+    ) -> BoxFuture<'fut, Result<Response<ReadCharacteristicResponse>>> {
+        async move {
+            let ReadCharacteristicRequest {
+                selector,
+                a2l_selector,
+                characteristic_name,
+            } = request.into_inner();
+            let session = self
+                .core
+                .select_entity::<Session>(selector.unwrap_or_default())?;
+            let a2l = self
+                .core
+                .select_entity::<A2l>(a2l_selector.unwrap_or_default())?;
+
+            let characteristic = a2l.get_characteristic(&characteristic_name)?;
+            let (timestamp, value) = session.read_characteristic(&characteristic).await?;
+            Ok(Response::new(ReadCharacteristicResponse {
+                timestamp: Some(timestamp),
+                value: Some(value),
+            }))
+        }
+        .boxed()
+    }
+
+    fn write_characteristic<'s: 'fut, 'fut>(
+        &'s self,
+        request: Request<WriteCharacteristicRequest>,
+    ) -> BoxFuture<'fut, Result<Response<WriteCharacteristicResponse>>> {
+        async move {
+            let WriteCharacteristicRequest {
+                selector,
+                a2l_selector,
+                characteristic_name,
+                value,
+            } = request.into_inner();
+            let session = self
+                .core
+                .select_entity::<Session>(selector.unwrap_or_default())?;
+            let a2l = self
+                .core
+                .select_entity::<A2l>(a2l_selector.unwrap_or_default())?;
+
+            let characteristic = a2l.get_characteristic(&characteristic_name)?;
+            session
+                .write_characteristic(&characteristic, &value.unwrap_or_default())
+                .await?;
+            Ok(Response::new(WriteCharacteristicResponse {}))
         }
         .boxed()
     }

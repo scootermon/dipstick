@@ -1,8 +1,8 @@
 use bytes::{Buf, Bytes};
 use dipstick_proto::xcp::v1::{
-    AddressGranularity, ByteOrder, CtoCommModeBasic, CtoConnectRespData, CtoErrorCode,
-    CtoEventCode, CtoReqPid, CtoResourceType, CtoResp, CtoRespData, CtoRespPacket, CtoRespPid,
-    CtoShortUploadRespData,
+    AddressGranularity, ByteOrder, CtoCommModeBasic, CtoConnectRespData, CtoDownloadRespData,
+    CtoErrorCode, CtoEventCode, CtoReqPid, CtoResourceType, CtoResp, CtoRespData, CtoRespPacket,
+    CtoRespPid, CtoSetMtaRespData, CtoShortDownloadRespData, CtoShortUploadRespData,
 };
 
 pub fn packet(input: &mut Bytes) -> anyhow::Result<CtoRespPacket> {
@@ -38,8 +38,12 @@ pub fn cto_resp(input: &mut Bytes, req_pid: CtoReqPid) -> anyhow::Result<CtoResp
         CtoReqPid::ShortUpload => {
             cto_short_upload_resp_data(input).map(CtoRespData::ShortUpload)?
         }
+        CtoReqPid::Download => cto_download_resp_data(input).map(CtoRespData::Download)?,
+        CtoReqPid::SetMta => cto_set_mta_resp_data(input).map(CtoRespData::SetMta)?,
+        CtoReqPid::ShortDownload => {
+            cto_short_download_resp_data(input).map(CtoRespData::ShortDownload)?
+        }
         CtoReqPid::Unspecified => unreachable!(),
-        _ => todo!(),
     };
     Ok(CtoResp {
         timestamp: None,
@@ -72,6 +76,18 @@ fn cto_short_upload_resp_data(input: &mut Bytes) -> anyhow::Result<CtoShortUploa
     Ok(CtoShortUploadRespData {
         data: input.clone(),
     })
+}
+
+fn cto_download_resp_data(_input: &mut Bytes) -> anyhow::Result<CtoDownloadRespData> {
+    Ok(CtoDownloadRespData {})
+}
+
+fn cto_set_mta_resp_data(_input: &mut Bytes) -> anyhow::Result<CtoSetMtaRespData> {
+    Ok(CtoSetMtaRespData {})
+}
+
+fn cto_short_download_resp_data(_input: &mut Bytes) -> anyhow::Result<CtoShortDownloadRespData> {
+    Ok(CtoShortDownloadRespData {})
 }
 
 #[inline(always)]

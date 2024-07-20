@@ -78,6 +78,11 @@ message A2lCharacteristic {
   optional int32 ecu_address_extension = 5;
 }
 
+message A2lFullCharacteristic {
+  A2lCharacteristic characteristic = 1;
+  A2lRecordLayout record_layout = 2;
+}
+
 enum A2lByteOrder {
   A2L_BYTE_ORDER_UNSPECIFIED = 0;
   A2L_BYTE_ORDER_LITTLE_ENDIAN = 1;

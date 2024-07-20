@@ -4,9 +4,9 @@ use std::time::Duration;
 use bytes::{Bytes, BytesMut};
 use dipstick_core::{Core, Entity, EntityKind, EntityMeta};
 use dipstick_proto::xcp::v1::{
-    A2lMeasurement, ByteOrder, CtoConnectReqData, CtoConnectRespData, CtoReq, CtoReqData,
-    CtoReqPid, CtoResp, CtoRespData, CtoShortUploadReqData, SessionEntity, SessionSpec,
-    SessionStatus,
+    A2lFullCharacteristic, A2lMeasurement, ByteOrder, CtoConnectReqData, CtoConnectRespData,
+    CtoDownloadReqData, CtoReq, CtoReqPid, CtoResp, CtoRespData, CtoSetMtaReqData,
+    CtoShortUploadReqData, SessionEntity, SessionSpec, SessionStatus,
 };
 use tokio::sync::Mutex;
 use tonic::{Result, Status};
@@ -73,10 +73,11 @@ impl Session {
             .ecu_address_extension()
             .try_into()
             .map_err(|_| Status::invalid_argument("ecu address extension invalid"))?;
+        let length = u32::from(crate::a2l::codec::data_type_len(measurement.datatype()));
         let (timestamp, mut data) = self
-            .cto_upload(measurement.ecu_address(), address_extension, 4)
+            .cto_short_upload(measurement.ecu_address(), address_extension, length)
             .await?;
-        let value = crate::a2l::decode_a2l_data_type(
+        let value = crate::a2l::codec::decode_data_type(
             &mut data,
             measurement.datatype(),
             measurement.byte_order(),
@@ -86,7 +87,65 @@ impl Session {
         Ok((timestamp, value))
     }
 
-    async fn cto_upload(
+    pub async fn read_characteristic(
+        &self,
+        characteristic: &A2lFullCharacteristic,
+    ) -> Result<(dipstick_proto::wkt::Timestamp, dipstick_proto::wkt::Value)> {
+        let A2lFullCharacteristic {
+            characteristic: Some(characteristic),
+            record_layout: Some(record_layout),
+        } = characteristic
+        else {
+            return Err(Status::invalid_argument("invalid characteristic"));
+        };
+        let address_extension = characteristic
+            .ecu_address_extension()
+            .try_into()
+            .map_err(|_| Status::invalid_argument("ecu address extension invalid"))?;
+        let length = u32::from(crate::a2l::codec::record_len(record_layout));
+        let (timestamp, mut data) = self
+            .cto_short_upload(characteristic.address, address_extension, length)
+            .await?;
+
+        let value =
+            crate::a2l::codec::decode_record(&mut data, record_layout, characteristic.byte_order())
+                .map_err(|err| Status::internal(format!("characteristic data invalid: {err}")))?;
+
+        Ok((timestamp, value))
+    }
+
+    pub async fn write_characteristic(
+        &self,
+        characteristic: &A2lFullCharacteristic,
+        value: &dipstick_proto::wkt::Value,
+    ) -> Result<()> {
+        let A2lFullCharacteristic {
+            characteristic: Some(characteristic),
+            record_layout: Some(record_layout),
+        } = characteristic
+        else {
+            return Err(Status::invalid_argument("invalid characteristic"));
+        };
+        let address_extension = characteristic
+            .ecu_address_extension()
+            .try_into()
+            .map_err(|_| Status::invalid_argument("ecu address extension invalid"))?;
+        let mut data = BytesMut::new();
+        crate::a2l::codec::encode_record(
+            &mut data,
+            record_layout,
+            characteristic.byte_order(),
+            value,
+        )
+        .map_err(|err| {
+            Status::invalid_argument(format!("unable to encode characteristic data: {err}"))
+        })?;
+        self.cto_download(characteristic.address, address_extension, data.freeze())
+            .await?;
+        Ok(())
+    }
+
+    async fn cto_short_upload(
         &self,
         address: u32,
         address_extension: u32,
@@ -97,18 +156,7 @@ impl Session {
             address_extension,
             length,
         };
-        let resp = match tokio::time::timeout(
-            self.spec.cto_timeout.unwrap().try_into().unwrap(),
-            self.cto_command(&CtoReq {
-                cto_req_data: Some(CtoReqData::ShortUpload(req_data)),
-            }),
-        )
-        .await
-        {
-            Ok(Ok(v)) => v,
-            Ok(Err(e)) => return Err(e),
-            Err(_) => return Err(Status::deadline_exceeded("cto command timeout")),
-        };
+        let resp = self.cto_command(&req_data.into()).await?;
         let resp_data = match resp.cto_resp_data {
             Some(CtoRespData::ShortUpload(data)) => data,
             Some(CtoRespData::Error(data)) => {
@@ -120,6 +168,41 @@ impl Session {
             _ => unreachable!(),
         };
         Ok((resp.timestamp.unwrap_or_default(), resp_data.data))
+    }
+
+    async fn cto_download(&self, address: u32, address_extension: u32, data: Bytes) -> Result<()> {
+        // TODO: need some kind of overarching lock
+        self.cto_set_mta(address, address_extension).await?;
+        let req_data = CtoDownloadReqData {
+            data,
+            block_mode_length: 0,
+            last: true, // TODO: smart
+        };
+        let resp = self.cto_command(&req_data.into()).await?;
+        match resp.cto_resp_data {
+            Some(CtoRespData::Download(_data)) => Ok(()),
+            Some(CtoRespData::Error(data)) => Err(Status::internal(format!(
+                "server rejected download: {}",
+                data.error().as_str_name()
+            ))),
+            _ => unreachable!(),
+        }
+    }
+
+    async fn cto_set_mta(&self, address: u32, address_extension: u32) -> Result<()> {
+        let req_data = CtoSetMtaReqData {
+            address,
+            address_extension,
+        };
+        let resp = self.cto_command(&req_data.into()).await?;
+        match resp.cto_resp_data {
+            Some(CtoRespData::SetMta(_data)) => Ok(()),
+            Some(CtoRespData::Error(data)) => Err(Status::internal(format!(
+                "server rejected set mta: {}",
+                data.error().as_str_name()
+            ))),
+            _ => unreachable!(),
+        }
     }
 
     pub async fn cto_command(&self, req: &CtoReq) -> Result<CtoResp> {
@@ -137,7 +220,7 @@ impl Session {
                 .map(|comm_mode_basic| comm_mode_basic.byte_order())
                 .unwrap_or(ByteOrder::Unspecified)
         };
-        self.cto_command_raw(byte_order, req).await
+        self.cto_command_impl(byte_order, req).await
     }
 
     async fn auto_connect_raw(&self) -> Result<()> {
@@ -146,13 +229,11 @@ impl Session {
         }
 
         tracing::info!("auto-connecting");
+        let req_data = CtoConnectReqData {
+            mode: self.spec.auto_connect_mode(),
+        };
         let resp = self
-            .cto_command_raw(
-                ByteOrder::Unspecified,
-                &CtoReq {
-                    cto_req_data: Some(CtoReqData::Connect(CtoConnectReqData { mode: 0 })), // TODO: mode in spec
-                },
-            )
+            .cto_command_impl(ByteOrder::Unspecified, &req_data.into())
             .await?;
         let connect_data = match resp.cto_resp_data {
             Some(CtoRespData::Connect(data)) => data,
@@ -170,16 +251,21 @@ impl Session {
         Ok(())
     }
 
-    async fn cto_command_raw(&self, byte_order: ByteOrder, req: &CtoReq) -> Result<CtoResp> {
+    async fn cto_command_impl(&self, byte_order: ByteOrder, req: &CtoReq) -> Result<CtoResp> {
         let mut buf = BytesMut::new();
         let req_pid = req.pid();
         crate::protocol::encoder::cto_req(&mut buf, byte_order, req)?;
         let mut packet_stream = self.transport.subscribe();
         self.transport.send(buf.freeze()).await?;
-        crate::transport::get_response(&mut packet_stream, |mut input| {
+        let resp_fut = crate::transport::get_response(&mut packet_stream, |mut input| {
             crate::protocol::decoder::cto_resp(&mut input, req_pid)
-        })
-        .await
+        });
+        match tokio::time::timeout(self.spec.cto_timeout.unwrap().try_into().unwrap(), resp_fut)
+            .await
+        {
+            Ok(res) => res,
+            Err(_) => Err(Status::deadline_exceeded("cto command timeout")),
+        }
     }
 }
 

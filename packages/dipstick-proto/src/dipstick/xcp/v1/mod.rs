@@ -6,11 +6,13 @@ pub use self::session_spec::XcpTransportSpec;
 pub use self::xcp_service_client::XcpServiceClient;
 pub use self::xcp_service_server::{XcpService, XcpServiceServer};
 
-impl CtoReq {
-    pub const fn pid(&self) -> CtoReqPid {
-        match &self.cto_req_data {
-            Some(data) => data.pid(),
-            None => CtoReqPid::Unspecified,
+mod cto_req_impl;
+
+impl A2lModule {
+    pub fn byte_order(&self) -> A2lByteOrder {
+        match self.mod_common {
+            Some(ref common) => common.byte_order(),
+            None => A2lByteOrder::Unspecified,
         }
     }
 }

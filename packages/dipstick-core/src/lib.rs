@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::sync::Arc;
 
 use dipstick_proto::core::v1::{
@@ -63,9 +64,9 @@ impl Core {
 
     pub fn select_entity<T: EntityKind + Entity>(
         &self,
-        selector: &EntitySelector,
+        selector: impl Borrow<EntitySelector>,
     ) -> Result<Arc<T>> {
-        self.registry.select(selector)
+        self.registry.select(selector.borrow())
     }
 
     fn new_entity_meta_raw(&self, spec: EntityMetaSpec) -> Result<(EntityMeta, ReservationHandle)> {

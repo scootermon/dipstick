@@ -13,6 +13,7 @@ service XcpService {
   rpc GetA2l(GetA2lRequest) returns (GetA2lResponse);
 
   rpc GetA2lMeasurement(GetA2lMeasurementRequest) returns (GetA2lMeasurementResponse);
+  rpc GetA2lCharacteristic(GetA2lCharacteristicRequest) returns (GetA2lCharacteristicResponse);
 
   rpc CreateSession(CreateSessionRequest) returns (CreateSessionResponse);
   rpc GetSession(GetSessionRequest) returns (GetSessionResponse);
@@ -20,6 +21,8 @@ service XcpService {
   rpc Command(CommandRequest) returns (CommandResponse);
 
   rpc ReadMeasurement(ReadMeasurementRequest) returns (ReadMeasurementResponse);
+  rpc ReadCharacteristic(ReadCharacteristicRequest) returns (ReadCharacteristicResponse);
+  rpc WriteCharacteristic(WriteCharacteristicRequest) returns (WriteCharacteristicResponse);
 }
 
 message CreateA2lRequest {
@@ -46,6 +49,15 @@ message GetA2lMeasurementRequest {
 
 message GetA2lMeasurementResponse {
   A2lMeasurement measurement = 1;
+}
+
+message GetA2lCharacteristicRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+  string characteristic_name = 2;
+}
+
+message GetA2lCharacteristicResponse {
+  A2lFullCharacteristic characteristic = 1;
 }
 
 message CreateSessionRequest {
@@ -84,3 +96,23 @@ message ReadMeasurementResponse {
   google.protobuf.Timestamp timestamp = 1;
   google.protobuf.Value value = 2;
 }
+
+message ReadCharacteristicRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+  dipstick.core.v1.EntitySelector a2l_selector = 2;
+  string characteristic_name = 3;
+}
+
+message ReadCharacteristicResponse {
+  google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Value value = 2;
+}
+
+message WriteCharacteristicRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+  dipstick.core.v1.EntitySelector a2l_selector = 2;
+  string characteristic_name = 3;
+  google.protobuf.Value value = 4;
+}
+
+message WriteCharacteristicResponse {}

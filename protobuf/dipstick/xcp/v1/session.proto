@@ -18,6 +18,7 @@ message SessionStatus {
 
 message SessionSpec {
   optional bool no_auto_reconnect = 3;
+  optional uint32 auto_connect_mode = 4;
   // Defaults to 500ms
   google.protobuf.Duration cto_timeout = 1;
   oneof xcp_transport_spec {
