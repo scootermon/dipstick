@@ -1,9 +1,37 @@
+use std::ops::Deref;
 use std::sync::{Arc, RwLock, Weak};
 use std::time::SystemTime;
 
 use dipstick_proto::core::v1::EntityDependency;
 
-use crate::UniqueId;
+use crate::{Entity, EntityMeta, UniqueId};
+
+pub struct Dep<T: Entity> {
+    entity: Arc<T>,
+    _dependency_handle: DependencyHandle,
+}
+
+impl<T: Entity> Dep<T> {
+    pub(crate) fn new(dependent_meta: &EntityMeta, entity: Arc<T>) -> Self {
+        let dependency_handle = dependent_meta.add_dependency(&entity.entity_meta());
+        Self {
+            entity,
+            _dependency_handle: dependency_handle,
+        }
+    }
+
+    pub fn ptr_eq(this: &Self, other: &Self) -> bool {
+        Arc::ptr_eq(&this.entity, &other.entity)
+    }
+}
+
+impl<T: Entity> Deref for Dep<T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        &self.entity
+    }
+}
 
 /// A handle to a dependency.
 ///

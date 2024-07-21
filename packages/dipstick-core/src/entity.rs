@@ -1,7 +1,7 @@
 use std::any::TypeId;
 use std::collections::HashMap;
 use std::num::NonZeroU32;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 use std::time::SystemTime;
 
 use dipstick_proto::core::v1::{EntityMetaSpec, EntityMetaStatus};
@@ -15,6 +15,16 @@ pub trait Entity: Send + Sync + 'static {
 
     fn entity_type_id(&self) -> TypeId {
         TypeId::of::<Self>()
+    }
+}
+
+impl<T: Entity> Entity for Arc<T> {
+    fn entity_meta(&self) -> &EntityMeta {
+        (**self).entity_meta()
+    }
+
+    fn entity_type_id(&self) -> TypeId {
+        (**self).entity_type_id()
     }
 }
 

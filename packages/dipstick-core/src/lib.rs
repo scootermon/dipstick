@@ -14,7 +14,7 @@ use tokio::sync::mpsc;
 use tokio_stream::wrappers::BroadcastStream;
 use tonic::{Request, Response, Result, Status};
 
-pub use self::dependency::DependencyHandle;
+pub use self::dependency::{Dep, DependencyHandle};
 pub use self::entity::{Entity, EntityKind, EntityMeta, QualifiedKey, UniqueId};
 pub use self::registry::ReservationHandle;
 
@@ -67,6 +67,15 @@ impl Core {
         selector: impl Borrow<EntitySelector>,
     ) -> Result<Arc<T>> {
         self.registry.select(selector.borrow())
+    }
+
+    pub fn select_entity_dep<T: EntityKind + Entity>(
+        &self,
+        dependent: &impl Entity,
+        selector: impl Borrow<EntitySelector>,
+    ) -> Result<Dep<T>> {
+        let entity = self.select_entity::<T>(selector)?;
+        Ok(Dep::new(dependent.entity_meta(), entity))
     }
 
     fn new_entity_meta_raw(&self, spec: EntityMetaSpec) -> Result<(EntityMeta, ReservationHandle)> {
