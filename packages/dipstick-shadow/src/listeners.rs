@@ -1,8 +1,11 @@
 use std::collections::HashMap;
 use std::sync::Arc;
+use std::time::Duration;
 
-use dipstick_core::{Core, DependencyHandle, Entity};
-use dipstick_proto::shadow::v1::GpioSignalSpec;
+use dipstick_core::{Core, Dep};
+use dipstick_proto::shadow::v1::{
+    A2lCharacteristicSignalSpec, A2lMeasurementSignalSpec, GpioSignalSpec,
+};
 use futures::StreamExt;
 use tokio_util::sync::{CancellationToken, DropGuard};
 use tokio_util::task::TaskTracker;
@@ -33,6 +36,7 @@ pub struct ListenersBuilder<'a> {
     cancel_token: CancellationToken,
     shadow: Arc<Shadow>,
     gpio_listeners: Vec<GpioChipListener>,
+    a2l_listeners: Vec<A2lListener>,
 }
 
 impl<'a> ListenersBuilder<'a> {
@@ -42,12 +46,16 @@ impl<'a> ListenersBuilder<'a> {
             cancel_token: CancellationToken::new(),
             shadow,
             gpio_listeners: Vec::new(),
+            a2l_listeners: Vec::new(),
         }
     }
 
     pub fn build(self) -> Listeners {
         let tracker = TaskTracker::new();
         for listener in self.gpio_listeners {
+            tracker.spawn(listener.run());
+        }
+        for listener in self.a2l_listeners {
             tracker.spawn(listener.run());
         }
         Listeners {
@@ -57,19 +65,21 @@ impl<'a> ListenersBuilder<'a> {
     }
 
     pub fn add_gpio_signal(&mut self, signal_id: String, spec: &mut GpioSignalSpec) -> Result<()> {
-        let selector = spec.chip.clone().unwrap_or_default();
-        let chip = self.core.select_entity::<dipstick_gpio::Chip>(&selector)?;
+        let chip = self.core.select_entity_dep::<dipstick_gpio::Chip>(
+            &self.shadow,
+            spec.chip.clone().unwrap_or_default(),
+        )?;
         let listener = self.get_gpio_chip_listener(chip);
         // TODO: check if chip has pin
         listener.add_mapping(spec.pin.clone(), signal_id)?;
         Ok(())
     }
 
-    fn get_gpio_chip_listener(&mut self, chip: Arc<dipstick_gpio::Chip>) -> &mut GpioChipListener {
+    fn get_gpio_chip_listener(&mut self, chip: Dep<dipstick_gpio::Chip>) -> &mut GpioChipListener {
         let index = self
             .gpio_listeners
             .iter()
-            .position(|listener| Arc::ptr_eq(&listener.chip, &chip));
+            .position(|listener| Dep::ptr_eq(&listener.chip, &chip));
         match index {
             // necessary to go through index to make the borrow checker happy
             Some(index) => self.gpio_listeners.get_mut(index).unwrap(),
@@ -83,13 +93,44 @@ impl<'a> ListenersBuilder<'a> {
             }
         }
     }
+
+    pub fn add_a2l_characteristic_signal(
+        &mut self,
+        signal_id: String,
+        spec: &mut A2lCharacteristicSignalSpec,
+    ) -> Result<()> {
+        let listener = A2lListener::new_characteristic(
+            self.cancel_token.clone(),
+            Arc::clone(&self.shadow),
+            &self.core,
+            signal_id,
+            spec,
+        )?;
+        self.a2l_listeners.push(listener);
+        Ok(())
+    }
+
+    pub fn add_a2l_measurement_signal(
+        &mut self,
+        signal_id: String,
+        spec: &mut A2lMeasurementSignalSpec,
+    ) -> Result<()> {
+        let listener = A2lListener::new_measurement(
+            self.cancel_token.clone(),
+            Arc::clone(&self.shadow),
+            &self.core,
+            signal_id,
+            spec,
+        )?;
+        self.a2l_listeners.push(listener);
+        Ok(())
+    }
 }
 
 struct GpioChipListener {
     cancel_token: CancellationToken,
     shadow: Arc<Shadow>,
-    chip: Arc<dipstick_gpio::Chip>,
-    _dependency_handle: DependencyHandle,
+    chip: Dep<dipstick_gpio::Chip>,
     /// Maps from pin id to signal id
     mapping: HashMap<String, String>,
 }
@@ -98,14 +139,12 @@ impl GpioChipListener {
     fn new(
         cancel_token: CancellationToken,
         shadow: Arc<Shadow>,
-        chip: Arc<dipstick_gpio::Chip>,
+        chip: Dep<dipstick_gpio::Chip>,
     ) -> Self {
-        let dependency_handle = shadow.entity_meta().add_dependency(chip.entity_meta());
         Self {
             cancel_token,
             shadow,
             chip,
-            _dependency_handle: dependency_handle,
             mapping: HashMap::new(),
         }
     }
@@ -144,6 +183,122 @@ impl GpioChipListener {
                 }
                 _ => todo!(), // TODO
             }
+        }
+    }
+}
+
+struct A2lListener {
+    cancel_token: CancellationToken,
+    shadow: Arc<Shadow>,
+    session: Dep<dipstick_xcp::Session>,
+    interval: tokio::time::Interval,
+    signal_id: String,
+    target: A2lTarget,
+}
+
+enum A2lTarget {
+    Characteristic(dipstick_proto::xcp::v1::A2lFullCharacteristic),
+    Measurement(dipstick_proto::xcp::v1::A2lMeasurement),
+}
+
+impl A2lListener {
+    fn new_characteristic(
+        cancel_token: CancellationToken,
+        shadow: Arc<Shadow>,
+        core: &Core,
+        signal_id: String,
+        spec: &mut A2lCharacteristicSignalSpec,
+    ) -> Result<Self> {
+        let interval = Self::prepare_interval(spec.poll_interval.unwrap_or_default())?;
+        let a2l = core.select_entity::<dipstick_xcp::A2l>(spec.a2l.clone().unwrap_or_default())?;
+        let target = a2l
+            .get_characteristic(&spec.characteristic_name)
+            .map(A2lTarget::Characteristic)?;
+
+        let session = core.select_entity_dep::<dipstick_xcp::Session>(
+            &shadow,
+            spec.session.clone().unwrap_or_default(),
+        )?;
+        Ok(Self {
+            cancel_token,
+            shadow,
+            session,
+            interval,
+            signal_id,
+            target,
+        })
+    }
+
+    fn new_measurement(
+        cancel_token: CancellationToken,
+        shadow: Arc<Shadow>,
+        core: &Core,
+        signal_id: String,
+        spec: &mut A2lMeasurementSignalSpec,
+    ) -> Result<Self> {
+        let interval = Self::prepare_interval(spec.poll_interval.unwrap_or_default())?;
+        let a2l = core.select_entity::<dipstick_xcp::A2l>(spec.a2l.clone().unwrap_or_default())?;
+        let target = a2l
+            .get_measurement(&spec.measurement_name)
+            .map(A2lTarget::Measurement)?;
+
+        let session = core.select_entity_dep::<dipstick_xcp::Session>(
+            &shadow,
+            spec.session.clone().unwrap_or_default(),
+        )?;
+        Ok(Self {
+            cancel_token,
+            shadow,
+            session,
+            interval,
+            signal_id,
+            target,
+        })
+    }
+
+    fn prepare_interval(
+        poll_interval: dipstick_proto::wkt::Duration,
+    ) -> Result<tokio::time::Interval> {
+        let period = Duration::try_from(poll_interval)
+            .map_err(|err| Status::invalid_argument(format!("invalid poll interval: {err}")))?;
+        if period.is_zero() {
+            return Err(Status::invalid_argument("poll interval must be non-zero"));
+        }
+        let mut interval = tokio::time::interval(period);
+        interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+        Ok(interval)
+    }
+
+    async fn run(mut self) {
+        loop {
+            tokio::select! {
+                _ = self.cancel_token.cancelled() => break,
+                _ = self.interval.tick() => {}
+            }
+            let (timestamp, value) = match self.read_target().await {
+                Ok(v) => v,
+                Err(err) => {
+                    // TODO error counter?
+                    tracing::error!(
+                        err = &err as &dyn std::error::Error,
+                        "failed to read a2l target"
+                    );
+                    continue;
+                }
+            };
+            self.shadow
+                .set_signal_value(&self.signal_id, timestamp, value);
+        }
+    }
+
+    async fn read_target(
+        &self,
+    ) -> Result<(dipstick_proto::wkt::Timestamp, dipstick_proto::wkt::Value)> {
+        match &self.target {
+            A2lTarget::Characteristic(characteristic) => {
+                self.session.read_characteristic(characteristic).await
+            }
+            A2lTarget::Measurement(measurement) => self.session.read_measurement(measurement).await,
         }
     }
 }

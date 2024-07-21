@@ -39,7 +39,20 @@ impl Shadow {
                 Some(SignalSpecVariant::Gpio(spec)) => {
                     builder.add_gpio_signal(signal_id.clone(), spec)?;
                 }
-                _ => todo!(), // TODO
+                Some(SignalSpecVariant::A2lCharacteristic(spec)) => {
+                    builder.add_a2l_characteristic_signal(signal_id.clone(), spec)?;
+                }
+                Some(SignalSpecVariant::A2lMeasurement(spec)) => {
+                    builder.add_a2l_measurement_signal(signal_id.clone(), spec)?;
+                }
+                Some(SignalSpecVariant::DeviceSensor(_spec)) => {
+                    todo!() // TODO
+                }
+                None => {
+                    return Err(tonic::Status::invalid_argument(
+                        "missing signal spec variant",
+                    ))
+                }
             }
         }
         *self.spec.write().unwrap() = new_spec;

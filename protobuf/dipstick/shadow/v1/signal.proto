@@ -15,14 +15,24 @@ message SignalStatus {
 message SignalSpec {
   oneof signal_spec_variant {
     A2lMeasurementSignalSpec a2l_measurement = 3;
+    A2lCharacteristicSignalSpec a2l_characteristic = 5;
     DeviceSensorSignalSpec device_sensor = 2;
     GpioSignalSpec gpio = 4;
   }
 }
 
 message A2lMeasurementSignalSpec {
+  dipstick.core.v1.EntitySelector session = 3;
   dipstick.core.v1.EntitySelector a2l = 1;
-  string measurement = 2;
+  string measurement_name = 2;
+  google.protobuf.Duration poll_interval = 4;
+}
+
+message A2lCharacteristicSignalSpec {
+  dipstick.core.v1.EntitySelector session = 1;
+  dipstick.core.v1.EntitySelector a2l = 2;
+  string characteristic_name = 3;
+  google.protobuf.Duration poll_interval = 4;
 }
 
 message DeviceSensorSignalSpec {

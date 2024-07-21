@@ -66,8 +66,9 @@ impl dipstick_proto::shadow::v1::ShadowService for ShadowService {
     ) -> BoxFuture<'fut, Result<Response<GetShadowResponse>>> {
         async move {
             let GetShadowRequest { selector } = request.into_inner();
-            let selector = selector.unwrap_or_default();
-            let shadow = self.core.select_entity::<Shadow>(&selector)?;
+            let shadow = self
+                .core
+                .select_entity::<Shadow>(selector.unwrap_or_default())?;
             Ok(Response::new(GetShadowResponse {
                 shadow: Some(shadow.to_proto()),
             }))
@@ -83,8 +84,9 @@ impl dipstick_proto::shadow::v1::ShadowService for ShadowService {
     ) -> BoxFuture<'fut, Result<Response<Self::ShadowSignalEventsStream>>> {
         async move {
             let ShadowSignalEventsRequest { selector } = request.into_inner();
-            let selector = selector.unwrap_or_default();
-            let _shadow = self.core.select_entity::<Shadow>(&selector)?;
+            let _shadow = self
+                .core
+                .select_entity::<Shadow>(selector.unwrap_or_default())?;
             todo!()
         }
         .boxed()
