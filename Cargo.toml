@@ -55,7 +55,9 @@ tonic-types = { git = "https://github.com/ttkgames/tonic.git", branch = "server-
 tonic-web = { git = "https://github.com/ttkgames/tonic.git", branch = "server-builders" }
 
 [profile.dev]
+opt-level = 1
 split-debuginfo = "packed"
 
 [profile.release]
+split-debuginfo = "packed"
 lto = true

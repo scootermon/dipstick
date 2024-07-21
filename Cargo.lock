@@ -309,6 +309,7 @@ dependencies = [
  "dipstick-core",
  "dipstick-gpio",
  "dipstick-proto",
+ "dipstick-xcp",
  "futures",
  "tokio",
  "tokio-util",
