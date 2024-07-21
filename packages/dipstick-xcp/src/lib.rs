@@ -13,7 +13,7 @@ use dipstick_proto::xcp::v1::{
 };
 use futures::future::BoxFuture;
 use futures::FutureExt;
-use tonic::{Request, Response, Result, Status};
+use tonic::{Request, Response, Result};
 
 pub use self::a2l::A2l;
 pub use self::session::Session;
@@ -102,9 +102,7 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
             let a2l = self
                 .core
                 .select_entity::<A2l>(selector.unwrap_or_default())?;
-            let measurement = a2l
-                .get_measurement(&measurement_name)
-                .ok_or_else(|| Status::not_found("measurement not found"))?;
+            let measurement = a2l.get_measurement(&measurement_name)?;
             Ok(Response::new(GetA2lMeasurementResponse {
                 measurement: Some(measurement),
             }))
@@ -199,9 +197,7 @@ impl dipstick_proto::xcp::v1::XcpService for XcpService {
                 .core
                 .select_entity::<A2l>(a2l_selector.unwrap_or_default())?;
 
-            let measurement = a2l
-                .get_measurement(&measurement_name)
-                .ok_or_else(|| Status::not_found("measurement not found in a2l"))?;
+            let measurement = a2l.get_measurement(&measurement_name)?;
 
             let (timestamp, value) = session.read_measurement(&measurement).await?;
             Ok(Response::new(ReadMeasurementResponse {

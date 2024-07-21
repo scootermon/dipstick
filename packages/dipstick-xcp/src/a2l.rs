@@ -65,7 +65,7 @@ impl A2l {
         }
     }
 
-    pub fn get_measurement(&self, measurement_name: &str) -> Option<A2lMeasurement> {
+    pub fn get_measurement(&self, measurement_name: &str) -> Result<A2lMeasurement> {
         let storage = self.storage.lock().unwrap();
         let modules = storage
             .a2l_file
@@ -85,9 +85,9 @@ impl A2l {
             if measurement.byte_order() == A2lByteOrder::Unspecified {
                 measurement.set_byte_order(module.byte_order());
             }
-            return Some(measurement);
+            return Ok(measurement);
         }
-        None
+        Err(Status::not_found("measurement not found"))
     }
 
     pub fn get_characteristic(&self, characteristic_name: &str) -> Result<A2lFullCharacteristic> {
