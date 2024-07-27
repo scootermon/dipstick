@@ -1,0 +1,17 @@
+syntax = "proto3";
+package dipstick.device.v1;
+
+import "google/protobuf/struct.proto";
+import "google/protobuf/timestamp.proto";
+
+message SensorStatus {
+  google.protobuf.Timestamp timestamp = 1;
+  string unit = 3;
+  google.protobuf.Value value = 2;
+}
+
+message SensorEvent {
+  google.protobuf.Timestamp timestamp = 1;
+  string sensor = 2;
+  google.protobuf.Value value = 3;
+}

@@ -2,12 +2,26 @@ syntax = "proto3";
 package dipstick.device.v1;
 
 import "dipstick/core/v1/entity.proto";
+import "google/protobuf/duration.proto";
 
 message Ina2xxSpec {
-  dipstick.core.v1.EntityMeta meta = 1;
+  // The value of the shunt resistor used for current calculation. No default value.
   optional float shunt_resistance = 2;
+  // The maximum current you are expecting. Component will use it to calibrate the sensor. No default value.
   optional float max_current = 3;
   oneof ina2xx_transport_spec {
-    dipstick.core.v1.EntitySelector spi = 5;
+    dipstick.core.v1.EntitySelector spi_device = 5;
   }
+  // Selects the range for differential input across shunt resistor. 0 for ±163.84 mV, 1 for ±40.96 mV range. Defaults to 0.
+  optional uint32 adc_range = 4;
+  // Defaults to 4120 us. Valid values are 50 us, 84 us, 150 us, 280 us, 540 us, 1052 us, 2074 us, 4120 us.
+  google.protobuf.Duration bus_voltage_conversion_time = 6;
+  // Defaults to 4120 us. Valid values are 50 us, 84 us, 150 us, 280 us, 540 us, 1052 us, 2074 us, 4120 us.
+  google.protobuf.Duration shunt_voltage_conversion_time = 7;
+  // Defaults to 4120 us. Valid values are 50 us, 84 us, 150 us, 280 us, 540 us, 1052 us, 2074 us, 4120 us.
+  google.protobuf.Duration temperature_conversion_time = 8;
+  // Selects ADC sample averaging count. Defaults to 128. Valid values are 1, 4, 16, 64, 128, 256, 512, 1024.
+  optional uint32 adc_averaging = 9;
+  // Temperature coefficient (ppm/°C) of the shunt for temperature compensation correction. Only applicable to INA228 and INA229 devices. Zero value means no compensation is done. Defaults to 0.
+  optional uint32 temperature_coefficient = 10;
 }
