@@ -275,6 +275,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "dipstick-device"
+version = "0.1.0"
+dependencies = [
+ "bytes",
+ "dipstick-core",
+ "dipstick-proto",
+ "dipstick-spi",
+ "futures",
+ "tokio",
+ "tokio-stream",
+ "tonic",
+ "tracing",
+]
+
+[[package]]
 name = "dipstick-gpio"
 version = "0.1.0"
 dependencies = [

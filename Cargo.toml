@@ -17,6 +17,7 @@ rust-version = "1.79"
 [workspace.dependencies]
 dipstick-can = { path = "packages/dipstick-can" }
 dipstick-core = { path = "packages/dipstick-core" }
+dipstick-device = { path = "packages/dipstick-device" }
 dipstick-gpio = { path = "packages/dipstick-gpio" }
 dipstick-proto = { path = "packages/dipstick-proto" }
 dipstick-shadow = { path = "packages/dipstick-shadow" }
