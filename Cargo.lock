@@ -224,6 +224,7 @@ dependencies = [
  "bytes",
  "dipstick-can",
  "dipstick-core",
+ "dipstick-device",
  "dipstick-gpio",
  "dipstick-proto",
  "dipstick-shadow",
@@ -353,6 +354,7 @@ version = "0.1.0"
 dependencies = [
  "dipstick-can",
  "dipstick-core",
+ "dipstick-device",
  "dipstick-gpio",
  "dipstick-proto",
  "dipstick-shadow",

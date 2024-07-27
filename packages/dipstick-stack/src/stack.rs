@@ -20,11 +20,11 @@ impl Stack {
     ) -> Result<Arc<Self>> {
         let StackSpec {
             can,
+            device,
             gpio,
-            spi,
-            device: _,
-            xcp,
             shadow,
+            spi,
+            xcp,
         } = &mut spec;
 
         let mut dependency_handles = DependencyHandles::new();
@@ -86,6 +86,20 @@ impl Stack {
 
             for spec in &mut xcp.session {
                 add_xcp_session(
+                    Context {
+                        packages,
+                        meta: &meta,
+                        dependency_handles: &mut dependency_handles,
+                    },
+                    spec,
+                )
+                .await?;
+            }
+        }
+
+        if let Some(device) = device {
+            for spec in &mut device.device {
+                add_device(
                     Context {
                         packages,
                         meta: &meta,
@@ -179,7 +193,6 @@ async fn add_spi_device(
             .await?
     };
     ctx.add_dependency(device.entity_meta());
-    spec.meta = Some(device.entity_meta().spec());
     spec.spec = Some(device.spec());
     Ok(())
 }
@@ -196,7 +209,6 @@ async fn add_gpio_chip(
             .await?
     };
     ctx.add_dependency(chip.entity_meta());
-    spec.meta = Some(chip.entity_meta().spec());
     spec.spec = Some(chip.spec());
     Ok(())
 }
@@ -213,7 +225,6 @@ async fn add_can_bus(
             .await?
     };
     ctx.add_dependency(bus.entity_meta());
-    spec.meta = Some(bus.entity_meta().spec());
     spec.spec = Some(bus.spec());
     Ok(())
 }
@@ -230,7 +241,6 @@ async fn add_a2l(
             .await?
     };
     ctx.add_dependency(a2l.entity_meta());
-    spec.meta = Some(a2l.entity_meta().spec());
     spec.spec = Some(a2l.spec());
     Ok(())
 }
@@ -247,8 +257,23 @@ async fn add_xcp_session(
             .await?
     };
     ctx.add_dependency(session.entity_meta());
-    spec.meta = Some(session.entity_meta().spec());
     spec.spec = Some(session.spec());
+    Ok(())
+}
+
+async fn add_device(
+    mut ctx: Context<'_>,
+    spec: &mut dipstick_proto::device::v1::CreateDeviceRequest,
+) -> Result<()> {
+    let device = {
+        let dipstick_proto::device::v1::CreateDeviceRequest { meta, spec } = spec.clone();
+        ctx.packages
+            .device
+            .create_device_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+            .await?
+    };
+    ctx.add_dependency(device.entity_meta());
+    spec.spec = Some(device.spec());
     Ok(())
 }
 
@@ -264,7 +289,6 @@ async fn add_shadow(
             .await?
     };
     ctx.add_dependency(bus.entity_meta());
-    spec.meta = Some(bus.entity_meta().spec());
     spec.spec = Some(bus.spec());
     Ok(())
 }

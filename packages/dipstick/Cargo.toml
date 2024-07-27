@@ -16,6 +16,7 @@ anyhow.workspace = true
 bytes.workspace = true
 dipstick-can.workspace = true
 dipstick-core.workspace = true
+dipstick-device.workspace = true
 dipstick-gpio.workspace = true
 dipstick-proto.workspace = true
 dipstick-shadow.workspace = true

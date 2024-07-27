@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use dipstick_can::Can;
 use dipstick_core::Core;
+use dipstick_device::DeviceService;
 use dipstick_gpio::Gpio;
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::stack::v1::{
@@ -32,17 +33,19 @@ impl StackService {
     pub fn new(
         core: Arc<Core>,
         can: Arc<Can>,
+        device: Arc<DeviceService>,
         gpio: Arc<Gpio>,
+        shadow: Arc<ShadowService>,
         spi: Arc<Spi>,
         xcp: Arc<XcpService>,
-        shadow: Arc<ShadowService>,
     ) -> Arc<Self> {
         let packages = Packages {
             can,
+            device,
             gpio,
+            shadow,
             spi,
             xcp,
-            shadow,
         };
         Arc::new(Self { core, packages })
     }

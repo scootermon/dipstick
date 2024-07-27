@@ -37,13 +37,15 @@ async fn _main() -> anyhow::Result<()> {
     let spi = dipstick_spi::Spi::new(Arc::clone(&core));
     let xcp_service = dipstick_xcp::XcpService::new(Arc::clone(&core));
     let shadow_service = dipstick_shadow::ShadowService::new(Arc::clone(&core));
+    let device_service = dipstick_device::DeviceService::new(Arc::clone(&core));
     let stack_service = dipstick_stack::StackService::new(
         Arc::clone(&core),
         Arc::clone(&can),
+        Arc::clone(&device_service),
         Arc::clone(&gpio),
+        Arc::clone(&shadow_service),
         Arc::clone(&spi),
         Arc::clone(&xcp_service),
-        Arc::clone(&shadow_service),
     );
 
     let addr = "0.0.0.0:3000".parse()?;
@@ -52,6 +54,7 @@ async fn _main() -> anyhow::Result<()> {
         .accept_http1(true)
         .add_service(tonic_web::enable(can.into_server()))
         .add_service(tonic_web::enable(core.into_server()))
+        .add_service(tonic_web::enable(device_service.into_server()))
         .add_service(tonic_web::enable(gpio.into_server()))
         .add_service(tonic_web::enable(reflection_v1_server))
         .add_service(tonic_web::enable(reflection_v1alpha_server))
