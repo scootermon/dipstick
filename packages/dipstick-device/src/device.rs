@@ -172,8 +172,19 @@ impl EntityKind for Device {
 async fn update_loop(device: Arc<Device>, variant: SharedDeviceVariant, poll_interval: Duration) {
     let mut poll_interval = tokio::time::interval(poll_interval);
     poll_interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+    let mut started = false;
     loop {
         poll_interval.tick().await;
+        if !started {
+            match variant.start(&device).await {
+                Ok(()) => started = true,
+                Err(err) => {
+                    tracing::error!(err = &err as &dyn std::error::Error, "device setup error");
+                    continue;
+                }
+            }
+        }
+
         if let Err(err) = variant.update(&device).await {
             tracing::error!(err = &err as &dyn std::error::Error, "device update error");
         }
