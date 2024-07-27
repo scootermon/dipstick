@@ -26,6 +26,7 @@ impl Model {
     pub const fn calibration(self) -> &'static Calibration {
         match self {
             Self::Ina228 | Self::Ina229 => &Calibration::INA228_INA229,
+            #[allow(unreachable_patterns)]
             _ => &Calibration::OTHER,
         }
     }
@@ -39,7 +40,7 @@ pub struct Calibration {
     pub current_lsb_scale_factor: i8,
     pub die_temp_lsb: f32,
     pub power_coeff: f32,
-    pub energy_coeff: f32,
+    pub _energy_coeff: f32,
 }
 
 impl Calibration {
@@ -51,7 +52,7 @@ impl Calibration {
         current_lsb_scale_factor: -19,
         die_temp_lsb: 0.0078125,
         power_coeff: 3.2,
-        energy_coeff: 16.0 * 3.2,
+        _energy_coeff: 16.0 * 3.2,
     };
     const OTHER: Self = Self {
         vbus_lsb: 0.003_125,
@@ -61,6 +62,6 @@ impl Calibration {
         current_lsb_scale_factor: -15,
         die_temp_lsb: 0.125,
         power_coeff: 0.2,
-        energy_coeff: 0.0, // N/A
+        _energy_coeff: 0.0, // N/A
     };
 }

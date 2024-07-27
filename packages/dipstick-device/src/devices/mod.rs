@@ -14,6 +14,8 @@ pub trait DeviceVariant: Send + Sync + 'static {
     fn spec(&self) -> DeviceSpecVariant;
 
     fn start<'s: 'fut, 'fut>(&'s self, device: &'fut Device) -> BoxFuture<'fut, Result<()>>;
+    // TODO: shutdown
+    #[allow(dead_code)]
     fn stop<'s: 'fut, 'fut>(&'s self, device: &'fut Device) -> BoxFuture<'fut, Result<()>>;
 
     fn call_action<'s: 'fut, 'fut>(

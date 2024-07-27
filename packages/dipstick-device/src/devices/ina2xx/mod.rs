@@ -238,7 +238,7 @@ impl DeviceVariant for Ina2xx {
     fn call_action<'s: 'fut, 'fut>(
         &'s self,
         _device: &'fut Device,
-        action: &'fut str,
+        _action: &'fut str,
     ) -> BoxFuture<'fut, Result<()>> {
         async move { Err(Status::invalid_argument("unknown action")) }.boxed()
     }
