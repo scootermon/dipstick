@@ -70,21 +70,9 @@ async fn _main() -> anyhow::Result<()> {
     res
 }
 
-const FILE_DESCRIPTORS: &[&[u8]] = &[
-    dipstick_proto::can::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::core::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::device::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::gpio::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::shadow::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::spi::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::stack::v1::FILE_DESCRIPTOR_SET,
-    dipstick_proto::wkt::FILE_DESCRIPTOR_SET,
-    dipstick_proto::xcp::v1::FILE_DESCRIPTOR_SET,
-];
-
 fn reflection_v1_server_builder() -> tonic_reflection::server::Builder<'static> {
     let mut builder = tonic_reflection::server::Builder::configure();
-    for file_descriptor_set in FILE_DESCRIPTORS {
+    for file_descriptor_set in dipstick_proto::ALL_FILE_DESCRIPTOR_SETS {
         builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);
     }
     builder
@@ -92,7 +80,7 @@ fn reflection_v1_server_builder() -> tonic_reflection::server::Builder<'static> 
 
 fn reflection_v1alpha_server_builder() -> tonic_reflection::server::v1alpha::Builder<'static> {
     let mut builder = tonic_reflection::server::v1alpha::Builder::configure();
-    for file_descriptor_set in FILE_DESCRIPTORS {
+    for file_descriptor_set in dipstick_proto::ALL_FILE_DESCRIPTOR_SETS {
         builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);
     }
     builder

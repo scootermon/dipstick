@@ -102,7 +102,7 @@ impl<'a> ListenersBuilder<'a> {
         let listener = A2lListener::new_characteristic(
             self.cancel_token.clone(),
             Arc::clone(&self.shadow),
-            &self.core,
+            self.core,
             signal_id,
             spec,
         )?;
@@ -118,7 +118,7 @@ impl<'a> ListenersBuilder<'a> {
         let listener = A2lListener::new_measurement(
             self.cancel_token.clone(),
             Arc::clone(&self.shadow),
-            &self.core,
+            self.core,
             signal_id,
             spec,
         )?;

@@ -13,7 +13,7 @@ pub struct Dep<T: Entity> {
 
 impl<T: Entity> Dep<T> {
     pub(crate) fn new(dependent_meta: &EntityMeta, entity: Arc<T>) -> Self {
-        let dependency_handle = dependent_meta.add_dependency(&entity.entity_meta());
+        let dependency_handle = dependent_meta.add_dependency(entity.entity_meta());
         Self {
             entity,
             _dependency_handle: dependency_handle,
