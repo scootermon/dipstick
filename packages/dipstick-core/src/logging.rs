@@ -4,46 +4,61 @@ use std::time::SystemTime;
 use dipstick_proto::core::v1::{LogConfig, LogEvent, LogLevel, LogSpan};
 use tokio::sync::broadcast;
 use tracing::level_filters::LevelFilter;
-use tracing_subscriber::filter;
 use tracing_subscriber::layer::SubscriberExt;
 use tracing_subscriber::util::SubscriberInitExt;
+use tracing_subscriber::{filter, fmt, reload, Layer as _};
 
 const CHANNEL_CAPACITY: usize = 128;
 
 pub fn init() -> LoggingHandle {
-    let filter_layer = filter::Targets::new()
+    let global_filter = filter::Targets::new()
+        .with_default(tracing::Level::INFO)
+        .with_target("tokio", tracing::Level::TRACE)
+        .with_target("runtime", tracing::Level::TRACE)
+        .with_target("dipstick", tracing::Level::TRACE);
+    let terminal_filter = filter::Targets::new()
         .with_default(tracing::Level::INFO)
         .with_target("dipstick", tracing::Level::DEBUG);
-    let (filter_layer, filter_layer_handle) = tracing_subscriber::reload::Layer::new(filter_layer);
-
-    let fmt_layer = tracing_subscriber::fmt::layer().with_writer(std::io::stderr);
-
-    let (logs_tx, _) = broadcast::channel(CHANNEL_CAPACITY);
-    let dipstick_layer = Layer {
-        tx: logs_tx.clone(),
+    let (dipstick_filter, dipstick_filter_get, dipstick_filter_modify) = {
+        let (filter, handle) = reload::Layer::new(terminal_filter.clone());
+        let get = {
+            let handle = handle.clone();
+            Box::new(move || handle.clone_current())
+        };
+        let modify = Box::new(move |modifier| handle.modify(modifier));
+        (filter, get, modify)
     };
 
+    let terminal_layer = fmt::layer().with_filter(terminal_filter);
+    let (dipstick_layer, logs_tx) = Layer::new();
+    let dipstick_layer = dipstick_layer.with_filter(dipstick_filter);
+    let console_layer = console_subscriber::spawn();
+
     tracing_subscriber::registry()
-        .with(filter_layer)
-        .with(fmt_layer)
+        .with(global_filter)
+        .with(terminal_layer)
         .with(dipstick_layer)
+        .with(console_layer)
         .init();
 
     LoggingHandle {
         logs_tx,
-        filter_layer_handle,
+        dipstick_filter_get,
+        dipstick_filter_modify,
     }
 }
 
+type BoxedModifierFn = Box<dyn FnOnce(&mut filter::Targets)>;
+
 pub struct LoggingHandle {
     pub logs_tx: broadcast::Sender<LogEvent>,
-    filter_layer_handle:
-        tracing_subscriber::reload::Handle<filter::Targets, tracing_subscriber::Registry>,
+    dipstick_filter_get: Box<dyn Fn() -> Option<filter::Targets> + Send + Sync>,
+    dipstick_filter_modify: Box<dyn Fn(BoxedModifierFn) -> Result<(), reload::Error> + Send + Sync>,
 }
 
 impl LoggingHandle {
     pub fn log_config(&self) -> Option<LogConfig> {
-        let layer = self.filter_layer_handle.clone_current()?;
+        let layer = (*self.dipstick_filter_get)()?;
         Some(LogConfig {
             default_level: layer
                 .default_level()
@@ -57,32 +72,40 @@ impl LoggingHandle {
     }
 
     pub fn set_log_config(&self, config: LogConfig) -> anyhow::Result<()> {
-        self.filter_layer_handle
-            .modify(|old_layer| {
-                let mut layer = filter::Targets::new();
-                if let Some(level) = pb_to_tracing_filter(config.default_level()) {
-                    layer = layer.with_default(level);
-                } else {
-                    // keep the old default level
-                    layer =
-                        layer.with_default(old_layer.default_level().unwrap_or(LevelFilter::OFF));
-                }
+        let modifier = Box::new(|old_layer: &mut filter::Targets| {
+            let mut layer = filter::Targets::new();
+            if let Some(level) = pb_to_tracing_filter(config.default_level()) {
+                layer = layer.with_default(level);
+            } else {
+                // keep the old default level
+                layer = layer.with_default(old_layer.default_level().unwrap_or(LevelFilter::OFF));
+            }
 
-                for (target, level) in config.target_filters {
-                    let level = LogLevel::try_from(level).unwrap_or(LogLevel::Unspecified);
-                    if let Some(level) = pb_to_tracing_filter(level) {
-                        layer = layer.with_target(target, level);
-                    }
+            for (target, level) in config.target_filters {
+                let level = LogLevel::try_from(level).unwrap_or(LogLevel::Unspecified);
+                if let Some(level) = pb_to_tracing_filter(level) {
+                    layer = layer.with_target(target, level);
                 }
+            }
 
-                *old_layer = layer;
-            })
-            .map_err(anyhow::Error::from)
+            *old_layer = layer;
+        });
+        (*self.dipstick_filter_modify)(modifier).map_err(anyhow::Error::from)
     }
 }
 
 struct Layer {
     tx: broadcast::Sender<LogEvent>,
+}
+
+impl Layer {
+    fn new() -> (Self, broadcast::Sender<LogEvent>) {
+        let (logs_tx, _) = broadcast::channel(CHANNEL_CAPACITY);
+        let layer = Layer {
+            tx: logs_tx.clone(),
+        };
+        (layer, logs_tx)
+    }
 }
 
 impl<S> tracing_subscriber::Layer<S> for Layer

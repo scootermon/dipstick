@@ -28,6 +28,7 @@ dipstick-xcp = { path = "packages/dipstick-xcp" }
 a2lfile = "2"
 anyhow = "1"
 bytes = "1"
+console-subscriber = "0.3"
 futures = "0.3"
 gpiocdev = { version = "0.7", features = ["async_tokio"] }
 percent-encoding = "2"
@@ -37,7 +38,7 @@ protoc-wkt = "1"
 rand = "0.8"
 socketcan = { version = "3", features = ["tokio"] }
 spidev = "0.6"
-tokio = { version = "1", features = ["full"] }
+tokio = { version = "1", features = ["full", "tracing"] }
 tokio-stream = { version = "0.1", features = ["full"] }
 tokio-util = { version = "0.7", features = ["full"] }
 tonic = "0.12"
