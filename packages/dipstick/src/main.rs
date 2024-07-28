@@ -1,3 +1,4 @@
+use std::net::SocketAddr;
 use std::process::ExitCode;
 use std::sync::Arc;
 
@@ -48,7 +49,7 @@ async fn _main() -> anyhow::Result<()> {
         Arc::clone(&xcp_service),
     );
 
-    let addr = "0.0.0.0:3000".parse()?;
+    let addr = SocketAddr::new("0.0.0.0".parse().unwrap(), consts::PORT);
     tracing::info!("listening on {addr:?}");
     let res = Server::builder()
         .accept_http1(true)
