@@ -133,6 +133,13 @@ impl Registry {
             f(entity);
         }
     }
+
+    pub fn force_remove_all_entities(&self) {
+        let mut inner = self.inner.write().unwrap();
+        // TODO: actually stop entities
+        inner.by_unique_id.clear();
+        inner.by_key.clear();
+    }
 }
 
 fn new_unique_id(inner: &Inner, reservations: &ReservationStorage) -> UniqueId {

@@ -18,6 +18,7 @@ service CoreService {
   rpc LogSubscribe(LogSubscribeRequest) returns (stream LogSubscribeResponse);
 
   rpc ListEntities(ListEntitiesRequest) returns (ListEntitiesResponse);
+  rpc ForceRemoveAllEntities(ForceRemoveAllEntitiesRequest) returns (ForceRemoveAllEntitiesResponse);
 }
 
 // Shutdown request
@@ -65,3 +66,9 @@ message ListEntitiesResponse {
   // The list of entities.
   repeated EntityMeta entities = 1;
 }
+
+// ForceRemoveAllEntities request
+message ForceRemoveAllEntitiesRequest {}
+
+// ForceRemoveAllEntities response
+message ForceRemoveAllEntitiesResponse {}

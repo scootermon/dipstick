@@ -3,9 +3,9 @@ use std::sync::Arc;
 
 use dipstick_proto::core::v1::{
     CoreService, CoreServiceServer, EntityMetaSpec, EntitySelector, File, FileVariant,
-    ListEntitiesRequest, ListEntitiesResponse, LogConfigRequest, LogConfigResponse,
-    LogSubscribeRequest, LogSubscribeResponse, ShutdownRequest, ShutdownResponse, VersionRequest,
-    VersionResponse,
+    ForceRemoveAllEntitiesRequest, ForceRemoveAllEntitiesResponse, ListEntitiesRequest,
+    ListEntitiesResponse, LogConfigRequest, LogConfigResponse, LogSubscribeRequest,
+    LogSubscribeResponse, ShutdownRequest, ShutdownResponse, VersionRequest, VersionResponse,
 };
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
@@ -193,6 +193,17 @@ impl CoreService for Core {
             self.registry
                 .visit_all(|entity| entities.push(entity.entity_meta().to_proto()));
             Ok(Response::new(ListEntitiesResponse { entities }))
+        }
+        .boxed()
+    }
+
+    fn force_remove_all_entities<'s: 'fut, 'fut>(
+        &'s self,
+        _request: Request<ForceRemoveAllEntitiesRequest>,
+    ) -> BoxFuture<'fut, Result<Response<ForceRemoveAllEntitiesResponse>>> {
+        async move {
+            self.registry.force_remove_all_entities();
+            Ok(Response::new(ForceRemoveAllEntitiesResponse {}))
         }
         .boxed()
     }
