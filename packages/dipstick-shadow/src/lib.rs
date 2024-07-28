@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use dipstick_core::Core;
+use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::shadow::v1::{
     CreateShadowRequest, CreateShadowResponse, GetShadowRequest, GetShadowResponse,
@@ -15,8 +15,6 @@ pub use self::shadow::Shadow;
 
 mod listeners;
 mod shadow;
-
-pub const PACKAGE: &str = "shadow.v1";
 
 pub struct ShadowService {
     core: Arc<Core>,
@@ -41,6 +39,16 @@ impl ShadowService {
         self.core.add_entity(reservation, Arc::clone(&shadow));
         Ok(shadow)
     }
+}
+
+impl Package for ShadowService {
+    fn package_name(&self) -> &'static str {
+        Self::PACKAGE_NAME
+    }
+}
+
+impl PackageKind for ShadowService {
+    const PACKAGE_NAME: &'static str = "shadow.v1";
 }
 
 impl dipstick_proto::shadow::v1::ShadowService for ShadowService {

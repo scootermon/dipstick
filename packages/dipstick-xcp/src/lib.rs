@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use dipstick_core::Core;
+use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::xcp::v1::{
     A2lSpec, CommandRequest, CommandResponse, CreateA2lRequest, CreateA2lResponse,
@@ -22,8 +22,6 @@ mod a2l;
 mod protocol;
 mod session;
 mod transport;
-
-pub const PACKAGE: &str = "xcp.v1";
 
 pub struct XcpService {
     core: Arc<Core>,
@@ -55,6 +53,16 @@ impl XcpService {
         self.core.add_entity(reservation, Arc::clone(&session));
         Ok(session)
     }
+}
+
+impl Package for XcpService {
+    fn package_name(&self) -> &'static str {
+        Self::PACKAGE_NAME
+    }
+}
+
+impl PackageKind for XcpService {
+    const PACKAGE_NAME: &'static str = "xcp.v1";
 }
 
 impl dipstick_proto::xcp::v1::XcpService for XcpService {

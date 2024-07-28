@@ -87,7 +87,7 @@ impl Entity for Chip {
 }
 
 impl EntityKind for Chip {
-    const PACKAGE: &'static str = crate::PACKAGE;
+    type Package = crate::Gpio;
     const KIND: &'static str = "Chip";
 }
 

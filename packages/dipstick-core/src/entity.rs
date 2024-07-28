@@ -6,7 +6,7 @@ use std::time::SystemTime;
 
 use dipstick_proto::core::v1::{EntityMetaSpec, EntityMetaStatus};
 
-use crate::DependencyHandle;
+use crate::{DependencyHandle, PackageKind};
 
 pub type UniqueId = NonZeroU32;
 
@@ -29,7 +29,7 @@ impl<T: Entity> Entity for Arc<T> {
 }
 
 pub trait EntityKind {
-    const PACKAGE: &'static str;
+    type Package: PackageKind;
     const KIND: &'static str;
 }
 

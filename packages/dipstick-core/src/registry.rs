@@ -7,11 +7,12 @@ use tonic::{Result, Status};
 
 pub use self::reservation::ReservationHandle;
 use self::reservation::ReservationStorage;
-use crate::{Entity, EntityKind, QualifiedKey, UniqueId};
+use crate::{Entity, EntityKind, Package, PackageKind, QualifiedKey, UniqueId};
 
 mod reservation;
 
 pub struct Registry {
+    packages: RwLock<Vec<Arc<dyn Package>>>,
     reservations: RwLock<ReservationStorage>,
     inner: RwLock<Inner>,
 }
@@ -19,9 +20,44 @@ pub struct Registry {
 impl Registry {
     pub fn new() -> Self {
         Self {
+            packages: RwLock::new(Vec::new()),
             reservations: RwLock::new(ReservationStorage::new()),
             inner: RwLock::new(Inner::new()),
         }
+    }
+
+    pub fn package<T: Package + PackageKind>(&self) -> Result<Arc<T>> {
+        self.package_opt()
+            .ok_or_else(|| Status::not_found(format!("package {} not found", T::PACKAGE_NAME)))
+    }
+
+    fn package_opt<T: Package + PackageKind>(&self) -> Option<Arc<T>> {
+        let package = self.package_raw(T::PACKAGE_NAME)?;
+        if package.package_type_id() == TypeId::of::<T>() {
+            // SAFETY: We just checked that the type ID matches.
+            Some(unsafe { Arc::from_raw(Arc::into_raw(package).cast()) })
+        } else {
+            None
+        }
+    }
+
+    fn package_raw(&self, name: &str) -> Option<Arc<dyn Package>> {
+        let packages = self.packages.read().unwrap();
+        packages
+            .iter()
+            .find(|package| package.package_name() == name)
+            .map(Arc::clone)
+    }
+
+    pub fn add_package<T: Package>(&self, package: Arc<T>) {
+        let mut packages = self.packages.write().unwrap();
+        if packages
+            .iter()
+            .any(|p| p.package_name() == package.package_name())
+        {
+            panic!("package {} is already registered", package.package_name());
+        }
+        packages.push(package);
     }
 
     pub fn reserve(
@@ -66,7 +102,7 @@ impl Registry {
     }
 
     fn select_opt<T: EntityKind + Entity>(&self, selector: &EntitySelector) -> Option<Arc<T>> {
-        let entity = self.select_raw(selector, T::PACKAGE, T::KIND)?;
+        let entity = self.select_raw(selector, T::Package::PACKAGE_NAME, T::KIND)?;
         if entity.entity_type_id() == TypeId::of::<T>() {
             // SAFETY: We just checked that the type ID matches.
             Some(unsafe { Arc::from_raw(Arc::into_raw(entity).cast()) })

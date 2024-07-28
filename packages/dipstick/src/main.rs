@@ -39,15 +39,15 @@ async fn _main() -> anyhow::Result<()> {
     let xcp_service = dipstick_xcp::XcpService::new(Arc::clone(&core));
     let shadow_service = dipstick_shadow::ShadowService::new(Arc::clone(&core));
     let device_service = dipstick_device::DeviceService::new(Arc::clone(&core));
-    let stack_service = dipstick_stack::StackService::new(
-        Arc::clone(&core),
-        Arc::clone(&can),
-        Arc::clone(&device_service),
-        Arc::clone(&gpio),
-        Arc::clone(&shadow_service),
-        Arc::clone(&spi),
-        Arc::clone(&xcp_service),
-    );
+    let stack_service = dipstick_stack::StackService::new(Arc::clone(&core));
+
+    core.add_package(Arc::clone(&gpio));
+    core.add_package(Arc::clone(&can));
+    core.add_package(Arc::clone(&spi));
+    core.add_package(Arc::clone(&xcp_service));
+    core.add_package(Arc::clone(&shadow_service));
+    core.add_package(Arc::clone(&device_service));
+    core.add_package(Arc::clone(&stack_service));
 
     let addr = SocketAddr::new("0.0.0.0".parse().unwrap(), consts::PORT);
     tracing::info!("listening on {addr:?}");

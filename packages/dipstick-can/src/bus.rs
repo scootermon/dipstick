@@ -63,6 +63,6 @@ impl Entity for Bus {
 }
 
 impl EntityKind for Bus {
-    const PACKAGE: &'static str = crate::PACKAGE;
+    type Package = crate::Can;
     const KIND: &'static str = "Bus";
 }

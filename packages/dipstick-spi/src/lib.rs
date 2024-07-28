@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use dipstick_core::Core;
+use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::spi::v1::{
     CreateDeviceRequest, CreateDeviceResponse, DeviceSpec, GetDeviceRequest, GetDeviceResponse,
@@ -13,8 +13,6 @@ use tonic::{Request, Response, Result};
 pub use self::device::Device;
 
 mod device;
-
-pub const PACKAGE: &str = "spi.v1";
 
 pub struct Spi {
     core: Arc<Core>,
@@ -39,6 +37,16 @@ impl Spi {
         self.core.add_entity(reservation, Arc::clone(&device));
         Ok(device)
     }
+}
+
+impl Package for Spi {
+    fn package_name(&self) -> &'static str {
+        Self::PACKAGE_NAME
+    }
+}
+
+impl PackageKind for Spi {
+    const PACKAGE_NAME: &'static str = "spi.v1";
 }
 
 impl SpiService for Spi {

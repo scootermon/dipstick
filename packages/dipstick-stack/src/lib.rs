@@ -1,53 +1,26 @@
 use std::sync::Arc;
 
-use dipstick_can::Can;
-use dipstick_core::Core;
-use dipstick_device::DeviceService;
-use dipstick_gpio::Gpio;
+use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::stack::v1::{
     CreateStackRequest, CreateStackResponse, GetStackRequest, GetStackResponse, StackServiceServer,
     StackSpec,
 };
-use dipstick_shadow::ShadowService;
-use dipstick_spi::Spi;
-use dipstick_xcp::XcpService;
 use futures::future::BoxFuture;
 use futures::FutureExt;
 use tonic::{Request, Response, Result};
 
-use self::packages::Packages;
 pub use self::stack::Stack;
 
-mod packages;
 mod stack;
-
-pub const PACKAGE: &str = "stack.v1";
 
 pub struct StackService {
     core: Arc<Core>,
-    packages: Packages,
 }
 
 impl StackService {
-    pub fn new(
-        core: Arc<Core>,
-        can: Arc<Can>,
-        device: Arc<DeviceService>,
-        gpio: Arc<Gpio>,
-        shadow: Arc<ShadowService>,
-        spi: Arc<Spi>,
-        xcp: Arc<XcpService>,
-    ) -> Arc<Self> {
-        let packages = Packages {
-            can,
-            device,
-            gpio,
-            shadow,
-            spi,
-            xcp,
-        };
-        Arc::new(Self { core, packages })
+    pub fn new(core: Arc<Core>) -> Arc<Self> {
+        Arc::new(Self { core })
     }
 
     pub fn into_server(self: Arc<Self>) -> StackServiceServer<Self> {
@@ -60,10 +33,20 @@ impl StackService {
         spec: StackSpec,
     ) -> Result<Arc<Stack>> {
         let (meta, reservation) = self.core.new_entity_meta::<Stack>(meta)?;
-        let stack = Stack::new(&self.packages, meta, spec).await?;
+        let stack = Stack::new(&self.core, meta, spec).await?;
         self.core.add_entity(reservation, Arc::clone(&stack));
         Ok(stack)
     }
+}
+
+impl Package for StackService {
+    fn package_name(&self) -> &'static str {
+        Self::PACKAGE_NAME
+    }
+}
+
+impl PackageKind for StackService {
+    const PACKAGE_NAME: &'static str = "stack.v1";
 }
 
 impl dipstick_proto::stack::v1::StackService for StackService {

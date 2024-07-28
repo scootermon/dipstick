@@ -1,10 +1,8 @@
 use std::sync::Arc;
 
-use dipstick_core::{DependencyHandle, Entity, EntityKind, EntityMeta};
+use dipstick_core::{Core, DependencyHandle, Entity, EntityKind, EntityMeta};
 use dipstick_proto::stack::v1::{StackEntity, StackSpec, StackStatus};
 use tonic::Result;
-
-use crate::packages::Packages;
 
 pub struct Stack {
     meta: EntityMeta,
@@ -13,11 +11,7 @@ pub struct Stack {
 }
 
 impl Stack {
-    pub async fn new(
-        packages: &Packages,
-        meta: EntityMeta,
-        mut spec: StackSpec,
-    ) -> Result<Arc<Self>> {
+    pub async fn new(core: &Core, meta: EntityMeta, mut spec: StackSpec) -> Result<Arc<Self>> {
         let StackSpec {
             can,
             device,
@@ -33,7 +27,7 @@ impl Stack {
             for spec in &mut spi.device {
                 add_spi_device(
                     Context {
-                        packages,
+                        core,
                         meta: &meta,
                         dependency_handles: &mut dependency_handles,
                     },
@@ -47,7 +41,7 @@ impl Stack {
             for spec in &mut gpio.chip {
                 add_gpio_chip(
                     Context {
-                        packages,
+                        core,
                         meta: &meta,
                         dependency_handles: &mut dependency_handles,
                     },
@@ -61,7 +55,7 @@ impl Stack {
             for spec in &mut can.bus {
                 add_can_bus(
                     Context {
-                        packages,
+                        core,
                         meta: &meta,
                         dependency_handles: &mut dependency_handles,
                     },
@@ -75,7 +69,7 @@ impl Stack {
             for spec in &mut xcp.a2l {
                 add_a2l(
                     Context {
-                        packages,
+                        core,
                         meta: &meta,
                         dependency_handles: &mut dependency_handles,
                     },
@@ -87,7 +81,7 @@ impl Stack {
             for spec in &mut xcp.session {
                 add_xcp_session(
                     Context {
-                        packages,
+                        core,
                         meta: &meta,
                         dependency_handles: &mut dependency_handles,
                     },
@@ -101,7 +95,7 @@ impl Stack {
             for spec in &mut device.device {
                 add_device(
                     Context {
-                        packages,
+                        core,
                         meta: &meta,
                         dependency_handles: &mut dependency_handles,
                     },
@@ -115,7 +109,7 @@ impl Stack {
             for spec in &mut shadow.shadow {
                 add_shadow(
                     Context {
-                        packages,
+                        core,
                         meta: &meta,
                         dependency_handles: &mut dependency_handles,
                     },
@@ -152,7 +146,7 @@ impl Entity for Stack {
 }
 
 impl EntityKind for Stack {
-    const PACKAGE: &'static str = crate::PACKAGE;
+    type Package = crate::StackService;
     const KIND: &'static str = "Stack";
 }
 
@@ -169,7 +163,7 @@ impl DependencyHandles {
 }
 
 struct Context<'a> {
-    packages: &'a Packages,
+    core: &'a Core,
     meta: &'a EntityMeta,
     dependency_handles: &'a mut DependencyHandles,
 }
@@ -187,9 +181,8 @@ async fn add_spi_device(
 ) -> Result<()> {
     let device = {
         let dipstick_proto::spi::v1::CreateDeviceRequest { meta, spec } = spec.clone();
-        ctx.packages
-            .spi
-            .create_device_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+        let spi = ctx.core.get_package::<dipstick_spi::Spi>()?;
+        spi.create_device_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };
     ctx.add_dependency(device.entity_meta());
@@ -203,9 +196,8 @@ async fn add_gpio_chip(
 ) -> Result<()> {
     let chip = {
         let dipstick_proto::gpio::v1::CreateChipRequest { meta, spec } = spec.clone();
-        ctx.packages
-            .gpio
-            .create_chip_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+        let gpio = ctx.core.get_package::<dipstick_gpio::Gpio>()?;
+        gpio.create_chip_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };
     ctx.add_dependency(chip.entity_meta());
@@ -219,9 +211,8 @@ async fn add_can_bus(
 ) -> Result<()> {
     let bus = {
         let dipstick_proto::can::v1::CreateBusRequest { meta, spec } = spec.clone();
-        ctx.packages
-            .can
-            .create_bus_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+        let can = ctx.core.get_package::<dipstick_can::Can>()?;
+        can.create_bus_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };
     ctx.add_dependency(bus.entity_meta());
@@ -235,9 +226,8 @@ async fn add_a2l(
 ) -> Result<()> {
     let a2l = {
         let dipstick_proto::xcp::v1::CreateA2lRequest { meta, spec } = spec.clone();
-        ctx.packages
-            .xcp
-            .create_a2l_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+        let xcp = ctx.core.get_package::<dipstick_xcp::XcpService>()?;
+        xcp.create_a2l_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };
     ctx.add_dependency(a2l.entity_meta());
@@ -251,9 +241,8 @@ async fn add_xcp_session(
 ) -> Result<()> {
     let session = {
         let dipstick_proto::xcp::v1::CreateSessionRequest { meta, spec } = spec.clone();
-        ctx.packages
-            .xcp
-            .create_session_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
+        let xcp = ctx.core.get_package::<dipstick_xcp::XcpService>()?;
+        xcp.create_session_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };
     ctx.add_dependency(session.entity_meta());
@@ -267,8 +256,8 @@ async fn add_device(
 ) -> Result<()> {
     let device = {
         let dipstick_proto::device::v1::CreateDeviceRequest { meta, spec } = spec.clone();
-        ctx.packages
-            .device
+        let device = ctx.core.get_package::<dipstick_device::DeviceService>()?;
+        device
             .create_device_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };
@@ -283,8 +272,8 @@ async fn add_shadow(
 ) -> Result<()> {
     let bus = {
         let dipstick_proto::shadow::v1::CreateShadowRequest { meta, spec } = spec.clone();
-        ctx.packages
-            .shadow
+        let shadow = ctx.core.get_package::<dipstick_shadow::ShadowService>()?;
+        shadow
             .create_shadow_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };

@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use dipstick_core::Core;
+use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::can::v1::{
     BusSpec, CanService, CanServiceServer, CreateBusRequest, CreateBusResponse, GetBusRequest,
     GetBusResponse, ReceiveFramesRequest, ReceiveFramesResponse, SendFrameRequest,
@@ -15,8 +15,6 @@ use tonic::{Request, Response, Result, Status};
 pub use self::bus::Bus;
 
 mod bus;
-
-pub const PACKAGE: &str = "can.v1";
 
 pub struct Can {
     core: Arc<Core>,
@@ -37,6 +35,16 @@ impl Can {
         self.core.add_entity(reservation, Arc::clone(&bus));
         Ok(bus)
     }
+}
+
+impl Package for Can {
+    fn package_name(&self) -> &'static str {
+        Self::PACKAGE_NAME
+    }
+}
+
+impl PackageKind for Can {
+    const PACKAGE_NAME: &'static str = "can.v1";
 }
 
 impl CanService for Can {

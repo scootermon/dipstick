@@ -114,7 +114,7 @@ impl Entity for Shadow {
 }
 
 impl EntityKind for Shadow {
-    const PACKAGE: &'static str = crate::PACKAGE;
+    type Package = crate::ShadowService;
     const KIND: &'static str = "Shadow";
 }
 

@@ -276,6 +276,6 @@ impl Entity for Session {
 }
 
 impl EntityKind for Session {
-    const PACKAGE: &'static str = crate::PACKAGE;
+    type Package = crate::XcpService;
     const KIND: &'static str = "Session";
 }

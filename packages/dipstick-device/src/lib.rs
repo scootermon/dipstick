@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use dipstick_core::Core;
+use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::device::v1::{
     CallActionRequest, CallActionResponse, CreateDeviceRequest, CreateDeviceResponse,
@@ -16,9 +16,6 @@ pub use self::device::Device;
 
 mod device;
 mod devices;
-mod sensor;
-
-pub const PACKAGE: &str = "device.v1";
 
 pub struct DeviceService {
     core: Arc<Core>,
@@ -43,6 +40,16 @@ impl DeviceService {
         self.core.add_entity(reservation, Arc::clone(&device));
         Ok(device)
     }
+}
+
+impl Package for DeviceService {
+    fn package_name(&self) -> &'static str {
+        Self::PACKAGE_NAME
+    }
+}
+
+impl PackageKind for DeviceService {
+    const PACKAGE_NAME: &'static str = "device.v1";
 }
 
 impl dipstick_proto::device::v1::DeviceService for DeviceService {

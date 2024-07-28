@@ -132,7 +132,7 @@ impl Entity for A2l {
 }
 
 impl EntityKind for A2l {
-    const PACKAGE: &'static str = crate::PACKAGE;
+    type Package = crate::XcpService;
     const KIND: &'static str = "A2l";
 }
 

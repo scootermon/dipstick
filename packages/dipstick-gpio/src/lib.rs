@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use dipstick_core::Core;
+use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::gpio::v1::{
     ChipSpec, CreateChipRequest, CreateChipResponse, GetChipRequest, GetChipResponse, GpioService,
@@ -14,8 +14,6 @@ use tonic::{Request, Response, Result, Status};
 pub use self::chip::Chip;
 
 mod chip;
-
-pub const PACKAGE: &str = "gpio.v1";
 
 pub struct Gpio {
     core: Arc<Core>,
@@ -40,6 +38,16 @@ impl Gpio {
         self.core.add_entity(reservation, Arc::clone(&chip));
         Ok(chip)
     }
+}
+
+impl Package for Gpio {
+    fn package_name(&self) -> &'static str {
+        Self::PACKAGE_NAME
+    }
+}
+
+impl PackageKind for Gpio {
+    const PACKAGE_NAME: &'static str = "gpio.v1";
 }
 
 impl GpioService for Gpio {

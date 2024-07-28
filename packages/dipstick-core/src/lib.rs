@@ -16,11 +16,13 @@ use tonic::{Request, Response, Result, Status};
 
 pub use self::dependency::{Dep, DependencyHandle};
 pub use self::entity::{Entity, EntityKind, EntityMeta, QualifiedKey, UniqueId};
+pub use self::package::{Package, PackageKind};
 pub use self::registry::ReservationHandle;
 
 mod dependency;
 mod entity;
 pub mod logging;
+mod package;
 mod registry;
 
 pub struct Core {
@@ -49,11 +51,19 @@ impl Core {
         CoreServiceServer::from_arc(self)
     }
 
+    pub fn add_package<T: Package>(&self, package: Arc<T>) {
+        self.registry.add_package(package);
+    }
+
+    pub fn get_package<T: Package + PackageKind>(&self) -> Result<Arc<T>> {
+        self.registry.package()
+    }
+
     pub fn new_entity_meta<T: EntityKind>(
         &self,
         mut spec: EntityMetaSpec,
     ) -> Result<(EntityMeta, ReservationHandle)> {
-        spec.package = T::PACKAGE.to_owned();
+        spec.package = T::Package::PACKAGE_NAME.to_owned();
         spec.kind = T::KIND.to_owned();
         self.new_entity_meta_raw(spec)
     }

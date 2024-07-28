@@ -165,7 +165,7 @@ impl Entity for Device {
 }
 
 impl EntityKind for Device {
-    const PACKAGE: &'static str = crate::PACKAGE;
+    type Package = crate::DeviceService;
     const KIND: &'static str = "Device";
 }
 
