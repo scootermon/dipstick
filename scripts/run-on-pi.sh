@@ -2,7 +2,7 @@
 set -euo pipefail
 
 TARGET="aarch64-unknown-linux-gnu"
-SSH_TARGET_DIR="/tmp"
+SSH_TARGET_DIR="/home/pi"
 PACKAGE_NAME="dipstick"
 
 ssh_host="${1:?}"
