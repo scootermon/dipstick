@@ -2,13 +2,13 @@ use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use std::time::SystemTime;
 
-use dipstick_core::{Entity, EntityKind, EntityMeta};
+use dipstick_core::{Core, Entity, EntityKind, EntityMeta};
 use dipstick_proto::gpio::v1::{
     ChipEntity, ChipSpec, ChipSpecVariant, ChipStatus, Level, PinStatus, SubscribeChipResponse,
 };
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
-use tokio_util::sync::{CancellationToken, DropGuard};
+use tokio_util::sync::DropGuard;
 use tokio_util::task::TaskTracker;
 use tonic::{Result, Status};
 
@@ -23,16 +23,16 @@ pub struct Chip {
 }
 
 impl Chip {
-    pub async fn new(meta: EntityMeta, mut spec: ChipSpec) -> Result<Arc<Self>> {
+    pub async fn new(core: &Core, meta: EntityMeta, mut spec: ChipSpec) -> Result<Arc<Self>> {
+        let cancel_token = core.new_cancel_token();
         let tracker = TaskTracker::new();
-        let cancel_token = CancellationToken::new();
         let pins = Arc::new(PinMap::new());
 
         match &mut spec.chip_spec_variant {
             Some(ChipSpecVariant::Linux(linux_spec)) => {
                 linux::spawn(
                     &tracker,
-                    cancel_token.child_token(),
+                    cancel_token.clone(),
                     Arc::clone(&pins),
                     linux_spec,
                     &mut spec.pins,

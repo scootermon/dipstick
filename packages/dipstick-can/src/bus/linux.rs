@@ -1,5 +1,6 @@
 use std::time::SystemTime;
 
+use dipstick_core::Core;
 use dipstick_proto::can::v1::{Frame, LinuxBusSpec};
 use futures::StreamExt;
 use socketcan::tokio::{CanFdSocket, CanSocket};
@@ -20,9 +21,12 @@ pub struct Bus {
 impl Bus {
     // TODO: shutdown
 
-    pub async fn new(spec: &mut LinuxBusSpec, tx: broadcast::Sender<Frame>) -> Result<Self> {
-        let cancel_token = CancellationToken::new();
-
+    pub async fn new(
+        core: &Core,
+        spec: &mut LinuxBusSpec,
+        tx: broadcast::Sender<Frame>,
+    ) -> Result<Self> {
+        let cancel_token = core.new_cancel_token();
         let (socket, reader_task) = block_in_place(|| -> anyhow::Result<_> {
             set_up_interface_blocking(spec)?;
             let socket = CanSocket::open(&spec.device)?;

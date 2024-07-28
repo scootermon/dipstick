@@ -45,7 +45,7 @@ impl<'a> ListenersBuilder<'a> {
     pub fn new(core: &'a Core, shadow: Arc<Shadow>) -> Self {
         Self {
             core,
-            cancel_token: CancellationToken::new(),
+            cancel_token: core.new_cancel_token(),
             shadow,
             gpio_listeners: Vec::new(),
             a2l_listeners: Vec::new(),

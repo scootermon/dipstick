@@ -10,8 +10,8 @@ use dipstick_proto::core::v1::{
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
 use futures::{FutureExt, StreamExt};
-use tokio::sync::mpsc;
 use tokio_stream::wrappers::BroadcastStream;
+use tokio_util::sync::CancellationToken;
 use tonic::{Request, Response, Result, Status};
 
 pub use self::dependency::{Dep, DependencyHandle};
@@ -26,29 +26,33 @@ mod package;
 mod registry;
 
 pub struct Core {
+    cancel_token: CancellationToken,
     registry: registry::Registry,
     log_handle: logging::LoggingHandle,
-    shutdown_tx: mpsc::Sender<()>,
     version: String,
 }
 
 impl Core {
     pub fn new(
+        cancel_token: CancellationToken,
         version: String,
         log_handle: logging::LoggingHandle,
-        shutdown_tx: mpsc::Sender<()>,
     ) -> Arc<Self> {
         let registry = registry::Registry::new();
         Arc::new(Self {
+            cancel_token,
             registry,
             log_handle,
-            shutdown_tx,
             version,
         })
     }
 
     pub fn into_server(self: Arc<Self>) -> CoreServiceServer<Self> {
         CoreServiceServer::from_arc(self)
+    }
+
+    pub fn new_cancel_token(&self) -> CancellationToken {
+        self.cancel_token.child_token()
     }
 
     pub fn add_package<T: Package>(&self, package: Arc<T>) {
@@ -122,7 +126,7 @@ impl CoreService for Core {
     ) -> BoxFuture<'fut, Result<Response<ShutdownResponse>>> {
         async move {
             tracing::info!("received shutdown request");
-            let _ = self.shutdown_tx.send(()).await;
+            self.cancel_token.cancel();
             Ok(Response::new(ShutdownResponse {}))
         }
         .boxed()

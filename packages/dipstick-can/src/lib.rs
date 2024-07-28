@@ -31,7 +31,7 @@ impl Can {
 
     pub async fn create_bus_impl(&self, meta: EntityMetaSpec, spec: BusSpec) -> Result<Arc<Bus>> {
         let (meta, reservation) = self.core.new_entity_meta::<Bus>(meta)?;
-        let bus = Bus::new(meta, spec).await?;
+        let bus = Bus::new(&self.core, meta, spec).await?;
         self.core.add_entity(reservation, Arc::clone(&bus));
         Ok(bus)
     }

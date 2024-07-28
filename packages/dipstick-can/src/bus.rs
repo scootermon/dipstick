@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use dipstick_core::{Entity, EntityKind, EntityMeta};
+use dipstick_core::{Core, Entity, EntityKind, EntityMeta};
 use dipstick_proto::can::v1::{BusEntity, BusSpec, BusSpecVariant, BusStatus, Frame};
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
@@ -16,10 +16,10 @@ pub struct Bus {
 }
 
 impl Bus {
-    pub async fn new(meta: EntityMeta, mut spec: BusSpec) -> Result<Arc<Self>> {
+    pub async fn new(core: &Core, meta: EntityMeta, mut spec: BusSpec) -> Result<Arc<Self>> {
         let (tx, _) = broadcast::channel(128); // TODO
         let linux = match &mut spec.bus_spec_variant {
-            Some(BusSpecVariant::Linux(linux)) => linux::Bus::new(linux, tx.clone()).await?,
+            Some(BusSpecVariant::Linux(linux)) => linux::Bus::new(core, linux, tx.clone()).await?,
             None => return Err(Status::invalid_argument("missing bus spec variant")),
         };
         Ok(Arc::new(Self {

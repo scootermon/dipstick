@@ -3,7 +3,7 @@ use std::process::ExitCode;
 use std::sync::Arc;
 
 use anyhow::Context;
-use tokio::sync::mpsc;
+use tokio_util::sync::CancellationToken;
 use tonic::transport::Server;
 
 mod consts;
@@ -11,9 +11,12 @@ mod consts;
 async fn _main() -> anyhow::Result<()> {
     let log_handle = dipstick_core::logging::init();
 
-    let (shutdown_tx, mut shutdown_rx) = mpsc::channel(1);
+    let cancel_token = CancellationToken::new();
+    let core =
+        dipstick_core::Core::new(cancel_token.clone(), consts::VERSION.to_owned(), log_handle);
+
     tokio::spawn({
-        let shutdown_tx = shutdown_tx.clone();
+        let cancel_token = cancel_token.clone();
         async move {
             if let Err(err) = tokio::signal::ctrl_c().await {
                 tracing::error!("failed to register signal handler for ctrl-c: {err}");
@@ -21,7 +24,7 @@ async fn _main() -> anyhow::Result<()> {
             }
 
             tracing::info!("received ctrl-c");
-            let _ = shutdown_tx.send(()).await;
+            cancel_token.cancel();
         }
     });
 
@@ -32,7 +35,6 @@ async fn _main() -> anyhow::Result<()> {
         .build()
         .context("failed to build reflection v1alpha server")?;
 
-    let core = dipstick_core::Core::new(consts::VERSION.to_owned(), log_handle, shutdown_tx);
     let gpio = dipstick_gpio::Gpio::new(Arc::clone(&core));
     let can = dipstick_can::Can::new(Arc::clone(&core));
     let spi = dipstick_spi::Spi::new(Arc::clone(&core));
@@ -63,9 +65,7 @@ async fn _main() -> anyhow::Result<()> {
         .add_service(tonic_web::enable(spi.into_server()))
         .add_service(tonic_web::enable(stack_service.into_server()))
         .add_service(tonic_web::enable(xcp_service.into_server()))
-        .serve_with_shutdown(addr, async {
-            shutdown_rx.recv().await;
-        })
+        .serve_with_shutdown(addr, cancel_token.cancelled_owned())
         .await
         .map_err(anyhow::Error::from);
 

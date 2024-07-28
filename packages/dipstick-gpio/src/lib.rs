@@ -34,7 +34,7 @@ impl Gpio {
         spec: ChipSpec,
     ) -> Result<Arc<Chip>> {
         let (meta, reservation) = self.core.new_entity_meta::<Chip>(meta)?;
-        let chip = Chip::new(meta, spec).await?;
+        let chip = Chip::new(&self.core, meta, spec).await?;
         self.core.add_entity(reservation, Arc::clone(&chip));
         Ok(chip)
     }

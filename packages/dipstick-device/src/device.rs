@@ -33,8 +33,8 @@ struct Inner {
 
 impl Device {
     pub async fn new(core: &Core, meta: EntityMeta, spec: DeviceSpec) -> Result<Arc<Self>> {
+        let cancel_token = core.new_cancel_token();
         let (tx, _) = broadcast::channel(16); // TODO
-        let cancel_token = CancellationToken::new();
         let drop_guard = cancel_token.clone().drop_guard();
         let this = Arc::new(Self {
             meta,

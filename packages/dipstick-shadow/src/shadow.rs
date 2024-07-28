@@ -103,7 +103,7 @@ impl Shadow {
             return;
         }
         tracing::trace!(signal_id, ?value, "updating signal value");
-        signal.changed_at = Some(timestamp.clone());
+        signal.changed_at = Some(timestamp);
         signal.value = Some(value.clone());
         signal.update_count += 1;
         let _ = self.tx.send(
