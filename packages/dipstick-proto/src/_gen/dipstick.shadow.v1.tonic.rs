@@ -138,11 +138,11 @@ pub mod shadow_service_client {
                 );
             self.inner.unary(req, path, codec).await
         }
-        pub async fn shadow_signal_events(
+        pub async fn shadow_events(
             &mut self,
-            request: impl tonic::IntoRequest<super::ShadowSignalEventsRequest>,
+            request: impl tonic::IntoRequest<super::ShadowEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<tonic::codec::Streaming<super::ShadowSignalEventsResponse>>,
+            tonic::Response<tonic::codec::Streaming<super::ShadowEventsResponse>>,
             tonic::Status,
         > {
             self.inner
@@ -156,15 +156,12 @@ pub mod shadow_service_client {
                 })?;
             let codec = tonic::codec::ProstCodec::default();
             let path = http::uri::PathAndQuery::from_static(
-                "/dipstick.shadow.v1.ShadowService/ShadowSignalEvents",
+                "/dipstick.shadow.v1.ShadowService/ShadowEvents",
             );
             let mut req = request.into_request();
             req.extensions_mut()
                 .insert(
-                    GrpcMethod::new(
-                        "dipstick.shadow.v1.ShadowService",
-                        "ShadowSignalEvents",
-                    ),
+                    GrpcMethod::new("dipstick.shadow.v1.ShadowService", "ShadowEvents"),
                 );
             self.inner.server_streaming(req, path, codec).await
         }
@@ -191,20 +188,17 @@ pub mod shadow_service_server {
             tonic::Response<super::GetShadowResponse>,
             tonic::Status,
         >;
-        /// Server streaming response type for the ShadowSignalEvents method.
-        type ShadowSignalEventsStream: tonic::codegen::tokio_stream::Stream<
-                Item = std::result::Result<
-                    super::ShadowSignalEventsResponse,
-                    tonic::Status,
-                >,
+        /// Server streaming response type for the ShadowEvents method.
+        type ShadowEventsStream: tonic::codegen::tokio_stream::Stream<
+                Item = std::result::Result<super::ShadowEventsResponse, tonic::Status>,
             >
             + Send
             + 'static;
-        async fn shadow_signal_events(
+        async fn shadow_events(
             &self,
-            request: tonic::Request<super::ShadowSignalEventsRequest>,
+            request: tonic::Request<super::ShadowEventsRequest>,
         ) -> std::result::Result<
-            tonic::Response<Self::ShadowSignalEventsStream>,
+            tonic::Response<Self::ShadowEventsStream>,
             tonic::Status,
         >;
     }
@@ -379,28 +373,26 @@ pub mod shadow_service_server {
                     };
                     Box::pin(fut)
                 }
-                "/dipstick.shadow.v1.ShadowService/ShadowSignalEvents" => {
+                "/dipstick.shadow.v1.ShadowService/ShadowEvents" => {
                     #[allow(non_camel_case_types)]
-                    struct ShadowSignalEventsSvc<T: ShadowService>(pub Arc<T>);
+                    struct ShadowEventsSvc<T: ShadowService>(pub Arc<T>);
                     impl<
                         T: ShadowService,
-                    > tonic::server::ServerStreamingService<
-                        super::ShadowSignalEventsRequest,
-                    > for ShadowSignalEventsSvc<T> {
-                        type Response = super::ShadowSignalEventsResponse;
-                        type ResponseStream = T::ShadowSignalEventsStream;
+                    > tonic::server::ServerStreamingService<super::ShadowEventsRequest>
+                    for ShadowEventsSvc<T> {
+                        type Response = super::ShadowEventsResponse;
+                        type ResponseStream = T::ShadowEventsStream;
                         type Future = BoxFuture<
                             tonic::Response<Self::ResponseStream>,
                             tonic::Status,
                         >;
                         fn call(
                             &mut self,
-                            request: tonic::Request<super::ShadowSignalEventsRequest>,
+                            request: tonic::Request<super::ShadowEventsRequest>,
                         ) -> Self::Future {
                             let inner = Arc::clone(&self.0);
                             let fut = async move {
-                                <T as ShadowService>::shadow_signal_events(&inner, request)
-                                    .await
+                                <T as ShadowService>::shadow_events(&inner, request).await
                             };
                             Box::pin(fut)
                         }
@@ -412,7 +404,7 @@ pub mod shadow_service_server {
                     let inner = self.inner.clone();
                     let fut = async move {
                         let inner = inner.0;
-                        let method = ShadowSignalEventsSvc(inner);
+                        let method = ShadowEventsSvc(inner);
                         let codec = tonic::codec::ProstCodec::default();
                         let mut grpc = tonic::server::Grpc::new(codec)
                             .apply_compression_config(

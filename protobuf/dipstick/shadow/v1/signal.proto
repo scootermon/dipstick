@@ -12,6 +12,12 @@ message SignalStatus {
   uint32 update_count = 3;
 }
 
+message SignalEvent {
+  string signal = 1;
+  google.protobuf.Timestamp timestamp = 2;
+  google.protobuf.Value value = 3;
+}
+
 message SignalSpec {
   oneof signal_spec_variant {
     A2lMeasurementSignalSpec a2l_measurement = 3;

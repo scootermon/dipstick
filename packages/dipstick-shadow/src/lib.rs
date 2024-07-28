@@ -4,12 +4,12 @@ use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::shadow::v1::{
     CreateShadowRequest, CreateShadowResponse, GetShadowRequest, GetShadowResponse,
-    ShadowServiceServer, ShadowSignalEventsRequest, ShadowSignalEventsResponse, ShadowSpec,
+    ShadowEventsRequest, ShadowEventsResponse, ShadowServiceServer, ShadowSpec,
 };
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
-use futures::FutureExt;
-use tonic::{Request, Response, Result};
+use futures::{FutureExt, StreamExt};
+use tonic::{Request, Response, Result, Status};
 
 pub use self::shadow::Shadow;
 
@@ -84,18 +84,26 @@ impl dipstick_proto::shadow::v1::ShadowService for ShadowService {
         .boxed()
     }
 
-    type ShadowSignalEventsStream = BoxStream<'static, Result<ShadowSignalEventsResponse>>;
+    type ShadowEventsStream = BoxStream<'static, Result<ShadowEventsResponse>>;
 
-    fn shadow_signal_events<'s: 'fut, 'fut>(
+    fn shadow_events<'s: 'fut, 'fut>(
         &'s self,
-        request: Request<ShadowSignalEventsRequest>,
-    ) -> BoxFuture<'fut, Result<Response<Self::ShadowSignalEventsStream>>> {
+        request: Request<ShadowEventsRequest>,
+    ) -> BoxFuture<'fut, Result<Response<Self::ShadowEventsStream>>> {
         async move {
-            let ShadowSignalEventsRequest { selector } = request.into_inner();
-            let _shadow = self
+            let ShadowEventsRequest { selector } = request.into_inner();
+            let shadow = self
                 .core
                 .select_entity::<Shadow>(selector.unwrap_or_default())?;
-            todo!()
+            let stream = shadow
+                .subscribe()
+                .map(|res| match res {
+                    Ok(event) => Ok(ShadowEventsResponse { event: Some(event) }),
+                    // TODO
+                    Err(err) => Err(Status::internal(format!("failed to receive event: {err}"))),
+                })
+                .boxed();
+            Ok(Response::new(stream))
         }
         .boxed()
     }

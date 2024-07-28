@@ -17,3 +17,9 @@ message ShadowSpec {
 message ShadowStatus {
   map<string, SignalStatus> signals = 1;
 }
+
+message ShadowEvent {
+  oneof shadow_event_variant {
+    SignalEvent signal = 1;
+  }
+}

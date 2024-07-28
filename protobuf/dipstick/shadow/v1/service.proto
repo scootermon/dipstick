@@ -8,7 +8,7 @@ service ShadowService {
   rpc CreateShadow(CreateShadowRequest) returns (CreateShadowResponse);
   rpc GetShadow(GetShadowRequest) returns (GetShadowResponse);
 
-  rpc ShadowSignalEvents(ShadowSignalEventsRequest) returns (stream ShadowSignalEventsResponse);
+  rpc ShadowEvents(ShadowEventsRequest) returns (stream ShadowEventsResponse);
 }
 
 message CreateShadowRequest {
@@ -28,8 +28,10 @@ message GetShadowResponse {
   ShadowEntity shadow = 1;
 }
 
-message ShadowSignalEventsRequest {
+message ShadowEventsRequest {
   dipstick.core.v1.EntitySelector selector = 1;
 }
 
-message ShadowSignalEventsResponse {}
+message ShadowEventsResponse {
+  ShadowEvent event = 1;
+}

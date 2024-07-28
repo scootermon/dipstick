@@ -3,9 +3,12 @@ use std::sync::{Arc, RwLock};
 
 use dipstick_core::{Core, Entity, EntityKind, EntityMeta};
 use dipstick_proto::shadow::v1::{
-    ShadowEntity, ShadowSpec, ShadowStatus, SignalSpecVariant, SignalStatus,
+    ShadowEntity, ShadowEvent, ShadowSpec, ShadowStatus, SignalEvent, SignalSpecVariant,
+    SignalStatus,
 };
 use dipstick_proto::wkt::{Timestamp, Value};
+use tokio::sync::broadcast;
+use tokio_stream::wrappers::BroadcastStream;
 use tonic::Result;
 
 use crate::listeners::Listeners;
@@ -15,26 +18,27 @@ pub struct Shadow {
     spec: RwLock<ShadowSpec>,
     signals: RwLock<HashMap<String, SignalStatus>>,
     listeners: ListenersCell,
+    tx: broadcast::Sender<ShadowEvent>,
 }
 
 impl Shadow {
     pub(crate) async fn new(core: &Core, meta: EntityMeta, spec: ShadowSpec) -> Result<Arc<Self>> {
+        let (tx, _) = broadcast::channel(64); // TODO
         let this = Arc::new(Self {
             meta,
             spec: RwLock::new(ShadowSpec::default()),
             signals: RwLock::new(HashMap::new()),
             listeners: ListenersCell::new(),
+            tx,
         });
         Arc::clone(&this).update_spec(core, spec).await?;
         Ok(this)
     }
 
     async fn update_spec(self: Arc<Self>, core: &Core, mut new_spec: ShadowSpec) -> Result<()> {
-        self.listeners.clear().await;
-
         let mut builder = Listeners::builder(core, Arc::clone(&self));
         for (signal_id, signal_spec) in new_spec.signals.iter_mut() {
-            self.add_signal(signal_id);
+            self.declare_signal(signal_id);
             match signal_spec.signal_spec_variant.as_mut() {
                 Some(SignalSpecVariant::Gpio(spec)) => {
                     builder.add_gpio_signal(signal_id.clone(), spec)?;
@@ -77,33 +81,39 @@ impl Shadow {
         }
     }
 
-    fn add_signal(&self, signal_id: &str) {
+    pub fn subscribe(&self) -> BroadcastStream<ShadowEvent> {
+        BroadcastStream::new(self.tx.subscribe())
+    }
+
+    fn declare_signal(&self, signal_id: &str) {
         let mut signals = self.signals.write().unwrap();
         if signals.contains_key(signal_id) {
-            return;
+            panic!("signal {signal_id:?} already declared");
         }
-        tracing::trace!(signal_id, "adding new signal");
+        tracing::trace!(signal_id, "declaring new signal");
         signals.insert(signal_id.to_owned(), SignalStatus::default());
     }
 
-    pub fn set_signal_value(&self, signal_id: &str, timestamp: Timestamp, value: Value) {
+    pub(crate) fn set_signal_value(&self, signal_id: &str, timestamp: Timestamp, value: Value) {
         let mut signals = self.signals.write().unwrap();
-        if let Some(signal) = signals.get_mut(signal_id) {
-            tracing::trace!(signal_id, ?value, "updating signal value");
-            signal.changed_at = Some(timestamp);
-            signal.value = Some(value);
-            signal.update_count += 1;
-        } else {
-            tracing::trace!(signal_id, ?value, "adding new signal value");
-            signals.insert(
-                signal_id.to_owned(),
-                SignalStatus {
-                    changed_at: Some(timestamp),
-                    value: Some(value),
-                    update_count: 1,
-                },
-            );
+        let signal = signals
+            .get_mut(signal_id)
+            .expect("signals should be declared up front");
+        if signal.value.as_ref() == Some(&value) {
+            return;
         }
+        tracing::trace!(signal_id, ?value, "updating signal value");
+        signal.changed_at = Some(timestamp.clone());
+        signal.value = Some(value.clone());
+        signal.update_count += 1;
+        let _ = self.tx.send(
+            SignalEvent {
+                signal: signal_id.to_owned(),
+                timestamp: Some(timestamp),
+                value: Some(value),
+            }
+            .into(),
+        );
     }
 }
 
