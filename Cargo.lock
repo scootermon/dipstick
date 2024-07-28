@@ -323,11 +323,13 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "dipstick-core",
+ "dipstick-device",
  "dipstick-gpio",
  "dipstick-proto",
  "dipstick-xcp",
  "futures",
  "tokio",
+ "tokio-stream",
  "tokio-util",
  "tonic",
  "tonic-types",

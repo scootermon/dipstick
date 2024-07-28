@@ -13,10 +13,12 @@ rust-version.workspace = true
 [dependencies]
 anyhow.workspace = true
 dipstick-core.workspace = true
+dipstick-device.workspace = true
 dipstick-gpio.workspace = true
 dipstick-proto.workspace = true
 dipstick-xcp.workspace = true
 futures.workspace = true
+tokio-stream.workspace = true
 tokio-util.workspace = true
 tokio.workspace = true
 tonic-types.workspace = true

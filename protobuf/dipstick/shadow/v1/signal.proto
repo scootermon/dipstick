@@ -38,7 +38,6 @@ message A2lCharacteristicSignalSpec {
 message DeviceSensorSignalSpec {
   dipstick.core.v1.EntitySelector device = 1;
   string sensor = 2;
-  google.protobuf.Duration poll_interval = 3;
 }
 
 message GpioSignalSpec {

@@ -4,9 +4,10 @@ use std::time::Duration;
 
 use dipstick_core::{Core, Dep};
 use dipstick_proto::shadow::v1::{
-    A2lCharacteristicSignalSpec, A2lMeasurementSignalSpec, GpioSignalSpec,
+    A2lCharacteristicSignalSpec, A2lMeasurementSignalSpec, DeviceSensorSignalSpec, GpioSignalSpec,
 };
 use futures::StreamExt;
+use tokio_stream::wrappers::errors::BroadcastStreamRecvError;
 use tokio_util::sync::{CancellationToken, DropGuard};
 use tokio_util::task::TaskTracker;
 use tonic::{Result, Status};
@@ -37,6 +38,7 @@ pub struct ListenersBuilder<'a> {
     shadow: Arc<Shadow>,
     gpio_listeners: Vec<GpioChipListener>,
     a2l_listeners: Vec<A2lListener>,
+    device_listeners: Vec<DeviceListener>,
 }
 
 impl<'a> ListenersBuilder<'a> {
@@ -47,6 +49,7 @@ impl<'a> ListenersBuilder<'a> {
             shadow,
             gpio_listeners: Vec::new(),
             a2l_listeners: Vec::new(),
+            device_listeners: Vec::new(),
         }
     }
 
@@ -56,6 +59,9 @@ impl<'a> ListenersBuilder<'a> {
             tracker.spawn(listener.run());
         }
         for listener in self.a2l_listeners {
+            tracker.spawn(listener.run());
+        }
+        for listener in self.device_listeners {
             tracker.spawn(listener.run());
         }
         Listeners {
@@ -124,6 +130,40 @@ impl<'a> ListenersBuilder<'a> {
         )?;
         self.a2l_listeners.push(listener);
         Ok(())
+    }
+
+    pub fn add_device_sensor_signal(
+        &mut self,
+        signal_id: String,
+        spec: &mut DeviceSensorSignalSpec,
+    ) -> Result<()> {
+        let device = self.core.select_entity_dep::<dipstick_device::Device>(
+            &self.shadow,
+            spec.device.clone().unwrap_or_default(),
+        )?;
+        let listener = self.get_device_listener(device);
+        // TODO: check if device has sensor
+        listener.add_sensor_mapping(spec.sensor.clone(), signal_id);
+        Ok(())
+    }
+
+    fn get_device_listener(&mut self, device: Dep<dipstick_device::Device>) -> &mut DeviceListener {
+        let index = self
+            .device_listeners
+            .iter()
+            .position(|listener| Dep::ptr_eq(&listener.device, &device));
+        match index {
+            // necessary to go through index to make the borrow checker happy
+            Some(index) => self.device_listeners.get_mut(index).unwrap(),
+            None => {
+                self.device_listeners.push(DeviceListener::new(
+                    self.cancel_token.clone(),
+                    Arc::clone(&self.shadow),
+                    device,
+                ));
+                self.device_listeners.last_mut().unwrap()
+            }
+        }
     }
 }
 
@@ -299,6 +339,66 @@ impl A2lListener {
                 self.session.read_characteristic(characteristic).await
             }
             A2lTarget::Measurement(measurement) => self.session.read_measurement(measurement).await,
+        }
+    }
+}
+
+struct DeviceListener {
+    cancel_token: CancellationToken,
+    shadow: Arc<Shadow>,
+    device: Dep<dipstick_device::Device>,
+    /// Maps from sensor to signal id
+    sensor_mapping: HashMap<String, String>,
+}
+
+impl DeviceListener {
+    fn new(
+        cancel_token: CancellationToken,
+        shadow: Arc<Shadow>,
+        device: Dep<dipstick_device::Device>,
+    ) -> Self {
+        Self {
+            cancel_token,
+            shadow,
+            device,
+            sensor_mapping: HashMap::new(),
+        }
+    }
+
+    fn add_sensor_mapping(&mut self, sensor: String, signal_id: String) {
+        self.sensor_mapping.insert(sensor, signal_id);
+    }
+
+    async fn handle_event(&mut self, event: dipstick_proto::device::v1::DeviceEvent) {
+        use dipstick_proto::device::v1::DeviceEventVariant;
+        if let Some(DeviceEventVariant::Sensor(event)) = event.device_event_variant {
+            let signal_id = match self.sensor_mapping.get(&event.sensor) {
+                Some(signal_id) => signal_id,
+                None => return,
+            };
+            self.shadow.set_signal_value(
+                signal_id,
+                event.timestamp.unwrap_or_default(),
+                event.value.unwrap_or_default(),
+            );
+        }
+    }
+
+    async fn run(mut self) {
+        let mut stream = self.device.subscribe();
+        loop {
+            let item = tokio::select! {
+                _ = self.cancel_token.cancelled() => break,
+                item = stream.next() => item,
+            };
+            match item {
+                Some(Ok(event)) => self.handle_event(event).await,
+                Some(Err(BroadcastStreamRecvError::Lagged(n))) => {
+                    tracing::error!(n, "device sensor listener missed events");
+                    // TODO: refresh all sensors here
+                }
+                None => unreachable!(),
+            }
         }
     }
 }
