@@ -78,6 +78,10 @@ impl Chip {
     pub fn subscribe(&self) -> BroadcastStream<SubscribeChipResponse> {
         BroadcastStream::new(self.pins.tx.subscribe())
     }
+
+    pub fn pin_status(&self, pin_id: &str) -> Option<PinStatus> {
+        self.pins.pins.read().unwrap().get(pin_id).cloned()
+    }
 }
 
 impl Entity for Chip {

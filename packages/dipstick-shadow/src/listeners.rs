@@ -199,9 +199,22 @@ impl GpioChipListener {
         Ok(())
     }
 
+    fn fetch_all_pins(&self) {
+        for (pin_id, signal_id) in &self.mapping {
+            let Some(status) = self.chip.pin_status(pin_id) else {
+                continue;
+            };
+            self.shadow.set_signal_value(
+                signal_id,
+                status.changed_at.unwrap_or_default(),
+                status.logical().into(),
+            );
+        }
+    }
+
     async fn run(self) {
-        // TODO: add option for subscribe to publish current values on subscribe
-        let mut stream = self.chip.subscribe(); // TODO: only subscribe to the pins we care about
+        let mut stream = self.chip.subscribe();
+        self.fetch_all_pins();
         loop {
             let item = tokio::select! {
                 _ = self.cancel_token.cancelled() => {
@@ -221,7 +234,11 @@ impl GpioChipListener {
                         status.logical().into(),
                     );
                 }
-                _ => todo!(), // TODO
+                Some(Err(BroadcastStreamRecvError::Lagged(n))) => {
+                    tracing::error!(n, "gpio chip listener missed events");
+                    self.fetch_all_pins();
+                }
+                None => unreachable!(),
             }
         }
     }
@@ -384,8 +401,22 @@ impl DeviceListener {
         }
     }
 
+    fn fetch_all_sensor_values(&self) {
+        for (sensor, signal_id) in &self.sensor_mapping {
+            let Some(status) = self.device.sensor_status(sensor) else {
+                continue;
+            };
+            self.shadow.set_signal_value(
+                signal_id,
+                status.timestamp.unwrap_or_default(),
+                status.value.unwrap_or_default(),
+            );
+        }
+    }
+
     async fn run(mut self) {
         let mut stream = self.device.subscribe();
+        self.fetch_all_sensor_values();
         loop {
             let item = tokio::select! {
                 _ = self.cancel_token.cancelled() => break,
@@ -395,7 +426,7 @@ impl DeviceListener {
                 Some(Ok(event)) => self.handle_event(event).await,
                 Some(Err(BroadcastStreamRecvError::Lagged(n))) => {
                     tracing::error!(n, "device sensor listener missed events");
-                    // TODO: refresh all sensors here
+                    self.fetch_all_sensor_values();
                 }
                 None => unreachable!(),
             }

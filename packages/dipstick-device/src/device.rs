@@ -127,6 +127,10 @@ impl Device {
         }
     }
 
+    pub fn sensor_status(&self, sensor: &str) -> Option<SensorStatus> {
+        self.sensors.read().unwrap().get(sensor).cloned()
+    }
+
     pub(crate) fn set_sensor_value(
         &self,
         sensor: &str,
