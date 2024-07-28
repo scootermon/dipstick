@@ -45,8 +45,8 @@ impl Shadow {
                 Some(SignalSpecVariant::A2lMeasurement(spec)) => {
                     builder.add_a2l_measurement_signal(signal_id.clone(), spec)?;
                 }
-                Some(SignalSpecVariant::DeviceSensor(_spec)) => {
-                    todo!() // TODO
+                Some(SignalSpecVariant::DeviceSensor(spec)) => {
+                    builder.add_device_sensor_signal(signal_id.clone(), spec)?;
                 }
                 None => {
                     return Err(tonic::Status::invalid_argument(

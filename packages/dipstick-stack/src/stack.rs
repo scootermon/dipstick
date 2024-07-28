@@ -186,6 +186,7 @@ async fn add_spi_device(
             .await?
     };
     ctx.add_dependency(device.entity_meta());
+    spec.meta = Some(device.entity_meta().spec());
     spec.spec = Some(device.spec());
     Ok(())
 }
@@ -201,6 +202,7 @@ async fn add_gpio_chip(
             .await?
     };
     ctx.add_dependency(chip.entity_meta());
+    spec.meta = Some(chip.entity_meta().spec());
     spec.spec = Some(chip.spec());
     Ok(())
 }
@@ -216,6 +218,7 @@ async fn add_can_bus(
             .await?
     };
     ctx.add_dependency(bus.entity_meta());
+    spec.meta = Some(bus.entity_meta().spec());
     spec.spec = Some(bus.spec());
     Ok(())
 }
@@ -231,6 +234,7 @@ async fn add_a2l(
             .await?
     };
     ctx.add_dependency(a2l.entity_meta());
+    spec.meta = Some(a2l.entity_meta().spec());
     spec.spec = Some(a2l.spec());
     Ok(())
 }
@@ -246,6 +250,7 @@ async fn add_xcp_session(
             .await?
     };
     ctx.add_dependency(session.entity_meta());
+    spec.meta = Some(session.entity_meta().spec());
     spec.spec = Some(session.spec());
     Ok(())
 }
@@ -262,6 +267,7 @@ async fn add_device(
             .await?
     };
     ctx.add_dependency(device.entity_meta());
+    spec.meta = Some(device.entity_meta().spec());
     spec.spec = Some(device.spec());
     Ok(())
 }
@@ -278,6 +284,7 @@ async fn add_shadow(
             .await?
     };
     ctx.add_dependency(bus.entity_meta());
+    spec.meta = Some(bus.entity_meta().spec());
     spec.spec = Some(bus.spec());
     Ok(())
 }
