@@ -1,5 +1,6 @@
 use std::any::TypeId;
 use std::collections::HashMap;
+use std::fmt::Display;
 use std::num::NonZeroU32;
 use std::sync::{Arc, RwLock};
 use std::time::SystemTime;
@@ -140,5 +141,12 @@ impl QualifiedKey {
             return None;
         }
         Some(Self { package, kind, key })
+    }
+}
+
+impl Display for QualifiedKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // TODO: escape slashes in package, kind, and key
+        write!(f, "{}/{}/{}", self.package, self.kind, self.key)
     }
 }

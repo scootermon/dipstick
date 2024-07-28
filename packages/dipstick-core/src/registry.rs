@@ -49,6 +49,11 @@ impl Registry {
             .map(Arc::clone)
     }
 
+    /// Registers a package with the registry.
+    ///
+    /// # Panics
+    ///
+    /// Panics if a package with the same name is already registered.
     pub fn add_package<T: Package>(&self, package: Arc<T>) {
         let mut packages = self.packages.write().unwrap();
         if packages
@@ -77,8 +82,7 @@ impl Registry {
         if let Some(qualified_key) = &qualified_key {
             if inner.has_qualified_key(qualified_key) {
                 return Err(Status::already_exists(format!(
-                    "key {} is already in use",
-                    qualified_key.key
+                    "key {qualified_key} is already in use"
                 )));
             }
         }
@@ -97,8 +101,24 @@ impl Registry {
     }
 
     pub fn select<T: EntityKind + Entity>(&self, selector: &EntitySelector) -> Result<Arc<T>> {
-        self.select_opt(selector)
-            .ok_or_else(|| Status::not_found("entity not found"))
+        match self.select_opt(selector) {
+            Some(entity) => Ok(entity),
+            None => {
+                let entity_kind = format!("{}/{}", T::Package::PACKAGE_NAME, T::KIND);
+                let status = match &selector.entity_selector_variant {
+                    Some(EntitySelectorVariant::Key(key)) => {
+                        Status::not_found(format!("{entity_kind} with key {key:?} not found"))
+                    }
+                    Some(EntitySelectorVariant::UniqueId(unique_id)) => Status::not_found(format!(
+                        "{entity_kind} with unique id {unique_id} not found"
+                    )),
+                    None => Status::invalid_argument(format!(
+                        "{entity_kind} selector variant is missing"
+                    )),
+                };
+                Err(status)
+            }
+        }
     }
 
     fn select_opt<T: EntityKind + Entity>(&self, selector: &EntitySelector) -> Option<Arc<T>> {
