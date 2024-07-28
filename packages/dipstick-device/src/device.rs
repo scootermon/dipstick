@@ -10,6 +10,7 @@ use dipstick_proto::wkt::IntoValue;
 use tokio::sync::broadcast;
 use tokio::task::JoinHandle;
 use tokio_stream::wrappers::BroadcastStream;
+use tokio_util::sync::{CancellationToken, DropGuard};
 use tonic::{Result, Status};
 
 use crate::devices::SharedDeviceVariant;
@@ -20,24 +21,29 @@ pub struct Device {
     tx: broadcast::Sender<DeviceEvent>,
     attrs: RwLock<HashMap<String, dipstick_proto::wkt::Value>>,
     sensors: RwLock<HashMap<String, SensorStatus>>,
+    cancel_token: CancellationToken,
+    _drop_guard: DropGuard,
 }
 
 struct Inner {
     variant: SharedDeviceVariant,
     poll_interval: std::time::Duration,
-    // TODO: shutdown
     _handle: JoinHandle<()>,
 }
 
 impl Device {
     pub async fn new(core: &Core, meta: EntityMeta, spec: DeviceSpec) -> Result<Arc<Self>> {
         let (tx, _) = broadcast::channel(16); // TODO
+        let cancel_token = CancellationToken::new();
+        let drop_guard = cancel_token.clone().drop_guard();
         let this = Arc::new(Self {
             meta,
             tx,
             inner: RwLock::new(None),
             attrs: RwLock::new(HashMap::new()),
             sensors: RwLock::new(HashMap::new()),
+            cancel_token,
+            _drop_guard: drop_guard,
         });
         this.apply_spec(core, spec).await?;
         Ok(this)
@@ -54,6 +60,7 @@ impl Device {
             .try_into()
             .map_err(|err| Status::invalid_argument(format!("invalid poll interval: {err}")))?;
         let handle = tokio::spawn(update_loop(
+            self.cancel_token.clone(),
             Arc::clone(self),
             Arc::clone(&variant),
             poll_interval,
@@ -169,13 +176,22 @@ impl EntityKind for Device {
     const KIND: &'static str = "Device";
 }
 
-async fn update_loop(device: Arc<Device>, variant: SharedDeviceVariant, poll_interval: Duration) {
+async fn update_loop(
+    cancel_token: CancellationToken,
+    device: Arc<Device>,
+    variant: SharedDeviceVariant,
+    poll_interval: Duration,
+) {
     let mut poll_interval = tokio::time::interval(poll_interval);
     poll_interval.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
     let mut started = false;
     loop {
-        poll_interval.tick().await;
+        tokio::select! {
+            _ = cancel_token.cancelled() => break,
+            _ = poll_interval.tick() => {}
+        }
         if !started {
+            tracing::debug!("starting device");
             match variant.start(&device).await {
                 Ok(()) => started = true,
                 Err(err) => {
@@ -185,8 +201,14 @@ async fn update_loop(device: Arc<Device>, variant: SharedDeviceVariant, poll_int
             }
         }
 
+        tracing::debug!("updating device");
         if let Err(err) = variant.update(&device).await {
             tracing::error!(err = &err as &dyn std::error::Error, "device update error");
         }
+    }
+
+    tracing::debug!("stopping device");
+    if let Err(err) = variant.stop(&device).await {
+        tracing::error!(err = &err as &dyn std::error::Error, "device stop error");
     }
 }

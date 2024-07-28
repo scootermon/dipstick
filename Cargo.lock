@@ -286,6 +286,7 @@ dependencies = [
  "futures",
  "tokio",
  "tokio-stream",
+ "tokio-util",
  "tonic",
  "tracing",
 ]
