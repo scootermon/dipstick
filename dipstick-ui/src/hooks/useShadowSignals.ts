@@ -1,9 +1,9 @@
-import { useEffect, useReducer } from "react";
 import { ShadowServiceClient } from "../api/dipstick/shadow/v1/service.client";
 import { SignalStatus } from "../api/dipstick/shadow/v1/signal";
 import { Value } from "../api/google/protobuf/struct";
 import { Timestamp } from "../api/google/protobuf/timestamp";
 import useShadowClient from "./useShadowClient";
+import { useEffect, useReducer } from "react";
 
 const nullValue: Value = { kind: { oneofKind: "nullValue", nullValue: 0 } };
 

@@ -47,6 +47,7 @@ import type { JsonReadOptions } from "@protobuf-ts/runtime";
 import type { JsonWriteOptions } from "@protobuf-ts/runtime";
 import type { JsonObject } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
+
 /**
  * `Struct` represents a structured data value, consisting of fields
  * which map to dynamically typed values. In some languages, `Struct`

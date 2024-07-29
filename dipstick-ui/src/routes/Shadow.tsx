@@ -1,15 +1,15 @@
-import { useParams } from "react-router-dom";
+import { Value } from "../api/google/protobuf/struct";
 import useShadowSignals from "../hooks/useShadowSignals";
 import {
-  TableContainer,
   Paper,
   Table,
+  TableBody,
+  TableCell,
+  TableContainer,
   TableHead,
   TableRow,
-  TableCell,
-  TableBody,
 } from "@mui/material";
-import { Value } from "../api/google/protobuf/struct";
+import { useParams } from "react-router-dom";
 
 export default function Shadow() {
   const { uniqueId } = useParams();

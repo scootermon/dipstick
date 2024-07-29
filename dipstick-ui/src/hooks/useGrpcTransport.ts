@@ -1,5 +1,5 @@
-import { useMemo } from "react";
 import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+import { useMemo } from "react";
 
 export default function useGrpcTransport() {
   const transport = useMemo(

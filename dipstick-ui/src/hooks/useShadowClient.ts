@@ -1,6 +1,6 @@
-import { useMemo } from "react";
-import useGrpcTransport from "./useGrpcTransport";
 import { ShadowServiceClient } from "../api/dipstick/shadow/v1/service.client";
+import useGrpcTransport from "./useGrpcTransport";
+import { useMemo } from "react";
 
 export default function useShadowClient() {
   const transport = useGrpcTransport();
