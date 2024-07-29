@@ -14,9 +14,13 @@ plugins:
     out: ../packages/dipstick-proto/src/_gen
 
   # python
-  - remote: buf.build/grpc/python:v1.65.0
+  - remote: buf.build/grpc/python:v1.65.1
     out: build/python
   - remote: buf.build/protocolbuffers/python:v27.2
     out: build/python
   - remote: buf.build/protocolbuffers/pyi:v27.2
     out: build/python
+
+  # typescript
+  - remote: buf.build/community/timostamm-protobuf-ts:v2.9.4
+    out: ../dipstick-ui/src/api
