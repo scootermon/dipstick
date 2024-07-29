@@ -20,7 +20,9 @@ pub fn init() -> LoggingHandle {
         .with_default(tracing::Level::INFO)
         .with_target("dipstick", tracing::Level::DEBUG);
     let (dipstick_filter, dipstick_filter_get, dipstick_filter_modify) = {
-        let (filter, handle) = reload::Layer::new(terminal_filter.clone());
+        let filter = filter::Targets::new().with_default(tracing::Level::DEBUG);
+        let (filter, handle) = reload::Layer::new(filter);
+        // we do this funny dance to avoid having to name the messy targets type
         let get = {
             let handle = handle.clone();
             Box::new(move || handle.clone_current())

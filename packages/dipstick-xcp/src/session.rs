@@ -228,7 +228,7 @@ impl Session {
             return Ok(());
         }
 
-        tracing::info!("auto-connecting");
+        tracing::debug!("auto-connecting");
         let req_data = CtoConnectReqData {
             mode: self.spec.auto_connect_mode(),
         };
