@@ -56,6 +56,11 @@ impl Device {
                 let rx = device.transfer(&data)?;
                 Ok(Bytes::from(rx))
             }
+            #[cfg(not(target_os = "linux"))]
+            _ => {
+                let _ = data;
+                unreachable!();
+            }
         }
     }
 }
@@ -86,6 +91,7 @@ impl Variant {
             }
             #[cfg(not(target_os = "linux"))]
             DeviceSpecVariant::Linux(_) => {
+                let _ = spec;
                 Err(Status::unimplemented("linux device support not available"))
             }
         }
