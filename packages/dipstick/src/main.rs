@@ -28,11 +28,11 @@ async fn _main() -> anyhow::Result<()> {
         }
     });
 
-    let reflection_v1_server = reflection_v1_server_builder()
-        .build()
+    let reflection_v1_server = reflection_server_builder()
+        .build_v1()
         .context("failed to build reflection v1 server")?;
-    let reflection_v1alpha_server = reflection_v1alpha_server_builder()
-        .build()
+    let reflection_v1alpha_server = reflection_server_builder()
+        .build_v1alpha()
         .context("failed to build reflection v1alpha server")?;
 
     let gpio = dipstick_gpio::Gpio::new(Arc::clone(&core));
@@ -74,7 +74,7 @@ async fn _main() -> anyhow::Result<()> {
     res
 }
 
-fn reflection_v1_server_builder() -> tonic_reflection::server::Builder<'static> {
+fn reflection_server_builder() -> tonic_reflection::server::Builder<'static> {
     let mut builder = tonic_reflection::server::Builder::configure();
     for file_descriptor_set in dipstick_proto::ALL_FILE_DESCRIPTOR_SETS {
         builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);
@@ -82,13 +82,6 @@ fn reflection_v1_server_builder() -> tonic_reflection::server::Builder<'static> 
     builder
 }
 
-fn reflection_v1alpha_server_builder() -> tonic_reflection::server::v1alpha::Builder<'static> {
-    let mut builder = tonic_reflection::server::v1alpha::Builder::configure();
-    for file_descriptor_set in dipstick_proto::ALL_FILE_DESCRIPTOR_SETS {
-        builder = builder.register_encoded_file_descriptor_set(file_descriptor_set);
-    }
-    builder
-}
 
 #[tokio::main]
 async fn main() -> ExitCode {

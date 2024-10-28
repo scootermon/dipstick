@@ -28,7 +28,7 @@ dipstick-xcp = { path = "packages/dipstick-xcp" }
 a2lfile = "2"
 anyhow = "1"
 bytes = "1"
-console-subscriber = "0.3"
+console-subscriber = "0.4"
 futures = "0.3"
 gpiocdev = { version = "0.7", features = ["async_tokio"] }
 percent-encoding = "2"
@@ -50,11 +50,6 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 
 [patch.crates-io]
-# for <https://github.com/hyperium/tonic/pull/1787>
-tonic = { git = "https://github.com/ttkgames/tonic.git", branch = "server-builders" }
-tonic-reflection = { git = "https://github.com/ttkgames/tonic.git", branch = "server-builders" }
-tonic-types = { git = "https://github.com/ttkgames/tonic.git", branch = "server-builders" }
-tonic-web = { git = "https://github.com/ttkgames/tonic.git", branch = "server-builders" }
 
 [profile.dev]
 opt-level = 1
