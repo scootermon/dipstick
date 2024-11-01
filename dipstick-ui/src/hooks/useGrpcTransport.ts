@@ -5,7 +5,7 @@ export default function useGrpcTransport() {
   const transport = useMemo(
     () =>
       new GrpcWebFetchTransport({
-        baseUrl: "http://10.90.40.13:50051",
+        baseUrl: import.meta.env.VITE_DIPSTICK_BASE_URL,
       }),
     [],
   );
