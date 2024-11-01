@@ -1,13 +1,20 @@
-import { ShadowServiceClient } from "../api/dipstick/shadow/v1/service.client";
-import { SignalStatus } from "../api/dipstick/shadow/v1/signal";
-import { Value } from "../api/google/protobuf/struct";
-import { Timestamp } from "../api/google/protobuf/timestamp";
-import useShadowClient from "./useShadowClient";
+import { useGrpcTransport } from "./grpc";
+import { ShadowServiceClient } from "@/api/dipstick/shadow/v1/service.client";
+import { SignalStatus } from "@/api/dipstick/shadow/v1/signal";
+import { Value } from "@/api/google/protobuf/struct";
+import { Timestamp } from "@/api/google/protobuf/timestamp";
+import { useMemo } from "react";
 import { useEffect, useReducer } from "react";
+
+export function useShadowClient() {
+  const transport = useGrpcTransport();
+  const client = useMemo(() => new ShadowServiceClient(transport), [transport]);
+  return client;
+}
 
 const nullValue: Value = { kind: { oneofKind: "nullValue", nullValue: 0 } };
 
-export default function useShadowSignals(uniqueId: number) {
+export function useShadowSignals(uniqueId: number) {
   const client = useShadowClient();
   const [state, dispatch] = useReducer(signalsReducer, undefined, () => ({
     signals: {},

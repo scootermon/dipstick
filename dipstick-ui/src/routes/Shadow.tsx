@@ -1,5 +1,5 @@
-import { Value } from "../api/google/protobuf/struct";
-import useShadowSignals from "../hooks/useShadowSignals";
+import { Value } from "@/api/google/protobuf/struct";
+import { useShadowSignals } from "@/hooks/shadow";
 import {
   Paper,
   Table,
