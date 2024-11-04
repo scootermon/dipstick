@@ -19,9 +19,11 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "noUnusedLocals": false, // needed because of grpc code
+    "noUnusedParameters": false, // needed because of grpc code
     "noFallthroughCasesInSwitch": true,
+
+    /* Import */
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -5,4 +5,4 @@ PORT="28589"
 
 ssh_host="${1:?}"
 
-exec ssh -tt "${ssh_host}" "cd /tmp && sudo lldb-server platform --server --listen '*:$PORT'"
+exec ssh -tt "${ssh_host}" "cd /opt/dipstick && sudo lldb-server platform --server --listen '*:$PORT'"
