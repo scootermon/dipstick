@@ -181,7 +181,7 @@ async fn add_spi_device(
 ) -> Result<()> {
     let device = {
         let dipstick_proto::spi::v1::CreateDeviceRequest { meta, spec } = spec.clone();
-        let spi = ctx.core.get_package::<dipstick_spi::Spi>()?;
+        let spi = ctx.core.get_package::<dipstick_spi::SpiService>()?;
         spi.create_device_impl(meta.unwrap_or_default(), spec.unwrap_or_default())
             .await?
     };

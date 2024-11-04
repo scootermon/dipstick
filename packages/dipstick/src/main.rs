@@ -37,7 +37,7 @@ async fn _main() -> anyhow::Result<()> {
 
     let gpio = dipstick_gpio::Gpio::new(Arc::clone(&core));
     let can = dipstick_can::Can::new(Arc::clone(&core));
-    let spi = dipstick_spi::Spi::new(Arc::clone(&core));
+    let spi_service = dipstick_spi::SpiService::new(Arc::clone(&core));
     let xcp_service = dipstick_xcp::XcpService::new(Arc::clone(&core));
     let shadow_service = dipstick_shadow::ShadowService::new(Arc::clone(&core));
     let device_service = dipstick_device::DeviceService::new(Arc::clone(&core));
@@ -45,7 +45,7 @@ async fn _main() -> anyhow::Result<()> {
 
     core.add_package(Arc::clone(&gpio));
     core.add_package(Arc::clone(&can));
-    core.add_package(Arc::clone(&spi));
+    core.add_package(Arc::clone(&spi_service));
     core.add_package(Arc::clone(&xcp_service));
     core.add_package(Arc::clone(&shadow_service));
     core.add_package(Arc::clone(&device_service));
@@ -62,7 +62,7 @@ async fn _main() -> anyhow::Result<()> {
         .add_service(tonic_web::enable(reflection_v1_server))
         .add_service(tonic_web::enable(reflection_v1alpha_server))
         .add_service(tonic_web::enable(shadow_service.into_server()))
-        .add_service(tonic_web::enable(spi.into_server()))
+        .add_service(tonic_web::enable(spi_service.into_server()))
         .add_service(tonic_web::enable(stack_service.into_server()))
         .add_service(tonic_web::enable(xcp_service.into_server()))
         .serve_with_shutdown(addr, cancel_token.cancelled_owned())
@@ -81,7 +81,6 @@ fn reflection_server_builder() -> tonic_reflection::server::Builder<'static> {
     }
     builder
 }
-
 
 #[tokio::main]
 async fn main() -> ExitCode {

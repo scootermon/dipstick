@@ -3,12 +3,15 @@ package dipstick.spi.v1;
 
 import "dipstick/core/v1/entity.proto";
 import "dipstick/spi/v1/device.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
 
 service SpiService {
   rpc CreateDevice(CreateDeviceRequest) returns (CreateDeviceResponse);
   rpc GetDevice(GetDeviceRequest) returns (GetDeviceResponse);
 
   rpc Transfer(TransferRequest) returns (TransferResponse);
+  rpc Transfers(TransfersRequest) returns (stream TransfersResponse);
 }
 
 message CreateDeviceRequest {
@@ -35,4 +38,15 @@ message TransferRequest {
 
 message TransferResponse {
   bytes data = 2;
+}
+
+message TransfersRequest {
+  dipstick.core.v1.EntitySelector selector = 1;
+}
+
+message TransfersResponse {
+  google.protobuf.Timestamp timestamp = 1;
+  google.protobuf.Duration duration = 4;
+  bytes rx = 2;
+  bytes tx = 3;
 }

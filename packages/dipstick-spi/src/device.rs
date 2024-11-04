@@ -1,8 +1,13 @@
 use std::sync::Arc;
+use std::time::SystemTime;
 
 use bytes::Bytes;
 use dipstick_core::{Entity, EntityKind, EntityMeta};
-use dipstick_proto::spi::v1::{DeviceEntity, DeviceSpec, DeviceSpecVariant, DeviceStatus};
+use dipstick_proto::spi::v1::{
+    DeviceEntity, DeviceSpec, DeviceSpecVariant, DeviceStatus, TransfersResponse,
+};
+use tokio::sync::broadcast;
+use tokio_stream::wrappers::BroadcastStream;
 use tonic::{Result, Status};
 
 #[cfg(target_os = "linux")]
@@ -12,6 +17,7 @@ pub struct Device {
     meta: EntityMeta,
     spec: DeviceSpec,
     variant: Variant,
+    tx: broadcast::Sender<TransfersResponse>,
 }
 
 impl Device {
@@ -24,11 +30,13 @@ impl Device {
             .ok_or_else(|| Status::invalid_argument("missing device spec variant"))?;
         let variant = Variant::new(&mut spec, &mut variant_spec).await?;
         spec.device_spec_variant = Some(variant_spec);
+        let (tx, _rx) = broadcast::channel(128); // TODO
         tracing::info!("created device");
         Ok(Arc::new(Self {
             meta,
             spec,
             variant,
+            tx,
         }))
     }
 
@@ -48,20 +56,38 @@ impl Device {
         }
     }
 
+    pub fn subscribe(&self) -> BroadcastStream<TransfersResponse> {
+        BroadcastStream::new(self.tx.subscribe())
+    }
+
     pub async fn transfer(&self, data: Bytes) -> Result<Bytes> {
         tracing::trace!("running transfer");
-        match &self.variant {
+        let start = SystemTime::now();
+        let rx = match &self.variant {
             #[cfg(target_os = "linux")]
             Variant::Linux(device) => {
                 let rx = device.transfer(&data)?;
-                Ok(Bytes::from(rx))
+                Bytes::from(rx)
             }
             #[cfg(not(target_os = "linux"))]
             _ => {
+                // unreachable!
                 let _ = data;
-                unreachable!();
+                Bytes::new()
             }
-        }
+        };
+
+        let duration = SystemTime::now()
+            .duration_since(start)
+            .ok()
+            .and_then(|dur| dur.try_into().ok());
+        let _ = self.tx.send(TransfersResponse {
+            timestamp: Some(start.into()),
+            duration,
+            rx: rx.clone(),
+            tx: data.clone(),
+        });
+        Ok(rx)
     }
 }
 
@@ -72,7 +98,7 @@ impl Entity for Device {
 }
 
 impl EntityKind for Device {
-    type Package = crate::Spi;
+    type Package = crate::SpiService;
     const KIND: &'static str = "Device";
 }
 

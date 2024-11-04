@@ -2,6 +2,8 @@
 // @generated from protobuf file "dipstick/spi/v1/service.proto" (package "dipstick.spi.v1", syntax proto3)
 // tslint:disable
 import { SpiService } from "./service";
+import type { TransactionsResponse } from "./service";
+import type { TransactionsRequest } from "./service";
 import type { TransferResponse } from "./service";
 import type { TransferRequest } from "./service";
 import type { GetDeviceResponse } from "./service";
@@ -10,6 +12,7 @@ import type { CreateDeviceResponse } from "./service";
 import type { CreateDeviceRequest } from "./service";
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
+import type { ServerStreamingCall } from "@protobuf-ts/runtime-rpc";
 import { stackIntercept } from "@protobuf-ts/runtime-rpc";
 import type { UnaryCall } from "@protobuf-ts/runtime-rpc";
 import type { RpcOptions } from "@protobuf-ts/runtime-rpc";
@@ -39,6 +42,13 @@ export interface ISpiServiceClient {
     input: TransferRequest,
     options?: RpcOptions,
   ): UnaryCall<TransferRequest, TransferResponse>;
+  /**
+   * @generated from protobuf rpc: Transactions(dipstick.spi.v1.TransactionsRequest) returns (stream dipstick.spi.v1.TransactionsResponse);
+   */
+  transactions(
+    input: TransactionsRequest,
+    options?: RpcOptions,
+  ): ServerStreamingCall<TransactionsRequest, TransactionsResponse>;
 }
 /**
  * @generated from protobuf service dipstick.spi.v1.SpiService
@@ -93,6 +103,23 @@ export class SpiServiceClient implements ISpiServiceClient, ServiceInfo {
       opt = this._transport.mergeOptions(options);
     return stackIntercept<TransferRequest, TransferResponse>(
       "unary",
+      this._transport,
+      method,
+      opt,
+      input,
+    );
+  }
+  /**
+   * @generated from protobuf rpc: Transactions(dipstick.spi.v1.TransactionsRequest) returns (stream dipstick.spi.v1.TransactionsResponse);
+   */
+  transactions(
+    input: TransactionsRequest,
+    options?: RpcOptions,
+  ): ServerStreamingCall<TransactionsRequest, TransactionsResponse> {
+    const method = this.methods[3],
+      opt = this._transport.mergeOptions(options);
+    return stackIntercept<TransactionsRequest, TransactionsResponse>(
+      "serverStreaming",
       this._transport,
       method,
       opt,
