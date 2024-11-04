@@ -2,6 +2,7 @@ import ErrorPage from "./routes/ErrorPage.tsx";
 import Root from "./routes/Root.tsx";
 import Shadow from "./routes/Shadow.tsx";
 import { CoreV1Page } from "./routes/core.v1/index.tsx";
+import { CoreV1LoggingPage } from "./routes/core.v1/logging.tsx";
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
@@ -17,8 +18,17 @@ const router = createBrowserRouter([
     errorElement: <ErrorPage />,
     children: [
       {
-        path: "core.v1",
-        element: <CoreV1Page />,
+        path: "core.v1/",
+        children: [
+          {
+            path: "",
+            element: <CoreV1Page />,
+          },
+          {
+            path: "logging",
+            element: <CoreV1LoggingPage />,
+          },
+        ],
       },
       {
         path: "shadow.v1/Shadow/:uniqueId",

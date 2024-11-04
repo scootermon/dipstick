@@ -4,8 +4,9 @@ import {
   useGrpcUnaryCall,
 } from "./grpc";
 import { EntityMeta } from "@/api/dipstick/core/v1/entity";
+import { LogEvent } from "@/api/dipstick/core/v1/logging";
 import { CoreServiceClient } from "@/api/dipstick/core/v1/service.client";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export function useCoreClient() {
   const transport = useGrpcTransport();
@@ -21,4 +22,30 @@ export function useCoreEntities(): AsyncOperationState<EntityMeta[]> {
   );
   const state = useGrpcUnaryCall(input);
   return { ...state, value: state.value?.entities ?? [] };
+}
+
+export function useLogs(opts?: { limit?: number }): LogEvent[] {
+  const { limit = 500 } = opts ?? {};
+
+  const client = useCoreClient();
+  const [logs, setLogs] = useState<LogEvent[]>([]);
+
+  useEffect(() => {
+    const abort = new AbortController();
+    const call = client.logSubscribe({}, { signal: abort.signal });
+    call.responses.onMessage((msg) => {
+      const event = msg.event;
+      if (!event) {
+        return;
+      }
+      setLogs((logs) => {
+        if (logs.length >= limit) {
+          return [...logs.slice(1), event];
+        } else {
+          return logs;
+        }
+      });
+    });
+  }, [client, limit]);
+  return logs;
 }
