@@ -69,6 +69,7 @@ impl SpiTransport {
         tx_data.put_u8((R::addr() << 2) | 0x01);
         tx_data.put_bytes(0, R::len());
         let mut rx_data = self.device.transfer(tx_data.freeze()).await?;
+        tracing::trace!(addr = R::addr(), len = R::len(), data = ?rx_data, "read register");
         rx_data.advance(1);
         Ok(R::decode(&mut rx_data))
     }
@@ -78,6 +79,7 @@ impl SpiTransport {
         tx_data.put_u8(R::addr() << 2);
         reg.encode(&mut tx_data);
         self.device.transfer(tx_data.freeze()).await?;
+        tracing::trace!(addr = R::addr(), len = R::len(), "wrote register");
         Ok(())
     }
 }

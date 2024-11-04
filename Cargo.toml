@@ -36,7 +36,7 @@ prost = "0.13"
 prost-types = "0.13"
 protoc-wkt = "1"
 rand = "0.8"
-socketcan = { version = "3", features = ["tokio"] }
+socketcan = { version = "3.4.0-pre.0", features = ["tokio"] } # see below
 spidev = "0.6"
 tokio = { version = "1", features = ["full", "tracing"] }
 tokio-stream = { version = "0.1", features = ["full"] }
@@ -50,6 +50,7 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 
 [patch.crates-io]
+socketcan = { git = "https://github.com/inomotech-foss/socketcan-rs", rev = "25299c165568c43e45fdb30cd0295fd6329be632" }
 
 [profile.dev]
 opt-level = 1
