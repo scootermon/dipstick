@@ -45,11 +45,8 @@ impl Bus {
 
     pub async fn send(&self, frame: &Frame) -> Result<()> {
         let frame = conv::to_linux_frame(frame)?;
-        let fut = self
-            .socket
-            .write_frame(frame)
-            .map_err(|err| Status::internal(format!("failed to duplicate socket: {err}")))?;
-        match fut.await {
+        let res = self.socket.write_frame(frame).await;
+        match res {
             Ok(()) => Ok(()),
             Err(err) => {
                 tracing::error!(
