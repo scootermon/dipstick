@@ -2,8 +2,8 @@
 // @generated from protobuf file "dipstick/spi/v1/service.proto" (package "dipstick.spi.v1", syntax proto3)
 // tslint:disable
 import { SpiService } from "./service";
-import type { TransactionsResponse } from "./service";
-import type { TransactionsRequest } from "./service";
+import type { TransfersResponse } from "./service";
+import type { TransfersRequest } from "./service";
 import type { TransferResponse } from "./service";
 import type { TransferRequest } from "./service";
 import type { GetDeviceResponse } from "./service";
@@ -43,12 +43,12 @@ export interface ISpiServiceClient {
     options?: RpcOptions,
   ): UnaryCall<TransferRequest, TransferResponse>;
   /**
-   * @generated from protobuf rpc: Transactions(dipstick.spi.v1.TransactionsRequest) returns (stream dipstick.spi.v1.TransactionsResponse);
+   * @generated from protobuf rpc: Transfers(dipstick.spi.v1.TransfersRequest) returns (stream dipstick.spi.v1.TransfersResponse);
    */
-  transactions(
-    input: TransactionsRequest,
+  transfers(
+    input: TransfersRequest,
     options?: RpcOptions,
-  ): ServerStreamingCall<TransactionsRequest, TransactionsResponse>;
+  ): ServerStreamingCall<TransfersRequest, TransfersResponse>;
 }
 /**
  * @generated from protobuf service dipstick.spi.v1.SpiService
@@ -110,15 +110,15 @@ export class SpiServiceClient implements ISpiServiceClient, ServiceInfo {
     );
   }
   /**
-   * @generated from protobuf rpc: Transactions(dipstick.spi.v1.TransactionsRequest) returns (stream dipstick.spi.v1.TransactionsResponse);
+   * @generated from protobuf rpc: Transfers(dipstick.spi.v1.TransfersRequest) returns (stream dipstick.spi.v1.TransfersResponse);
    */
-  transactions(
-    input: TransactionsRequest,
+  transfers(
+    input: TransfersRequest,
     options?: RpcOptions,
-  ): ServerStreamingCall<TransactionsRequest, TransactionsResponse> {
+  ): ServerStreamingCall<TransfersRequest, TransfersResponse> {
     const method = this.methods[3],
       opt = this._transport.mergeOptions(options);
-    return stackIntercept<TransactionsRequest, TransactionsResponse>(
+    return stackIntercept<TransfersRequest, TransfersResponse>(
       "serverStreaming",
       this._transport,
       method,

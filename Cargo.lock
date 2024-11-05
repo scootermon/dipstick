@@ -410,6 +410,7 @@ dependencies = [
  "futures",
  "spidev",
  "tokio",
+ "tokio-stream",
  "tonic",
  "tracing",
 ]
