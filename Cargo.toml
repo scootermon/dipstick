@@ -53,7 +53,6 @@ tracing-subscriber = "0.3"
 socketcan = { git = "https://github.com/inomotech-foss/socketcan-rs", rev = "25299c165568c43e45fdb30cd0295fd6329be632" }
 
 [profile.dev]
-opt-level = 1
 split-debuginfo = "packed"
 
 [profile.release]
