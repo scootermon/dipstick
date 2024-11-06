@@ -1,8 +1,8 @@
 use std::io;
 use std::os::fd::AsRawFd;
 
-use dipstick_proto::spi::v1::{DeviceSpec, LinuxDeviceSpec};
-use spidev::{Spidev, SpidevOptions, SpidevTransfer};
+use dipstick_proto::spi::v1::{DeviceSpec, LinuxDeviceSpec, SpiMode};
+use spidev::{SpiModeFlags, Spidev, SpidevOptions, SpidevTransfer};
 use tokio::task::block_in_place;
 
 pub struct Device(Spidev);
@@ -43,6 +43,9 @@ fn apply_spec_to_device_blocking(device: &mut Spidev, spec: &mut DeviceSpec) -> 
 
 fn write_device_config_blocking(device: &mut Spidev, spec: &DeviceSpec) -> io::Result<()> {
     let mut options = SpidevOptions::new();
+    if let Some(mode) = to_linux_mode(spec.mode()) {
+        options.mode(mode);
+    }
     if let Some(value) = spec.bits_per_word {
         let value = value.try_into().map_err(|_err| {
             io::Error::new(io::ErrorKind::InvalidInput, "bits_per_word out of range")
@@ -61,6 +64,11 @@ fn write_device_config_blocking(device: &mut Spidev, spec: &DeviceSpec) -> io::R
 }
 
 fn read_device_config_blocking(device: &mut Spidev, spec: &mut DeviceSpec) -> io::Result<()> {
+    // TODO: why can't we call get_mode32?
+    let value = spidev::spidevioctl::get_mode(device.as_raw_fd())?;
+    spec.set_mode(from_linux_mode(SpiModeFlags::from_bits_retain(
+        value.into(),
+    )));
     let value = spidev::spidevioctl::get_bits_per_word(device.as_raw_fd())?;
     spec.bits_per_word = Some(value.into());
     let value = spidev::spidevioctl::get_max_speed_hz(device.as_raw_fd())?;
@@ -69,4 +77,20 @@ fn read_device_config_blocking(device: &mut Spidev, spec: &mut DeviceSpec) -> io
     spec.lsb_first = Some(value != 0);
     tracing::trace!("read device configuration");
     Ok(())
+}
+
+const fn to_linux_mode(mode: SpiMode) -> Option<SpiModeFlags> {
+    match mode {
+        SpiMode::Unspecified => None,
+        SpiMode::SpiMode0 => Some(SpiModeFlags::SPI_MODE_0),
+        SpiMode::SpiMode1 => Some(SpiModeFlags::SPI_MODE_1),
+        SpiMode::SpiMode2 => Some(SpiModeFlags::SPI_MODE_2),
+        SpiMode::SpiMode3 => Some(SpiModeFlags::SPI_MODE_3),
+    }
+}
+
+const fn from_linux_mode(mode: SpiModeFlags) -> SpiMode {
+    let cpha = mode.contains(SpiModeFlags::SPI_CPHA);
+    let cpol = mode.contains(SpiModeFlags::SPI_CPOL);
+    SpiMode::from_cpol_cpha(cpha, cpol)
 }

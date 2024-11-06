@@ -13,9 +13,16 @@ message DeviceSpec {
   optional uint32 bits_per_word = 1;
   optional uint32 max_speed_hz = 3;
   optional bool lsb_first = 4;
-  oneof device_spec_variant {
-    LinuxDeviceSpec linux = 2;
-  }
+  SpiMode mode = 5;
+  oneof device_spec_variant { LinuxDeviceSpec linux = 2; }
+}
+
+enum SpiMode {
+  SPI_MODE_UNSPECIFIED = 0;
+  SPI_MODE_0 = 1;
+  SPI_MODE_1 = 2;
+  SPI_MODE_2 = 3;
+  SPI_MODE_3 = 4;
 }
 
 message LinuxDeviceSpec {

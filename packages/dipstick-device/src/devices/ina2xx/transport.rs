@@ -54,6 +54,8 @@ struct SpiTransport {
 impl SpiTransport {
     fn new(core: &Core, device: &Device, selector: EntitySelector) -> Result<Self> {
         let device = core.select_entity_dep(device, &selector)?;
+        // TODO: ensure max_speed < 10e6
+        // TODO: ensure spi mode == 1
         Ok(Self {
             spec: selector,
             device,
