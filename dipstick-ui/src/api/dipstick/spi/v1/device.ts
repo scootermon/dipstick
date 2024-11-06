@@ -46,6 +46,10 @@ export interface DeviceSpec {
    */
   lsbFirst?: boolean;
   /**
+   * @generated from protobuf field: dipstick.spi.v1.SpiMode mode = 5;
+   */
+  mode: SpiMode;
+  /**
    * @generated from protobuf oneof: device_spec_variant
    */
   deviceSpecVariant:
@@ -77,6 +81,31 @@ export interface LinuxDeviceSpec {
  * @generated from protobuf message dipstick.spi.v1.DeviceStatus
  */
 export interface DeviceStatus {}
+/**
+ * @generated from protobuf enum dipstick.spi.v1.SpiMode
+ */
+export enum SpiMode {
+  /**
+   * @generated from protobuf enum value: SPI_MODE_UNSPECIFIED = 0;
+   */
+  SPI_MODE_UNSPECIFIED = 0,
+  /**
+   * @generated from protobuf enum value: SPI_MODE_0 = 1;
+   */
+  SPI_MODE_0 = 1,
+  /**
+   * @generated from protobuf enum value: SPI_MODE_1 = 2;
+   */
+  SPI_MODE_1 = 2,
+  /**
+   * @generated from protobuf enum value: SPI_MODE_2 = 3;
+   */
+  SPI_MODE_2 = 3,
+  /**
+   * @generated from protobuf enum value: SPI_MODE_3 = 4;
+   */
+  SPI_MODE_3 = 4,
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class DeviceEntity$Type extends MessageType<DeviceEntity> {
   constructor() {
@@ -212,6 +241,12 @@ class DeviceSpec$Type extends MessageType<DeviceSpec> {
         T: 8 /*ScalarType.BOOL*/,
       },
       {
+        no: 5,
+        name: "mode",
+        kind: "enum",
+        T: () => ["dipstick.spi.v1.SpiMode", SpiMode],
+      },
+      {
         no: 2,
         name: "linux",
         kind: "message",
@@ -222,6 +257,7 @@ class DeviceSpec$Type extends MessageType<DeviceSpec> {
   }
   create(value?: PartialMessage<DeviceSpec>): DeviceSpec {
     const message = globalThis.Object.create(this.messagePrototype!);
+    message.mode = 0;
     message.deviceSpecVariant = { oneofKind: undefined };
     if (value !== undefined)
       reflectionMergePartial<DeviceSpec>(this, message, value);
@@ -246,6 +282,9 @@ class DeviceSpec$Type extends MessageType<DeviceSpec> {
           break;
         case /* optional bool lsb_first */ 4:
           message.lsbFirst = reader.bool();
+          break;
+        case /* dipstick.spi.v1.SpiMode mode */ 5:
+          message.mode = reader.int32();
           break;
         case /* dipstick.spi.v1.LinuxDeviceSpec linux */ 2:
           message.deviceSpecVariant = {
@@ -291,6 +330,8 @@ class DeviceSpec$Type extends MessageType<DeviceSpec> {
     /* optional bool lsb_first = 4; */
     if (message.lsbFirst !== undefined)
       writer.tag(4, WireType.Varint).bool(message.lsbFirst);
+    /* dipstick.spi.v1.SpiMode mode = 5; */
+    if (message.mode !== 0) writer.tag(5, WireType.Varint).int32(message.mode);
     /* dipstick.spi.v1.LinuxDeviceSpec linux = 2; */
     if (message.deviceSpecVariant.oneofKind === "linux")
       LinuxDeviceSpec.internalBinaryWrite(
