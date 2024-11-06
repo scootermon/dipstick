@@ -90,7 +90,7 @@ const fn to_linux_mode(mode: SpiMode) -> Option<SpiModeFlags> {
 }
 
 const fn from_linux_mode(mode: SpiModeFlags) -> SpiMode {
-    let cpha = mode.contains(SpiModeFlags::SPI_CPHA);
     let cpol = mode.contains(SpiModeFlags::SPI_CPOL);
-    SpiMode::from_cpol_cpha(cpha, cpol)
+    let cpha = mode.contains(SpiModeFlags::SPI_CPHA);
+    SpiMode::from_cpol_cpha(cpol, cpha)
 }
