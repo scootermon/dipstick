@@ -23,6 +23,7 @@ pub struct Session {
     spec: SessionSpec,
     transport: Transport,
     connect_data: RwLock<Option<CtoConnectRespData>>,
+    // TODO: replace this hack with a proper mutex
     cto_guard: Mutex<()>,
 }
 
@@ -74,9 +75,13 @@ impl Session {
             .try_into()
             .map_err(|_| Status::invalid_argument("ecu address extension invalid"))?;
         let length = u32::from(crate::a2l::codec::data_type_len(measurement.datatype()));
-        let (timestamp, mut data) = self
-            .cto_short_upload(measurement.ecu_address(), address_extension, length)
-            .await?;
+
+        let (timestamp, mut data) = {
+            let _guard = self.cto_guard.lock().await;
+            self.cto_short_upload(measurement.ecu_address(), address_extension, length)
+                .await?
+        };
+
         let value = crate::a2l::codec::decode_data_type(
             &mut data,
             measurement.datatype(),
@@ -103,9 +108,12 @@ impl Session {
             .try_into()
             .map_err(|_| Status::invalid_argument("ecu address extension invalid"))?;
         let length = u32::from(crate::a2l::codec::record_len(record_layout));
-        let (timestamp, mut data) = self
-            .cto_short_upload(characteristic.address, address_extension, length)
-            .await?;
+
+        let (timestamp, mut data) = {
+            let _guard = self.cto_guard.lock().await;
+            self.cto_short_upload(characteristic.address, address_extension, length)
+                .await?
+        };
 
         let value =
             crate::a2l::codec::decode_record(&mut data, record_layout, characteristic.byte_order())
@@ -140,8 +148,11 @@ impl Session {
         .map_err(|err| {
             Status::invalid_argument(format!("unable to encode characteristic data: {err}"))
         })?;
-        self.cto_download(characteristic.address, address_extension, data.freeze())
-            .await?;
+        {
+            let _guard = self.cto_guard.lock().await;
+            self.cto_download(characteristic.address, address_extension, data.freeze())
+                .await?;
+        }
         Ok(())
     }
 
@@ -171,7 +182,6 @@ impl Session {
     }
 
     async fn cto_download(&self, address: u32, address_extension: u32, data: Bytes) -> Result<()> {
-        // TODO: need some kind of overarching lock
         self.cto_set_mta(address, address_extension).await?;
         let req_data = CtoDownloadReqData {
             data,
@@ -206,8 +216,6 @@ impl Session {
     }
 
     pub async fn cto_command(&self, req: &CtoReq) -> Result<CtoResp> {
-        let _guard = self.cto_guard.lock().await;
-
         if req.pid() != CtoReqPid::Connect {
             self.auto_connect_raw().await?;
         }
