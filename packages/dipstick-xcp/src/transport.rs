@@ -93,11 +93,9 @@ impl CanTransport {
 
         let server_id = spec
             .server_id
-            .clone()
             .ok_or_else(|| Status::invalid_argument("missing server id"))?;
         let client_id = spec
             .client_id
-            .clone()
             .ok_or_else(|| Status::invalid_argument("missing client id"))?;
 
         let (packet_tx, _) = broadcast::channel(32); // TODO
@@ -142,7 +140,7 @@ impl CanTransport {
     async fn send(&self, packet_data: Bytes) -> Result<()> {
         // TODO: pad packet if required
         let can_frame = dipstick_proto::can::v1::Frame {
-            id: Some(self.server_id.clone()),
+            id: Some(self.server_id),
             data: packet_data,
             ..Default::default()
         };

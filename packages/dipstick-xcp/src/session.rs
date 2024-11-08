@@ -54,7 +54,7 @@ impl Session {
     }
 
     pub fn status(&self) -> SessionStatus {
-        let connect_data = self.connect_data.read().unwrap().clone();
+        let connect_data = *self.connect_data.read().unwrap();
         SessionStatus { connect_data }
     }
 

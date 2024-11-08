@@ -41,7 +41,7 @@ impl Device {
     }
 
     pub fn spec(&self) -> DeviceSpec {
-        self.spec.clone()
+        self.spec
     }
 
     pub fn status(&self) -> DeviceStatus {

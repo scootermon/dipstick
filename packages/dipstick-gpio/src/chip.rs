@@ -145,7 +145,7 @@ impl PinMap {
                 if self.tx.receiver_count() > 0 {
                     let _ = self.tx.send(SubscribeChipResponse {
                         pin_id: id.to_owned(),
-                        status: Some(status.clone()),
+                        status: Some(*status),
                     });
                 }
             }

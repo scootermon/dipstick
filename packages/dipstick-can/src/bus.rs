@@ -19,11 +19,11 @@ pub struct Bus {
 impl Bus {
     pub async fn new(core: &Core, meta: EntityMeta, mut spec: BusSpec) -> Result<Arc<Self>> {
         let (tx, _) = broadcast::channel(128); // TODO
-        let mut variant_spec = spec
+        let variant_spec = spec
             .bus_spec_variant
             .as_mut()
             .ok_or_else(|| Status::invalid_argument("missing bus spec variant"))?;
-        let variant = Variant::new(core, tx.clone(), &mut variant_spec).await?;
+        let variant = Variant::new(core, tx.clone(), variant_spec).await?;
         Ok(Arc::new(Self {
             meta,
             spec,
@@ -89,7 +89,7 @@ impl Variant {
             #[cfg(not(target_os = "linux"))]
             BusSpecVariant::Linux(_) => {
                 let _ = (core, tx);
-                return Err(Status::invalid_argument("linux bus support not available"));
+                Err(Status::invalid_argument("linux bus support not available"))
             }
         }
     }

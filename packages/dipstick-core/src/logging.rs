@@ -227,7 +227,7 @@ impl FieldStorage {
 
 struct Visitor<'a>(&'a mut HashMap<String, dipstick_proto::wkt::Value>);
 
-impl<'a> tracing::field::Visit for Visitor<'a> {
+impl tracing::field::Visit for Visitor<'_> {
     fn record_debug(&mut self, field: &tracing::field::Field, value: &dyn std::fmt::Debug) {
         let kind = dipstick_proto::wkt::value::Kind::StringValue(format!("{value:?}"));
         self.0.insert(field.name().to_owned(), pb_value(kind));
