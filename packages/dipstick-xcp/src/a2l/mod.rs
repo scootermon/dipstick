@@ -87,7 +87,9 @@ impl A2l {
             }
             return Ok(measurement);
         }
-        Err(Status::not_found("measurement not found"))
+        Err(Status::not_found(format!(
+            "measurement {measurement_name:?} not found"
+        )))
     }
 
     pub fn get_characteristic(&self, characteristic_name: &str) -> Result<A2lFullCharacteristic> {
