@@ -205,7 +205,7 @@ async fn update_loop(
             }
         }
 
-        tracing::debug!("updating device");
+        tracing::trace!("updating device");
         if let Err(err) = variant.update(&device).await {
             tracing::error!(err = &err as &dyn std::error::Error, "device update error");
         }
