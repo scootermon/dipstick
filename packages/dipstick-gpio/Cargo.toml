@@ -15,9 +15,11 @@ anyhow.workspace = true
 dipstick-core.workspace = true
 dipstick-proto.workspace = true
 futures.workspace = true
-gpiocdev.workspace = true
 tokio.workspace = true
 tonic.workspace = true
 tracing.workspace = true
 tokio-util.workspace = true
 tokio-stream.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+gpiocdev.workspace = true

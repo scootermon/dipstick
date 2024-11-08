@@ -12,6 +12,7 @@ use tokio_util::sync::DropGuard;
 use tokio_util::task::TaskTracker;
 use tonic::{Result, Status};
 
+#[cfg(target_os = "linux")]
 mod linux;
 
 pub struct Chip {
@@ -29,6 +30,7 @@ impl Chip {
         let pins = Arc::new(PinMap::new());
 
         match &mut spec.chip_spec_variant {
+            #[cfg(target_os = "linux")]
             Some(ChipSpecVariant::Linux(linux_spec)) => {
                 linux::spawn(
                     &tracker,
@@ -38,6 +40,10 @@ impl Chip {
                     &mut spec.pins,
                 )
                 .await?;
+            }
+            #[cfg(not(target_os = "linux"))]
+            Some(ChipSpecVariant::Linux(_)) => {
+                return Err(Status::unimplemented("linux chip support not available"))
             }
             None => return Err(Status::invalid_argument("missing chip spec variant")),
         }
