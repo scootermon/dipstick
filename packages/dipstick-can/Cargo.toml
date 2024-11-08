@@ -16,9 +16,11 @@ bytes.workspace = true
 dipstick-core.workspace = true
 dipstick-proto.workspace = true
 futures.workspace = true
-socketcan.workspace = true
 tokio-stream.workspace = true
 tokio-util.workspace = true
 tokio.workspace = true
 tonic.workspace = true
 tracing.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+socketcan.workspace = true
