@@ -1,6 +1,7 @@
 use dipstick_proto::xcp::v1::{
-    A2lAddrType, A2lByteOrder, A2lCharacteristic, A2lDataType, A2lFile, A2lFncValues,
-    A2lMeasurement, A2lModCommon, A2lModule, A2lProject, A2lRecordLayout,
+    A2lAddrType, A2lByteOrder, A2lCharacteristic, A2lCompuMethod, A2lCompuTab, A2lCompuVtab,
+    A2lConversionType, A2lDataType, A2lFile, A2lFncValues, A2lMeasurement, A2lModCommon, A2lModule,
+    A2lProject, A2lRecordLayout, A2lValuePairsStruct,
 };
 
 pub fn map_file(a2l: a2lfile::A2lFile) -> A2lFile {
@@ -13,11 +14,20 @@ pub fn map_file(a2l: a2lfile::A2lFile) -> A2lFile {
 
 fn map_module(module: a2lfile::Module) -> A2lModule {
     A2lModule {
+        name: module.name,
+        long_identifier: module.long_identifier,
         characteristic: module
             .characteristic
             .into_iter()
             .map(map_characteristic)
             .collect(),
+        compu_method: module
+            .compu_method
+            .into_iter()
+            .map(map_compu_method)
+            .collect(),
+        compu_tab: module.compu_tab.into_iter().map(map_compu_tab).collect(),
+        compu_vtab: module.compu_vtab.into_iter().map(map_compu_vtab).collect(),
         measurement: module
             .measurement
             .into_iter()
@@ -45,9 +55,63 @@ fn map_characteristic(c: a2lfile::Characteristic) -> A2lCharacteristic {
         long_identifier: c.long_identifier,
         address: c.address,
         deposit: c.deposit,
-        conversion: c.conversion,
+        conversion: map_conversion(c.conversion),
         byte_order: map_byte_order(c.byte_order.map(|order| order.byte_order)) as _,
         ecu_address_extension: c.ecu_address_extension.map(|ext| i32::from(ext.extension)),
+    }
+}
+
+fn map_compu_method(method: a2lfile::CompuMethod) -> A2lCompuMethod {
+    A2lCompuMethod {
+        name: method.name,
+        long_identifier: method.long_identifier,
+        conversion_type: map_conversion_type(method.conversion_type) as _,
+        format: method.format,
+        unit: method.unit,
+        compu_tab_ref: method.compu_tab_ref.map(|v| v.conversion_table),
+        ref_unit: method.ref_unit.map(|v| v.unit),
+        status_string_ref: method.status_string_ref.map(|v| v.conversion_table),
+    }
+}
+
+fn map_compu_tab(tab: a2lfile::CompuTab) -> A2lCompuTab {
+    A2lCompuTab {
+        name: tab.name,
+        long_identifier: tab.long_identifier,
+        conversion_type: map_conversion_type(tab.conversion_type) as _,
+    }
+}
+
+fn map_compu_vtab(vtab: a2lfile::CompuVtab) -> A2lCompuVtab {
+    A2lCompuVtab {
+        name: vtab.name,
+        long_identifier: vtab.long_identifier,
+        conversion_type: map_conversion_type(vtab.conversion_type) as _,
+        value_pairs: vtab
+            .value_pairs
+            .into_iter()
+            .map(map_value_pairs_struct)
+            .collect(),
+        default_value: vtab.default_value.map(|v| v.display_string),
+    }
+}
+
+fn map_value_pairs_struct(pair: a2lfile::ValuePairsStruct) -> A2lValuePairsStruct {
+    A2lValuePairsStruct {
+        in_val: pair.in_val,
+        out_val: pair.out_val,
+    }
+}
+
+fn map_conversion_type(conversion_type: a2lfile::ConversionType) -> A2lConversionType {
+    match conversion_type {
+        a2lfile::ConversionType::Identical => A2lConversionType::Identical,
+        a2lfile::ConversionType::Form => A2lConversionType::Form,
+        a2lfile::ConversionType::Linear => A2lConversionType::Linear,
+        a2lfile::ConversionType::RatFunc => A2lConversionType::RatFunc,
+        a2lfile::ConversionType::TabIntp => A2lConversionType::TabIntp,
+        a2lfile::ConversionType::TabNointp => A2lConversionType::TabNointp,
+        a2lfile::ConversionType::TabVerb => A2lConversionType::TabVerb,
     }
 }
 
@@ -68,7 +132,7 @@ fn map_measurement(meas: a2lfile::Measurement) -> A2lMeasurement {
         name: meas.name,
         long_identifier: meas.long_identifier,
         datatype: map_data_type(meas.datatype) as _,
-        conversion: meas.conversion,
+        conversion: map_conversion(meas.conversion),
         byte_order: map_byte_order(meas.byte_order.map(|order| order.byte_order)) as _,
         ecu_address: meas.ecu_address.map(|addr| addr.address),
         ecu_address_extension: meas
@@ -115,5 +179,13 @@ fn map_addr_type(addr_type: a2lfile::AddrType) -> A2lAddrType {
         a2lfile::AddrType::Plong => A2lAddrType::Plong,
         a2lfile::AddrType::Plonglong => A2lAddrType::Plonglong,
         a2lfile::AddrType::Direct => A2lAddrType::Direct,
+    }
+}
+
+fn map_conversion(c: String) -> Option<String> {
+    if c == "NO_COMPU_METHOD" {
+        None
+    } else {
+        Some(c)
     }
 }

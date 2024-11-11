@@ -99,6 +99,7 @@ impl Session {
         let A2lFullCharacteristic {
             characteristic: Some(characteristic),
             record_layout: Some(record_layout),
+            .. // TODO
         } = characteristic
         else {
             return Err(Status::invalid_argument("invalid characteristic"));
@@ -130,6 +131,7 @@ impl Session {
         let A2lFullCharacteristic {
             characteristic: Some(characteristic),
             record_layout: Some(record_layout),
+            .. // TODO
         } = characteristic
         else {
             return Err(Status::invalid_argument("invalid characteristic"));

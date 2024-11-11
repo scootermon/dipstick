@@ -2,7 +2,8 @@ use std::sync::{Arc, Mutex};
 
 use dipstick_core::{Core, Entity, EntityKind, EntityMeta};
 use dipstick_proto::xcp::v1::{
-    A2lByteOrder, A2lEntity, A2lFile, A2lFullCharacteristic, A2lMeasurement, A2lSpec, A2lStatus,
+    A2lByteOrder, A2lConversionType, A2lEntity, A2lFile, A2lFullCharacteristic, A2lMeasurement,
+    A2lSpec, A2lStatus,
 };
 use tonic::{Result, Status};
 
@@ -73,11 +74,7 @@ impl A2l {
             .iter()
             .flat_map(|project| project.module.iter());
         for module in modules {
-            let Some(measurement) = module
-                .measurement
-                .iter()
-                .find(|measurement| measurement.name == measurement_name)
-            else {
+            let Some(measurement) = module.find_measurement(measurement_name) else {
                 continue;
             };
 
@@ -100,20 +97,55 @@ impl A2l {
             .iter()
             .flat_map(|project| project.module.iter());
         for module in modules {
-            let Some(characteristic) = module
-                .characteristic
-                .iter()
-                .find(|characteristic| characteristic.name == characteristic_name)
-            else {
+            let Some(characteristic) = module.find_characteristic(characteristic_name) else {
                 continue;
             };
             let record_layout = module
-                .record_layout
-                .iter()
-                .find(|layout| layout.name == characteristic.deposit)
+                .find_record_layout(&characteristic.deposit)
                 .ok_or_else(|| {
-                    Status::not_found("record layout referenced by characteristic not found")
+                    Status::not_found(format!(
+                        "record layout {:?} referenced by characteristic not found",
+                        characteristic.deposit
+                    ))
                 })?;
+
+            let compu_method = if let Some(conversion) = &characteristic.conversion {
+                Some(
+                    module
+                        .find_compu_method(conversion)
+                        .ok_or_else(|| {
+                            Status::not_found(format!(
+                                "compu method {:?} referenced by characteristic not found",
+                                conversion
+                            ))
+                        })?
+                        .clone(),
+                )
+            } else {
+                None
+            };
+
+            let compu_vtab = if let Some(method) = &compu_method {
+                if method.conversion_type() == A2lConversionType::TabVerb {
+                    let name = method.compu_tab_ref();
+                    Some(
+                        module
+                            .find_compu_vtab(name)
+                            .ok_or_else(|| {
+                                Status::not_found(format!(
+                                    "compu vtab {:?} referenced by compu method not found",
+                                    name
+                                ))
+                            })?
+                            .clone(),
+                    )
+                } else {
+                    None
+                }
+            } else {
+                None
+            };
+
             let mut characteristic = characteristic.clone();
             if characteristic.byte_order() == A2lByteOrder::Unspecified {
                 characteristic.set_byte_order(module.byte_order());
@@ -121,6 +153,8 @@ impl A2l {
             return Ok(A2lFullCharacteristic {
                 characteristic: Some(characteristic),
                 record_layout: Some(record_layout.clone()),
+                compu_method,
+                compu_vtab,
             });
         }
         Err(Status::not_found("characteristic not found"))

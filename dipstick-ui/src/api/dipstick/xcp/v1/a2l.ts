@@ -83,10 +83,41 @@ export interface A2lProject {
  */
 export interface A2lModule {
   /**
+   * @generated from protobuf field: string name = 6;
+   */
+  name: string;
+  /**
+   * @generated from protobuf field: string long_identifier = 7;
+   */
+  longIdentifier: string;
+  /**
+   * A2lA2ml a2ml = 8;
+   * repeated A2lAxisPts axis_pts = 9;
+   * repeated A2lBlob blob = 10;
+   *
    * @generated from protobuf field: repeated dipstick.xcp.v1.A2lCharacteristic characteristic = 2;
    */
   characteristic: A2lCharacteristic[];
   /**
+   * @generated from protobuf field: repeated dipstick.xcp.v1.A2lCompuMethod compu_method = 5;
+   */
+  compuMethod: A2lCompuMethod[];
+  /**
+   * @generated from protobuf field: repeated dipstick.xcp.v1.A2lCompuTab compu_tab = 11;
+   */
+  compuTab: A2lCompuTab[];
+  /**
+   * @generated from protobuf field: repeated dipstick.xcp.v1.A2lCompuVtab compu_vtab = 12;
+   */
+  compuVtab: A2lCompuVtab[];
+  /**
+   * repeated A2lCompuVtabRange compu_vtab_range = 13;
+   * repeated A2lFrame frame = 14;
+   * repeated A2lFunction function = 15;
+   * repeated A2lGroup group = 16;
+   * repeated A2lIfData if_data = 17;
+   * repeated A2lInstance instance = 18;
+   *
    * @generated from protobuf field: repeated dipstick.xcp.v1.A2lMeasurement measurement = 1;
    */
   measurement: A2lMeasurement[];
@@ -95,9 +126,19 @@ export interface A2lModule {
    */
   modCommon?: A2lModCommon;
   /**
+   * A2lModPar mod_par = 19;
+   *
    * @generated from protobuf field: repeated dipstick.xcp.v1.A2lRecordLayout record_layout = 3;
    */
-  recordLayout: A2lRecordLayout[];
+  recordLayout: A2lRecordLayout[]; // repeated A2lTransformer transformer = 20;
+  // repeated A2lTypedefAxis typedef_axis = 21;
+  // repeated A2lTypedefBlob typedef_blob = 22;
+  // repeated A2lTypedefCharacteristic typedef_characteristic = 23;
+  // repeated A2lTypedefMeasurement typedef_measurement = 24;
+  // repeated A2lTypedefStructure typedef_structure = 25;
+  // repeated A2lUnit unit = 26;
+  // repeated A2lUserRights user_rights = 27;
+  // A2lVariantCoding variant_coding = 28;
 }
 /**
  * @generated from protobuf message dipstick.xcp.v1.A2lModCommon
@@ -129,9 +170,11 @@ export interface A2lMeasurement {
    */
   datatype: A2lDataType;
   /**
-   * @generated from protobuf field: string conversion = 6;
+   * 'NO_COMPU_METHOD' is replaced with null
+   *
+   * @generated from protobuf field: optional string conversion = 6;
    */
-  conversion: string;
+  conversion?: string;
   /**
    * @generated from protobuf field: dipstick.xcp.v1.A2lByteOrder byte_order = 7;
    */
@@ -168,9 +211,11 @@ export interface A2lCharacteristic {
    */
   deposit: string;
   /**
-   * @generated from protobuf field: string conversion = 7;
+   * 'NO_COMPU_METHOD' is replaced with null
+   *
+   * @generated from protobuf field: optional string conversion = 7;
    */
-  conversion: string;
+  conversion?: string;
   /**
    * @generated from protobuf field: dipstick.xcp.v1.A2lByteOrder byte_order = 3;
    */
@@ -181,6 +226,110 @@ export interface A2lCharacteristic {
    * @generated from protobuf field: optional int32 ecu_address_extension = 5;
    */
   ecuAddressExtension?: number;
+}
+/**
+ * @generated from protobuf message dipstick.xcp.v1.A2lCompuMethod
+ */
+export interface A2lCompuMethod {
+  /**
+   * @generated from protobuf field: string name = 1;
+   */
+  name: string;
+  /**
+   * @generated from protobuf field: string long_identifier = 2;
+   */
+  longIdentifier: string;
+  /**
+   * @generated from protobuf field: dipstick.xcp.v1.A2lConversionType conversion_type = 3;
+   */
+  conversionType: A2lConversionType;
+  /**
+   * @generated from protobuf field: string format = 4;
+   */
+  format: string;
+  /**
+   * @generated from protobuf field: string unit = 5;
+   */
+  unit: string;
+  /**
+   * A2lCoeffs coeffs = 6;
+   * A2lCoeffsLinear coeffs_linear = 7;
+   *
+   * @generated from protobuf field: optional string compu_tab_ref = 8;
+   */
+  compuTabRef?: string;
+  /**
+   * A2lFormula formula = 9;
+   *
+   * @generated from protobuf field: optional string ref_unit = 10;
+   */
+  refUnit?: string;
+  /**
+   * @generated from protobuf field: optional string status_string_ref = 11;
+   */
+  statusStringRef?: string;
+}
+/**
+ * @generated from protobuf message dipstick.xcp.v1.A2lCompuTab
+ */
+export interface A2lCompuTab {
+  /**
+   * @generated from protobuf field: string name = 1;
+   */
+  name: string;
+  /**
+   * @generated from protobuf field: string long_identifier = 2;
+   */
+  longIdentifier: string;
+  /**
+   * @generated from protobuf field: dipstick.xcp.v1.A2lConversionType conversion_type = 3;
+   */
+  conversionType: A2lConversionType; // // u16 (this is just the length of tab_entry, not needed)
+  // uint32 number_value_pairs = 4;
+  // repeated A2lTabEntryStruct tab_entry = 5;
+  // A2lDefaultValue default_value = 6;
+  // A2lDefaultValueNumeric default_value_numeric = 7;
+}
+/**
+ * @generated from protobuf message dipstick.xcp.v1.A2lCompuVtab
+ */
+export interface A2lCompuVtab {
+  /**
+   * @generated from protobuf field: string name = 1;
+   */
+  name: string;
+  /**
+   * @generated from protobuf field: string long_identifier = 2;
+   */
+  longIdentifier: string;
+  /**
+   * @generated from protobuf field: dipstick.xcp.v1.A2lConversionType conversion_type = 3;
+   */
+  conversionType: A2lConversionType;
+  /**
+   * // u16 (this is just the length of number_value_pairs)
+   * uint32 number_value_pairs = 4;
+   *
+   * @generated from protobuf field: repeated dipstick.xcp.v1.A2lValuePairsStruct value_pairs = 5;
+   */
+  valuePairs: A2lValuePairsStruct[];
+  /**
+   * @generated from protobuf field: optional string default_value = 6;
+   */
+  defaultValue?: string;
+}
+/**
+ * @generated from protobuf message dipstick.xcp.v1.A2lValuePairsStruct
+ */
+export interface A2lValuePairsStruct {
+  /**
+   * @generated from protobuf field: double in_val = 1;
+   */
+  inVal: number;
+  /**
+   * @generated from protobuf field: string out_val = 2;
+   */
+  outVal: string;
 }
 /**
  * @generated from protobuf message dipstick.xcp.v1.A2lFullCharacteristic
@@ -194,6 +343,14 @@ export interface A2lFullCharacteristic {
    * @generated from protobuf field: dipstick.xcp.v1.A2lRecordLayout record_layout = 2;
    */
   recordLayout?: A2lRecordLayout;
+  /**
+   * @generated from protobuf field: dipstick.xcp.v1.A2lCompuMethod compu_method = 3;
+   */
+  compuMethod?: A2lCompuMethod;
+  /**
+   * @generated from protobuf field: dipstick.xcp.v1.A2lCompuVtab compu_vtab = 4;
+   */
+  compuVtab?: A2lCompuVtab;
 }
 /**
  * @generated from protobuf message dipstick.xcp.v1.A2lRecordLayout
@@ -279,6 +436,43 @@ export enum A2lDataType {
    * @generated from protobuf enum value: A2L_DATA_TYPE_F64_IEEE = 11;
    */
   F64_IEEE = 11,
+}
+/**
+ * @generated from protobuf enum dipstick.xcp.v1.A2lConversionType
+ */
+export enum A2lConversionType {
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_UNSPECIFIED = 0;
+   */
+  UNSPECIFIED = 0,
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_IDENTICAL = 1;
+   */
+  IDENTICAL = 1,
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_FORM = 2;
+   */
+  FORM = 2,
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_LINEAR = 3;
+   */
+  LINEAR = 3,
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_RAT_FUNC = 4;
+   */
+  RAT_FUNC = 4,
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_TAB_INTP = 5;
+   */
+  TAB_INTP = 5,
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_TAB_NOINTP = 6;
+   */
+  TAB_NOINTP = 6,
+  /**
+   * @generated from protobuf enum value: A2L_CONVERSION_TYPE_TAB_VERB = 7;
+   */
+  TAB_VERB = 7,
 }
 /**
  * @generated from protobuf enum dipstick.xcp.v1.A2lByteOrder
@@ -808,12 +1002,40 @@ export const A2lProject = new A2lProject$Type();
 class A2lModule$Type extends MessageType<A2lModule> {
   constructor() {
     super("dipstick.xcp.v1.A2lModule", [
+      { no: 6, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      {
+        no: 7,
+        name: "long_identifier",
+        kind: "scalar",
+        T: 9 /*ScalarType.STRING*/,
+      },
       {
         no: 2,
         name: "characteristic",
         kind: "message",
         repeat: 1 /*RepeatType.PACKED*/,
         T: () => A2lCharacteristic,
+      },
+      {
+        no: 5,
+        name: "compu_method",
+        kind: "message",
+        repeat: 1 /*RepeatType.PACKED*/,
+        T: () => A2lCompuMethod,
+      },
+      {
+        no: 11,
+        name: "compu_tab",
+        kind: "message",
+        repeat: 1 /*RepeatType.PACKED*/,
+        T: () => A2lCompuTab,
+      },
+      {
+        no: 12,
+        name: "compu_vtab",
+        kind: "message",
+        repeat: 1 /*RepeatType.PACKED*/,
+        T: () => A2lCompuVtab,
       },
       {
         no: 1,
@@ -834,7 +1056,12 @@ class A2lModule$Type extends MessageType<A2lModule> {
   }
   create(value?: PartialMessage<A2lModule>): A2lModule {
     const message = globalThis.Object.create(this.messagePrototype!);
+    message.name = "";
+    message.longIdentifier = "";
     message.characteristic = [];
+    message.compuMethod = [];
+    message.compuTab = [];
+    message.compuVtab = [];
     message.measurement = [];
     message.recordLayout = [];
     if (value !== undefined)
@@ -852,6 +1079,12 @@ class A2lModule$Type extends MessageType<A2lModule> {
     while (reader.pos < end) {
       let [fieldNo, wireType] = reader.tag();
       switch (fieldNo) {
+        case /* string name */ 6:
+          message.name = reader.string();
+          break;
+        case /* string long_identifier */ 7:
+          message.longIdentifier = reader.string();
+          break;
         case /* repeated dipstick.xcp.v1.A2lCharacteristic characteristic */ 2:
           message.characteristic.push(
             A2lCharacteristic.internalBinaryRead(
@@ -859,6 +1092,21 @@ class A2lModule$Type extends MessageType<A2lModule> {
               reader.uint32(),
               options,
             ),
+          );
+          break;
+        case /* repeated dipstick.xcp.v1.A2lCompuMethod compu_method */ 5:
+          message.compuMethod.push(
+            A2lCompuMethod.internalBinaryRead(reader, reader.uint32(), options),
+          );
+          break;
+        case /* repeated dipstick.xcp.v1.A2lCompuTab compu_tab */ 11:
+          message.compuTab.push(
+            A2lCompuTab.internalBinaryRead(reader, reader.uint32(), options),
+          );
+          break;
+        case /* repeated dipstick.xcp.v1.A2lCompuVtab compu_vtab */ 12:
+          message.compuVtab.push(
+            A2lCompuVtab.internalBinaryRead(reader, reader.uint32(), options),
           );
           break;
         case /* repeated dipstick.xcp.v1.A2lMeasurement measurement */ 1:
@@ -907,11 +1155,38 @@ class A2lModule$Type extends MessageType<A2lModule> {
     writer: IBinaryWriter,
     options: BinaryWriteOptions,
   ): IBinaryWriter {
+    /* string name = 6; */
+    if (message.name !== "")
+      writer.tag(6, WireType.LengthDelimited).string(message.name);
+    /* string long_identifier = 7; */
+    if (message.longIdentifier !== "")
+      writer.tag(7, WireType.LengthDelimited).string(message.longIdentifier);
     /* repeated dipstick.xcp.v1.A2lCharacteristic characteristic = 2; */
     for (let i = 0; i < message.characteristic.length; i++)
       A2lCharacteristic.internalBinaryWrite(
         message.characteristic[i],
         writer.tag(2, WireType.LengthDelimited).fork(),
+        options,
+      ).join();
+    /* repeated dipstick.xcp.v1.A2lCompuMethod compu_method = 5; */
+    for (let i = 0; i < message.compuMethod.length; i++)
+      A2lCompuMethod.internalBinaryWrite(
+        message.compuMethod[i],
+        writer.tag(5, WireType.LengthDelimited).fork(),
+        options,
+      ).join();
+    /* repeated dipstick.xcp.v1.A2lCompuTab compu_tab = 11; */
+    for (let i = 0; i < message.compuTab.length; i++)
+      A2lCompuTab.internalBinaryWrite(
+        message.compuTab[i],
+        writer.tag(11, WireType.LengthDelimited).fork(),
+        options,
+      ).join();
+    /* repeated dipstick.xcp.v1.A2lCompuVtab compu_vtab = 12; */
+    for (let i = 0; i < message.compuVtab.length; i++)
+      A2lCompuVtab.internalBinaryWrite(
+        message.compuVtab[i],
+        writer.tag(12, WireType.LengthDelimited).fork(),
         options,
       ).join();
     /* repeated dipstick.xcp.v1.A2lMeasurement measurement = 1; */
@@ -1052,7 +1327,13 @@ class A2lMeasurement$Type extends MessageType<A2lMeasurement> {
         kind: "enum",
         T: () => ["dipstick.xcp.v1.A2lDataType", A2lDataType, "A2L_DATA_TYPE_"],
       },
-      { no: 6, name: "conversion", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      {
+        no: 6,
+        name: "conversion",
+        kind: "scalar",
+        opt: true,
+        T: 9 /*ScalarType.STRING*/,
+      },
       {
         no: 7,
         name: "byte_order",
@@ -1084,7 +1365,6 @@ class A2lMeasurement$Type extends MessageType<A2lMeasurement> {
     message.name = "";
     message.longIdentifier = "";
     message.datatype = 0;
-    message.conversion = "";
     message.byteOrder = 0;
     if (value !== undefined)
       reflectionMergePartial<A2lMeasurement>(this, message, value);
@@ -1110,7 +1390,7 @@ class A2lMeasurement$Type extends MessageType<A2lMeasurement> {
         case /* dipstick.xcp.v1.A2lDataType datatype */ 3:
           message.datatype = reader.int32();
           break;
-        case /* string conversion */ 6:
+        case /* optional string conversion */ 6:
           message.conversion = reader.string();
           break;
         case /* dipstick.xcp.v1.A2lByteOrder byte_order */ 7:
@@ -1155,8 +1435,8 @@ class A2lMeasurement$Type extends MessageType<A2lMeasurement> {
     /* dipstick.xcp.v1.A2lDataType datatype = 3; */
     if (message.datatype !== 0)
       writer.tag(3, WireType.Varint).int32(message.datatype);
-    /* string conversion = 6; */
-    if (message.conversion !== "")
+    /* optional string conversion = 6; */
+    if (message.conversion !== undefined)
       writer.tag(6, WireType.LengthDelimited).string(message.conversion);
     /* dipstick.xcp.v1.A2lByteOrder byte_order = 7; */
     if (message.byteOrder !== 0)
@@ -1194,7 +1474,13 @@ class A2lCharacteristic$Type extends MessageType<A2lCharacteristic> {
       },
       { no: 4, name: "address", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
       { no: 6, name: "deposit", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
-      { no: 7, name: "conversion", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      {
+        no: 7,
+        name: "conversion",
+        kind: "scalar",
+        opt: true,
+        T: 9 /*ScalarType.STRING*/,
+      },
       {
         no: 3,
         name: "byte_order",
@@ -1220,7 +1506,6 @@ class A2lCharacteristic$Type extends MessageType<A2lCharacteristic> {
     message.longIdentifier = "";
     message.address = 0;
     message.deposit = "";
-    message.conversion = "";
     message.byteOrder = 0;
     if (value !== undefined)
       reflectionMergePartial<A2lCharacteristic>(this, message, value);
@@ -1249,7 +1534,7 @@ class A2lCharacteristic$Type extends MessageType<A2lCharacteristic> {
         case /* string deposit */ 6:
           message.deposit = reader.string();
           break;
-        case /* string conversion */ 7:
+        case /* optional string conversion */ 7:
           message.conversion = reader.string();
           break;
         case /* dipstick.xcp.v1.A2lByteOrder byte_order */ 3:
@@ -1294,8 +1579,8 @@ class A2lCharacteristic$Type extends MessageType<A2lCharacteristic> {
     /* string deposit = 6; */
     if (message.deposit !== "")
       writer.tag(6, WireType.LengthDelimited).string(message.deposit);
-    /* string conversion = 7; */
-    if (message.conversion !== "")
+    /* optional string conversion = 7; */
+    if (message.conversion !== undefined)
       writer.tag(7, WireType.LengthDelimited).string(message.conversion);
     /* dipstick.xcp.v1.A2lByteOrder byte_order = 3; */
     if (message.byteOrder !== 0)
@@ -1318,6 +1603,472 @@ class A2lCharacteristic$Type extends MessageType<A2lCharacteristic> {
  */
 export const A2lCharacteristic = new A2lCharacteristic$Type();
 // @generated message type with reflection information, may provide speed optimized methods
+class A2lCompuMethod$Type extends MessageType<A2lCompuMethod> {
+  constructor() {
+    super("dipstick.xcp.v1.A2lCompuMethod", [
+      { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      {
+        no: 2,
+        name: "long_identifier",
+        kind: "scalar",
+        T: 9 /*ScalarType.STRING*/,
+      },
+      {
+        no: 3,
+        name: "conversion_type",
+        kind: "enum",
+        T: () => [
+          "dipstick.xcp.v1.A2lConversionType",
+          A2lConversionType,
+          "A2L_CONVERSION_TYPE_",
+        ],
+      },
+      { no: 4, name: "format", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      { no: 5, name: "unit", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      {
+        no: 8,
+        name: "compu_tab_ref",
+        kind: "scalar",
+        opt: true,
+        T: 9 /*ScalarType.STRING*/,
+      },
+      {
+        no: 10,
+        name: "ref_unit",
+        kind: "scalar",
+        opt: true,
+        T: 9 /*ScalarType.STRING*/,
+      },
+      {
+        no: 11,
+        name: "status_string_ref",
+        kind: "scalar",
+        opt: true,
+        T: 9 /*ScalarType.STRING*/,
+      },
+    ]);
+  }
+  create(value?: PartialMessage<A2lCompuMethod>): A2lCompuMethod {
+    const message = globalThis.Object.create(this.messagePrototype!);
+    message.name = "";
+    message.longIdentifier = "";
+    message.conversionType = 0;
+    message.format = "";
+    message.unit = "";
+    if (value !== undefined)
+      reflectionMergePartial<A2lCompuMethod>(this, message, value);
+    return message;
+  }
+  internalBinaryRead(
+    reader: IBinaryReader,
+    length: number,
+    options: BinaryReadOptions,
+    target?: A2lCompuMethod,
+  ): A2lCompuMethod {
+    let message = target ?? this.create(),
+      end = reader.pos + length;
+    while (reader.pos < end) {
+      let [fieldNo, wireType] = reader.tag();
+      switch (fieldNo) {
+        case /* string name */ 1:
+          message.name = reader.string();
+          break;
+        case /* string long_identifier */ 2:
+          message.longIdentifier = reader.string();
+          break;
+        case /* dipstick.xcp.v1.A2lConversionType conversion_type */ 3:
+          message.conversionType = reader.int32();
+          break;
+        case /* string format */ 4:
+          message.format = reader.string();
+          break;
+        case /* string unit */ 5:
+          message.unit = reader.string();
+          break;
+        case /* optional string compu_tab_ref */ 8:
+          message.compuTabRef = reader.string();
+          break;
+        case /* optional string ref_unit */ 10:
+          message.refUnit = reader.string();
+          break;
+        case /* optional string status_string_ref */ 11:
+          message.statusStringRef = reader.string();
+          break;
+        default:
+          let u = options.readUnknownField;
+          if (u === "throw")
+            throw new globalThis.Error(
+              `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`,
+            );
+          let d = reader.skip(wireType);
+          if (u !== false)
+            (u === true ? UnknownFieldHandler.onRead : u)(
+              this.typeName,
+              message,
+              fieldNo,
+              wireType,
+              d,
+            );
+      }
+    }
+    return message;
+  }
+  internalBinaryWrite(
+    message: A2lCompuMethod,
+    writer: IBinaryWriter,
+    options: BinaryWriteOptions,
+  ): IBinaryWriter {
+    /* string name = 1; */
+    if (message.name !== "")
+      writer.tag(1, WireType.LengthDelimited).string(message.name);
+    /* string long_identifier = 2; */
+    if (message.longIdentifier !== "")
+      writer.tag(2, WireType.LengthDelimited).string(message.longIdentifier);
+    /* dipstick.xcp.v1.A2lConversionType conversion_type = 3; */
+    if (message.conversionType !== 0)
+      writer.tag(3, WireType.Varint).int32(message.conversionType);
+    /* string format = 4; */
+    if (message.format !== "")
+      writer.tag(4, WireType.LengthDelimited).string(message.format);
+    /* string unit = 5; */
+    if (message.unit !== "")
+      writer.tag(5, WireType.LengthDelimited).string(message.unit);
+    /* optional string compu_tab_ref = 8; */
+    if (message.compuTabRef !== undefined)
+      writer.tag(8, WireType.LengthDelimited).string(message.compuTabRef);
+    /* optional string ref_unit = 10; */
+    if (message.refUnit !== undefined)
+      writer.tag(10, WireType.LengthDelimited).string(message.refUnit);
+    /* optional string status_string_ref = 11; */
+    if (message.statusStringRef !== undefined)
+      writer.tag(11, WireType.LengthDelimited).string(message.statusStringRef);
+    let u = options.writeUnknownFields;
+    if (u !== false)
+      (u == true ? UnknownFieldHandler.onWrite : u)(
+        this.typeName,
+        message,
+        writer,
+      );
+    return writer;
+  }
+}
+/**
+ * @generated MessageType for protobuf message dipstick.xcp.v1.A2lCompuMethod
+ */
+export const A2lCompuMethod = new A2lCompuMethod$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class A2lCompuTab$Type extends MessageType<A2lCompuTab> {
+  constructor() {
+    super("dipstick.xcp.v1.A2lCompuTab", [
+      { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      {
+        no: 2,
+        name: "long_identifier",
+        kind: "scalar",
+        T: 9 /*ScalarType.STRING*/,
+      },
+      {
+        no: 3,
+        name: "conversion_type",
+        kind: "enum",
+        T: () => [
+          "dipstick.xcp.v1.A2lConversionType",
+          A2lConversionType,
+          "A2L_CONVERSION_TYPE_",
+        ],
+      },
+    ]);
+  }
+  create(value?: PartialMessage<A2lCompuTab>): A2lCompuTab {
+    const message = globalThis.Object.create(this.messagePrototype!);
+    message.name = "";
+    message.longIdentifier = "";
+    message.conversionType = 0;
+    if (value !== undefined)
+      reflectionMergePartial<A2lCompuTab>(this, message, value);
+    return message;
+  }
+  internalBinaryRead(
+    reader: IBinaryReader,
+    length: number,
+    options: BinaryReadOptions,
+    target?: A2lCompuTab,
+  ): A2lCompuTab {
+    let message = target ?? this.create(),
+      end = reader.pos + length;
+    while (reader.pos < end) {
+      let [fieldNo, wireType] = reader.tag();
+      switch (fieldNo) {
+        case /* string name */ 1:
+          message.name = reader.string();
+          break;
+        case /* string long_identifier */ 2:
+          message.longIdentifier = reader.string();
+          break;
+        case /* dipstick.xcp.v1.A2lConversionType conversion_type */ 3:
+          message.conversionType = reader.int32();
+          break;
+        default:
+          let u = options.readUnknownField;
+          if (u === "throw")
+            throw new globalThis.Error(
+              `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`,
+            );
+          let d = reader.skip(wireType);
+          if (u !== false)
+            (u === true ? UnknownFieldHandler.onRead : u)(
+              this.typeName,
+              message,
+              fieldNo,
+              wireType,
+              d,
+            );
+      }
+    }
+    return message;
+  }
+  internalBinaryWrite(
+    message: A2lCompuTab,
+    writer: IBinaryWriter,
+    options: BinaryWriteOptions,
+  ): IBinaryWriter {
+    /* string name = 1; */
+    if (message.name !== "")
+      writer.tag(1, WireType.LengthDelimited).string(message.name);
+    /* string long_identifier = 2; */
+    if (message.longIdentifier !== "")
+      writer.tag(2, WireType.LengthDelimited).string(message.longIdentifier);
+    /* dipstick.xcp.v1.A2lConversionType conversion_type = 3; */
+    if (message.conversionType !== 0)
+      writer.tag(3, WireType.Varint).int32(message.conversionType);
+    let u = options.writeUnknownFields;
+    if (u !== false)
+      (u == true ? UnknownFieldHandler.onWrite : u)(
+        this.typeName,
+        message,
+        writer,
+      );
+    return writer;
+  }
+}
+/**
+ * @generated MessageType for protobuf message dipstick.xcp.v1.A2lCompuTab
+ */
+export const A2lCompuTab = new A2lCompuTab$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class A2lCompuVtab$Type extends MessageType<A2lCompuVtab> {
+  constructor() {
+    super("dipstick.xcp.v1.A2lCompuVtab", [
+      { no: 1, name: "name", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+      {
+        no: 2,
+        name: "long_identifier",
+        kind: "scalar",
+        T: 9 /*ScalarType.STRING*/,
+      },
+      {
+        no: 3,
+        name: "conversion_type",
+        kind: "enum",
+        T: () => [
+          "dipstick.xcp.v1.A2lConversionType",
+          A2lConversionType,
+          "A2L_CONVERSION_TYPE_",
+        ],
+      },
+      {
+        no: 5,
+        name: "value_pairs",
+        kind: "message",
+        repeat: 1 /*RepeatType.PACKED*/,
+        T: () => A2lValuePairsStruct,
+      },
+      {
+        no: 6,
+        name: "default_value",
+        kind: "scalar",
+        opt: true,
+        T: 9 /*ScalarType.STRING*/,
+      },
+    ]);
+  }
+  create(value?: PartialMessage<A2lCompuVtab>): A2lCompuVtab {
+    const message = globalThis.Object.create(this.messagePrototype!);
+    message.name = "";
+    message.longIdentifier = "";
+    message.conversionType = 0;
+    message.valuePairs = [];
+    if (value !== undefined)
+      reflectionMergePartial<A2lCompuVtab>(this, message, value);
+    return message;
+  }
+  internalBinaryRead(
+    reader: IBinaryReader,
+    length: number,
+    options: BinaryReadOptions,
+    target?: A2lCompuVtab,
+  ): A2lCompuVtab {
+    let message = target ?? this.create(),
+      end = reader.pos + length;
+    while (reader.pos < end) {
+      let [fieldNo, wireType] = reader.tag();
+      switch (fieldNo) {
+        case /* string name */ 1:
+          message.name = reader.string();
+          break;
+        case /* string long_identifier */ 2:
+          message.longIdentifier = reader.string();
+          break;
+        case /* dipstick.xcp.v1.A2lConversionType conversion_type */ 3:
+          message.conversionType = reader.int32();
+          break;
+        case /* repeated dipstick.xcp.v1.A2lValuePairsStruct value_pairs */ 5:
+          message.valuePairs.push(
+            A2lValuePairsStruct.internalBinaryRead(
+              reader,
+              reader.uint32(),
+              options,
+            ),
+          );
+          break;
+        case /* optional string default_value */ 6:
+          message.defaultValue = reader.string();
+          break;
+        default:
+          let u = options.readUnknownField;
+          if (u === "throw")
+            throw new globalThis.Error(
+              `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`,
+            );
+          let d = reader.skip(wireType);
+          if (u !== false)
+            (u === true ? UnknownFieldHandler.onRead : u)(
+              this.typeName,
+              message,
+              fieldNo,
+              wireType,
+              d,
+            );
+      }
+    }
+    return message;
+  }
+  internalBinaryWrite(
+    message: A2lCompuVtab,
+    writer: IBinaryWriter,
+    options: BinaryWriteOptions,
+  ): IBinaryWriter {
+    /* string name = 1; */
+    if (message.name !== "")
+      writer.tag(1, WireType.LengthDelimited).string(message.name);
+    /* string long_identifier = 2; */
+    if (message.longIdentifier !== "")
+      writer.tag(2, WireType.LengthDelimited).string(message.longIdentifier);
+    /* dipstick.xcp.v1.A2lConversionType conversion_type = 3; */
+    if (message.conversionType !== 0)
+      writer.tag(3, WireType.Varint).int32(message.conversionType);
+    /* repeated dipstick.xcp.v1.A2lValuePairsStruct value_pairs = 5; */
+    for (let i = 0; i < message.valuePairs.length; i++)
+      A2lValuePairsStruct.internalBinaryWrite(
+        message.valuePairs[i],
+        writer.tag(5, WireType.LengthDelimited).fork(),
+        options,
+      ).join();
+    /* optional string default_value = 6; */
+    if (message.defaultValue !== undefined)
+      writer.tag(6, WireType.LengthDelimited).string(message.defaultValue);
+    let u = options.writeUnknownFields;
+    if (u !== false)
+      (u == true ? UnknownFieldHandler.onWrite : u)(
+        this.typeName,
+        message,
+        writer,
+      );
+    return writer;
+  }
+}
+/**
+ * @generated MessageType for protobuf message dipstick.xcp.v1.A2lCompuVtab
+ */
+export const A2lCompuVtab = new A2lCompuVtab$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class A2lValuePairsStruct$Type extends MessageType<A2lValuePairsStruct> {
+  constructor() {
+    super("dipstick.xcp.v1.A2lValuePairsStruct", [
+      { no: 1, name: "in_val", kind: "scalar", T: 1 /*ScalarType.DOUBLE*/ },
+      { no: 2, name: "out_val", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+    ]);
+  }
+  create(value?: PartialMessage<A2lValuePairsStruct>): A2lValuePairsStruct {
+    const message = globalThis.Object.create(this.messagePrototype!);
+    message.inVal = 0;
+    message.outVal = "";
+    if (value !== undefined)
+      reflectionMergePartial<A2lValuePairsStruct>(this, message, value);
+    return message;
+  }
+  internalBinaryRead(
+    reader: IBinaryReader,
+    length: number,
+    options: BinaryReadOptions,
+    target?: A2lValuePairsStruct,
+  ): A2lValuePairsStruct {
+    let message = target ?? this.create(),
+      end = reader.pos + length;
+    while (reader.pos < end) {
+      let [fieldNo, wireType] = reader.tag();
+      switch (fieldNo) {
+        case /* double in_val */ 1:
+          message.inVal = reader.double();
+          break;
+        case /* string out_val */ 2:
+          message.outVal = reader.string();
+          break;
+        default:
+          let u = options.readUnknownField;
+          if (u === "throw")
+            throw new globalThis.Error(
+              `Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`,
+            );
+          let d = reader.skip(wireType);
+          if (u !== false)
+            (u === true ? UnknownFieldHandler.onRead : u)(
+              this.typeName,
+              message,
+              fieldNo,
+              wireType,
+              d,
+            );
+      }
+    }
+    return message;
+  }
+  internalBinaryWrite(
+    message: A2lValuePairsStruct,
+    writer: IBinaryWriter,
+    options: BinaryWriteOptions,
+  ): IBinaryWriter {
+    /* double in_val = 1; */
+    if (message.inVal !== 0)
+      writer.tag(1, WireType.Bit64).double(message.inVal);
+    /* string out_val = 2; */
+    if (message.outVal !== "")
+      writer.tag(2, WireType.LengthDelimited).string(message.outVal);
+    let u = options.writeUnknownFields;
+    if (u !== false)
+      (u == true ? UnknownFieldHandler.onWrite : u)(
+        this.typeName,
+        message,
+        writer,
+      );
+    return writer;
+  }
+}
+/**
+ * @generated MessageType for protobuf message dipstick.xcp.v1.A2lValuePairsStruct
+ */
+export const A2lValuePairsStruct = new A2lValuePairsStruct$Type();
+// @generated message type with reflection information, may provide speed optimized methods
 class A2lFullCharacteristic$Type extends MessageType<A2lFullCharacteristic> {
   constructor() {
     super("dipstick.xcp.v1.A2lFullCharacteristic", [
@@ -1333,6 +2084,8 @@ class A2lFullCharacteristic$Type extends MessageType<A2lFullCharacteristic> {
         kind: "message",
         T: () => A2lRecordLayout,
       },
+      { no: 3, name: "compu_method", kind: "message", T: () => A2lCompuMethod },
+      { no: 4, name: "compu_vtab", kind: "message", T: () => A2lCompuVtab },
     ]);
   }
   create(value?: PartialMessage<A2lFullCharacteristic>): A2lFullCharacteristic {
@@ -1366,6 +2119,22 @@ class A2lFullCharacteristic$Type extends MessageType<A2lFullCharacteristic> {
             reader.uint32(),
             options,
             message.recordLayout,
+          );
+          break;
+        case /* dipstick.xcp.v1.A2lCompuMethod compu_method */ 3:
+          message.compuMethod = A2lCompuMethod.internalBinaryRead(
+            reader,
+            reader.uint32(),
+            options,
+            message.compuMethod,
+          );
+          break;
+        case /* dipstick.xcp.v1.A2lCompuVtab compu_vtab */ 4:
+          message.compuVtab = A2lCompuVtab.internalBinaryRead(
+            reader,
+            reader.uint32(),
+            options,
+            message.compuVtab,
           );
           break;
         default:
@@ -1404,6 +2173,20 @@ class A2lFullCharacteristic$Type extends MessageType<A2lFullCharacteristic> {
       A2lRecordLayout.internalBinaryWrite(
         message.recordLayout,
         writer.tag(2, WireType.LengthDelimited).fork(),
+        options,
+      ).join();
+    /* dipstick.xcp.v1.A2lCompuMethod compu_method = 3; */
+    if (message.compuMethod)
+      A2lCompuMethod.internalBinaryWrite(
+        message.compuMethod,
+        writer.tag(3, WireType.LengthDelimited).fork(),
+        options,
+      ).join();
+    /* dipstick.xcp.v1.A2lCompuVtab compu_vtab = 4; */
+    if (message.compuVtab)
+      A2lCompuVtab.internalBinaryWrite(
+        message.compuVtab,
+        writer.tag(4, WireType.LengthDelimited).fork(),
         options,
       ).join();
     let u = options.writeUnknownFields;

@@ -21,19 +21,39 @@ message A2lSpec {
   optional bool strict_parsing = 3;
 }
 
-message A2lFile {
-  A2lProject project = 1;
-}
+message A2lFile { A2lProject project = 1; }
 
-message A2lProject {
-  repeated A2lModule module = 1;
-}
+message A2lProject { repeated A2lModule module = 1; }
 
 message A2lModule {
+  string name = 6;
+  string long_identifier = 7;
+  // A2lA2ml a2ml = 8;
+  // repeated A2lAxisPts axis_pts = 9;
+  // repeated A2lBlob blob = 10;
   repeated A2lCharacteristic characteristic = 2;
+  repeated A2lCompuMethod compu_method = 5;
+  repeated A2lCompuTab compu_tab = 11;
+  repeated A2lCompuVtab compu_vtab = 12;
+  // repeated A2lCompuVtabRange compu_vtab_range = 13;
+  // repeated A2lFrame frame = 14;
+  // repeated A2lFunction function = 15;
+  // repeated A2lGroup group = 16;
+  // repeated A2lIfData if_data = 17;
+  // repeated A2lInstance instance = 18;
   repeated A2lMeasurement measurement = 1;
   A2lModCommon mod_common = 4;
+  // A2lModPar mod_par = 19;
   repeated A2lRecordLayout record_layout = 3;
+  // repeated A2lTransformer transformer = 20;
+  // repeated A2lTypedefAxis typedef_axis = 21;
+  // repeated A2lTypedefBlob typedef_blob = 22;
+  // repeated A2lTypedefCharacteristic typedef_characteristic = 23;
+  // repeated A2lTypedefMeasurement typedef_measurement = 24;
+  // repeated A2lTypedefStructure typedef_structure = 25;
+  // repeated A2lUnit unit = 26;
+  // repeated A2lUserRights user_rights = 27;
+  // A2lVariantCoding variant_coding = 28;
 }
 
 message A2lModCommon {
@@ -45,7 +65,8 @@ message A2lMeasurement {
   string name = 1;
   string long_identifier = 2;
   A2lDataType datatype = 3;
-  string conversion = 6;
+  // 'NO_COMPU_METHOD' is replaced with null
+  optional string conversion = 6;
   A2lByteOrder byte_order = 7;
   optional uint32 ecu_address = 4;
   // i16
@@ -72,15 +93,65 @@ message A2lCharacteristic {
   string long_identifier = 2;
   uint32 address = 4;
   string deposit = 6;
-  string conversion = 7;
+  // 'NO_COMPU_METHOD' is replaced with null
+  optional string conversion = 7;
   A2lByteOrder byte_order = 3;
   // i16
   optional int32 ecu_address_extension = 5;
 }
 
+message A2lCompuMethod {
+  string name = 1;
+  string long_identifier = 2;
+  A2lConversionType conversion_type = 3;
+  string format = 4;
+  string unit = 5;
+  // A2lCoeffs coeffs = 6;
+  // A2lCoeffsLinear coeffs_linear = 7;
+  optional string compu_tab_ref = 8;
+  // A2lFormula formula = 9;
+  optional string ref_unit = 10;
+  optional string status_string_ref = 11;
+}
+
+enum A2lConversionType {
+  A2L_CONVERSION_TYPE_UNSPECIFIED = 0;
+  A2L_CONVERSION_TYPE_IDENTICAL = 1;
+  A2L_CONVERSION_TYPE_FORM = 2;
+  A2L_CONVERSION_TYPE_LINEAR = 3;
+  A2L_CONVERSION_TYPE_RAT_FUNC = 4;
+  A2L_CONVERSION_TYPE_TAB_INTP = 5;
+  A2L_CONVERSION_TYPE_TAB_NOINTP = 6;
+  A2L_CONVERSION_TYPE_TAB_VERB = 7;
+}
+
+message A2lCompuTab {
+  string name = 1;
+  string long_identifier = 2;
+  A2lConversionType conversion_type = 3;
+  // repeated A2lTabEntryStruct tab_entry = 5;
+  // A2lDefaultValue default_value = 6;
+  // A2lDefaultValueNumeric default_value_numeric = 7;
+}
+
+message A2lCompuVtab {
+  string name = 1;
+  string long_identifier = 2;
+  A2lConversionType conversion_type = 3;
+  repeated A2lValuePairsStruct value_pairs = 5;
+  optional string default_value = 6;
+}
+
+message A2lValuePairsStruct {
+  double in_val = 1;
+  string out_val = 2;
+}
+
 message A2lFullCharacteristic {
   A2lCharacteristic characteristic = 1;
   A2lRecordLayout record_layout = 2;
+  A2lCompuMethod compu_method = 3;
+  A2lCompuVtab compu_vtab = 4;
 }
 
 enum A2lByteOrder {

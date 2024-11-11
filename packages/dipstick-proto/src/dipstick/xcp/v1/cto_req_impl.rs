@@ -9,6 +9,18 @@ impl CtoReq {
     }
 }
 
+impl CtoReqData {
+    pub const fn pid(&self) -> CtoReqPid {
+        match self {
+            Self::Connect(_) => CtoReqPid::Connect,
+            Self::ShortUpload(_) => CtoReqPid::ShortUpload,
+            Self::ShortDownload(_) => CtoReqPid::ShortDownload,
+            Self::SetMta(_) => CtoReqPid::SetMta,
+            Self::Download(_) => CtoReqPid::Download,
+        }
+    }
+}
+
 impl From<CtoConnectReqData> for CtoReq {
     fn from(value: CtoConnectReqData) -> Self {
         Self {
