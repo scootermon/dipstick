@@ -37,7 +37,7 @@ message SubscribeChipResponse {
 message SetPinLevelRequest {
   dipstick.core.v1.EntitySelector chip = 1;
   string pin_id = 2;
-  Level level = 3;
+  Level logical = 3;
 }
 
 message SetPinLevelResponse {}

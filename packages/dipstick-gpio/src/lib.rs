@@ -4,7 +4,8 @@ use dipstick_core::{Core, Package, PackageKind};
 use dipstick_proto::core::v1::EntityMetaSpec;
 use dipstick_proto::gpio::v1::{
     ChipSpec, CreateChipRequest, CreateChipResponse, GetChipRequest, GetChipResponse, GpioService,
-    GpioServiceServer, SubscribeChipRequest, SubscribeChipResponse,
+    GpioServiceServer, Level, SetPinLevelRequest, SetPinLevelResponse, SubscribeChipRequest,
+    SubscribeChipResponse,
 };
 use futures::future::BoxFuture;
 use futures::stream::BoxStream;
@@ -100,6 +101,24 @@ impl GpioService for Gpio {
                 })
                 .boxed();
             Ok(Response::new(stream))
+        }
+        .boxed()
+    }
+
+    fn set_pin_level<'s: 'fut, 'fut>(
+        &'s self,
+        request: Request<SetPinLevelRequest>,
+    ) -> BoxFuture<'fut, Result<Response<SetPinLevelResponse>>> {
+        async move {
+            let SetPinLevelRequest {
+                chip,
+                pin_id,
+                logical,
+            } = request.into_inner();
+            let logical = Level::try_from(logical).unwrap_or_default();
+            let chip = self.core.select_entity::<Chip>(&chip.unwrap_or_default())?;
+            chip.set_pin_level(pin_id, logical).await?;
+            Ok(Response::new(SetPinLevelResponse {}))
         }
         .boxed()
     }

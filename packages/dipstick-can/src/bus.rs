@@ -99,7 +99,10 @@ impl Variant {
             #[cfg(target_os = "linux")]
             Self::Linux(bus) => bus.send(frame).await,
             #[cfg(not(target_os = "linux"))]
-            _ => unreachable!(),
+            _ => {
+                let _ = frame;
+                unreachable!()
+            }
         }
     }
 }

@@ -9,9 +9,10 @@ message PinSpec {
   string line_name = 2;
   dipstick.core.v1.IoDir direction = 3;
   // Only used if direction is OUTPUT.
+  // If unspecified for an output pin, the default level is LOW.
   Level default_level = 4;
   Bias bias = 5;
-  // Only used for input pins.
+  // Only used if direction is INPUT.
   google.protobuf.Duration debounce_period = 6;
 }
 
