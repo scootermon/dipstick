@@ -161,6 +161,31 @@ pub mod gpio_service_client {
                 );
             self.inner.server_streaming(req, path, codec).await
         }
+        pub async fn set_pin_level(
+            &mut self,
+            request: impl tonic::IntoRequest<super::SetPinLevelRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SetPinLevelResponse>,
+            tonic::Status,
+        > {
+            self.inner
+                .ready()
+                .await
+                .map_err(|e| {
+                    tonic::Status::new(
+                        tonic::Code::Unknown,
+                        format!("Service was not ready: {}", e.into()),
+                    )
+                })?;
+            let codec = tonic::codec::ProstCodec::default();
+            let path = http::uri::PathAndQuery::from_static(
+                "/dipstick.gpio.v1.GpioService/SetPinLevel",
+            );
+            let mut req = request.into_request();
+            req.extensions_mut()
+                .insert(GrpcMethod::new("dipstick.gpio.v1.GpioService", "SetPinLevel"));
+            self.inner.unary(req, path, codec).await
+        }
     }
 }
 /// Generated server implementations.
@@ -192,6 +217,13 @@ pub mod gpio_service_server {
             request: tonic::Request<super::SubscribeChipRequest>,
         ) -> std::result::Result<
             tonic::Response<Self::SubscribeChipStream>,
+            tonic::Status,
+        >;
+        async fn set_pin_level(
+            &self,
+            request: tonic::Request<super::SetPinLevelRequest>,
+        ) -> std::result::Result<
+            tonic::Response<super::SetPinLevelResponse>,
             tonic::Status,
         >;
     }
@@ -403,6 +435,51 @@ pub mod gpio_service_server {
                                 max_encoding_message_size,
                             );
                         let res = grpc.server_streaming(method, req).await;
+                        Ok(res)
+                    };
+                    Box::pin(fut)
+                }
+                "/dipstick.gpio.v1.GpioService/SetPinLevel" => {
+                    #[allow(non_camel_case_types)]
+                    struct SetPinLevelSvc<T: GpioService>(pub Arc<T>);
+                    impl<
+                        T: GpioService,
+                    > tonic::server::UnaryService<super::SetPinLevelRequest>
+                    for SetPinLevelSvc<T> {
+                        type Response = super::SetPinLevelResponse;
+                        type Future = BoxFuture<
+                            tonic::Response<Self::Response>,
+                            tonic::Status,
+                        >;
+                        fn call(
+                            &mut self,
+                            request: tonic::Request<super::SetPinLevelRequest>,
+                        ) -> Self::Future {
+                            let inner = Arc::clone(&self.0);
+                            let fut = async move {
+                                <T as GpioService>::set_pin_level(&inner, request).await
+                            };
+                            Box::pin(fut)
+                        }
+                    }
+                    let accept_compression_encodings = self.accept_compression_encodings;
+                    let send_compression_encodings = self.send_compression_encodings;
+                    let max_decoding_message_size = self.max_decoding_message_size;
+                    let max_encoding_message_size = self.max_encoding_message_size;
+                    let inner = self.inner.clone();
+                    let fut = async move {
+                        let method = SetPinLevelSvc(inner);
+                        let codec = tonic::codec::ProstCodec::default();
+                        let mut grpc = tonic::server::Grpc::new(codec)
+                            .apply_compression_config(
+                                accept_compression_encodings,
+                                send_compression_encodings,
+                            )
+                            .apply_max_message_size_config(
+                                max_decoding_message_size,
+                                max_encoding_message_size,
+                            );
+                        let res = grpc.unary(method, req).await;
                         Ok(res)
                     };
                     Box::pin(fut)

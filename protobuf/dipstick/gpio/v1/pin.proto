@@ -2,11 +2,17 @@ syntax = "proto3";
 package dipstick.gpio.v1;
 
 import "dipstick/core/v1/direction.proto";
+import "google/protobuf/duration.proto";
 import "google/protobuf/timestamp.proto";
 
 message PinSpec {
   string line_name = 2;
   dipstick.core.v1.IoDir direction = 3;
+  // Only used if direction is OUTPUT.
+  Level default_level = 4;
+  Bias bias = 5;
+  // Only used for input pins.
+  google.protobuf.Duration debounce_period = 6;
 }
 
 message PinStatus {
@@ -18,4 +24,11 @@ enum Level {
   LEVEL_UNSPECIFIED = 0;
   LEVEL_LOW = 1;
   LEVEL_HIGH = 2;
+}
+
+enum Bias {
+  BIAS_UNSPECIFIED = 0;
+  BIAS_DISABLE = 1;
+  BIAS_PULL_UP = 2;
+  BIAS_PULL_DOWN = 3;
 }

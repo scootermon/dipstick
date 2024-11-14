@@ -10,7 +10,10 @@ service GpioService {
 
   rpc GetChip(GetChipRequest) returns (GetChipResponse);
 
-  rpc SubscribeChip(SubscribeChipRequest) returns (stream SubscribeChipResponse);
+  rpc SubscribeChip(SubscribeChipRequest)
+      returns (stream SubscribeChipResponse);
+
+  rpc SetPinLevel(SetPinLevelRequest) returns (SetPinLevelResponse);
 }
 
 message CreateChipRequest {
@@ -18,23 +21,23 @@ message CreateChipRequest {
   ChipSpec spec = 2;
 }
 
-message CreateChipResponse {
-  ChipEntity chip = 1;
-}
+message CreateChipResponse { ChipEntity chip = 1; }
 
-message GetChipRequest {
-  dipstick.core.v1.EntitySelector chip = 1;
-}
+message GetChipRequest { dipstick.core.v1.EntitySelector chip = 1; }
 
-message GetChipResponse {
-  ChipEntity chip = 1;
-}
+message GetChipResponse { ChipEntity chip = 1; }
 
-message SubscribeChipRequest {
-  dipstick.core.v1.EntitySelector chip = 1;
-}
+message SubscribeChipRequest { dipstick.core.v1.EntitySelector chip = 1; }
 
 message SubscribeChipResponse {
   string pin_id = 1;
   PinStatus status = 2;
 }
+
+message SetPinLevelRequest {
+  dipstick.core.v1.EntitySelector chip = 1;
+  string pin_id = 2;
+  Level level = 3;
+}
+
+message SetPinLevelResponse {}

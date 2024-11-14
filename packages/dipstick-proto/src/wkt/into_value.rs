@@ -1,5 +1,4 @@
-pub use prost_types::*;
-pub use protoc_wkt::google::protobuf::FILE_DESCRIPTOR_SET;
+use super::{Value, ValueKind};
 
 pub trait IntoValue {
     fn into_value(self) -> Value;
@@ -16,7 +15,7 @@ macro_rules! impl_into_value {
         impl IntoValue for $ty {
             fn into_value(self) -> Value {
                 Value {
-                    kind: Some(value::Kind::$kind(self.into())),
+                    kind: Some(ValueKind::$kind(self.into())),
                 }
             }
         }
