@@ -208,10 +208,9 @@ fn apply_input_spec(
     if pin.bias() == Bias::Unspecified {
         // if bias isn't set, use the current bias setting
         pin.set_bias(match line_info.bias {
-            Some(gpiocdev::line::Bias::Disabled) => Bias::Disable,
+            Some(gpiocdev::line::Bias::Disabled) | None => Bias::Disable,
             Some(gpiocdev::line::Bias::PullUp) => Bias::PullUp,
             Some(gpiocdev::line::Bias::PullDown) => Bias::PullDown,
-            None => Bias::Unspecified,
         });
     }
     builder.with_bias(match pin.bias() {

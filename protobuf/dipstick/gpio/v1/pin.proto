@@ -11,6 +11,8 @@ message PinSpec {
   // Only used if direction is OUTPUT.
   // If unspecified for an output pin, the default level is LOW.
   Level default_level = 4;
+  // Only used if direction is INPUT.
+  // If unspecified for an input pin, the default bias is DISABLE.
   Bias bias = 5;
   // Only used if direction is INPUT.
   google.protobuf.Duration debounce_period = 6;
