@@ -64,11 +64,8 @@ fn write_device_config_blocking(device: &mut Spidev, spec: &DeviceSpec) -> io::R
 }
 
 fn read_device_config_blocking(device: &mut Spidev, spec: &mut DeviceSpec) -> io::Result<()> {
-    // TODO: why can't we call get_mode32?
-    let value = spidev::spidevioctl::get_mode(device.as_raw_fd())?;
-    spec.set_mode(from_linux_mode(SpiModeFlags::from_bits_retain(
-        value.into(),
-    )));
+    let value = spidev::spidevioctl::get_mode_u32(device.as_raw_fd())?;
+    spec.set_mode(from_linux_mode(SpiModeFlags::from_bits_retain(value)));
     let value = spidev::spidevioctl::get_bits_per_word(device.as_raw_fd())?;
     spec.bits_per_word = Some(value.into());
     let value = spidev::spidevioctl::get_max_speed_hz(device.as_raw_fd())?;

@@ -1365,8 +1365,7 @@ dependencies = [
 [[package]]
 name = "spidev"
 version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c2800c129338c77998c1dcb6d4200447e018beb7d29959eb104cba2d45f83c1a"
+source = "git+https://github.com/rust-embedded/rust-spidev?rev=75c319bf9378ca166dc6088ea560548e84caf42f#75c319bf9378ca166dc6088ea560548e84caf42f"
 dependencies = [
  "bitflags 2.6.0",
  "libc",
