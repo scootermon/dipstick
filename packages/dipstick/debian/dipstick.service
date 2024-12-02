@@ -3,6 +3,7 @@ Description=Dipstick
 
 [Service]
 ExecStart=/usr/bin/dipstick
+Restart=always
 
 [Install]
 WantedBy=multi-user.target
