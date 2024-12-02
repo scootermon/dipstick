@@ -5,6 +5,7 @@ resolver = "2"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/workspaces.html
 
 [workspace.package]
+version = "1.0.0"
 authors = ["Simon Berger <simon.berger@b-on.com>"]
 categories = []
 edition = "2021"
