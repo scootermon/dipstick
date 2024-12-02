@@ -5,7 +5,7 @@ use std::time::{Duration, SystemTime};
 use anyhow::Context;
 use dipstick_proto::core::v1::IoDir;
 use dipstick_proto::gpio::v1::{Bias, Level, LinuxChipSpec, PinSpec};
-use gpiocdev::line::{EdgeEvent, EventClock, OffsetMap, Values};
+use gpiocdev::line::{EdgeEvent, EdgeKind, EventClock, OffsetMap, Values};
 use gpiocdev::tokio::AsyncRequest;
 use gpiocdev::Request;
 use tokio::sync::{mpsc, oneshot};
@@ -160,8 +160,8 @@ impl Actor {
                     return;
                 };
                 let logical = match event.kind {
-                    gpiocdev::line::EdgeKind::Rising => Level::High,
-                    gpiocdev::line::EdgeKind::Falling => Level::Low,
+                    EdgeKind::Rising => Level::High,
+                    EdgeKind::Falling => Level::Low,
                 };
                 let timestamp = SystemTime::UNIX_EPOCH + Duration::from_nanos(event.timestamp_ns);
                 self.pins.set_pin_level(id, timestamp, logical)
