@@ -1,0 +1,8 @@
+[Unit]
+Description=Dipstick
+
+[Service]
+ExecStart=/usr/bin/dipstick
+
+[Install]
+WantedBy=multi-user.target
