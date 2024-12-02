@@ -6,7 +6,7 @@ use futures::StreamExt;
 use socketcan::tokio::{CanFdSocket, CanSocket};
 use socketcan::SocketOptions;
 use tokio::sync::broadcast;
-use tokio::task::{block_in_place, JoinHandle};
+use tokio::task::{self, block_in_place, JoinHandle};
 use tokio_util::sync::{CancellationToken, DropGuard};
 use tonic::{Result, Status};
 
@@ -98,7 +98,7 @@ fn spawn_reader_task_blocking(
         socket,
         tx,
     }
-    .spawn())
+    .spawn(ifname))
 }
 
 struct ReaderTask {
@@ -108,9 +108,12 @@ struct ReaderTask {
 }
 
 impl ReaderTask {
-    fn spawn(self) -> JoinHandle<()> {
+    fn spawn(self, ifname: &str) -> JoinHandle<()> {
         // TODO: span
-        tokio::spawn(self.run())
+        task::Builder::new()
+            .name(&format!("dp-can-{ifname}"))
+            .spawn(self.run())
+            .unwrap()
     }
 
     async fn run(mut self) {

@@ -14,7 +14,7 @@ use tonic::{Result, Status};
 
 use super::PinMap;
 
-const CONSUMER: &str = "dipstick-gpio";
+const CONSUMER: &str = "dp-gpio";
 
 pub enum Message {
     Shutdown,
@@ -35,7 +35,9 @@ pub async fn spawn(
         Actor::new_blocking(receiver, pins, spec, pin_specs)
             .map_err(|err| Status::internal(format!("failed to create linux gpio chip: {err}")))
     })?;
-    task::spawn(run_actor(actor));
+    task::Builder::new()
+        .name(&format!("{CONSUMER}-{}", spec.name))
+        .spawn(run_actor(actor))?;
     Ok(())
 }
 

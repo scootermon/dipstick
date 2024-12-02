@@ -18,6 +18,10 @@ The contents of "spec" and "status" depend on the entity kind.
 APIs are structured into packages.
 Packages contain gRPC services and entity kinds.
 
+### Naming
+
+`dp` is used as the abbreviation for Dipstick.
+
 ## Ideas
 
 - CAN Frame should store frame kind (remote, error, classic, fd)
