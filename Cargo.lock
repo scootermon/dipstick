@@ -278,7 +278,7 @@ checksum = "22ec99545bb0ed0ea7bb9b8e1e9122ea386ff8a48c0922e43f36d45ab09e0e80"
 
 [[package]]
 name = "dipstick"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "bytes",
@@ -305,7 +305,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-can"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "bytes",
@@ -322,7 +322,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-core"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "console-subscriber",
@@ -340,7 +340,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-device"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "bytes",
  "dipstick-core",
@@ -356,7 +356,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-gpio"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "dipstick-core",
@@ -372,7 +372,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-proto"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "bytes",
  "prost",
@@ -383,7 +383,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-shadow"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "anyhow",
  "dipstick-core",
@@ -402,7 +402,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-spi"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "bytes",
  "dipstick-core",
@@ -417,7 +417,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-stack"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "dipstick-can",
  "dipstick-core",
@@ -433,7 +433,7 @@ dependencies = [
 
 [[package]]
 name = "dipstick-xcp"
-version = "1.0.1"
+version = "1.0.2"
 dependencies = [
  "a2lfile",
  "anyhow",

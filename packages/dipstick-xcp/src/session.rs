@@ -274,7 +274,14 @@ impl Session {
             .await
         {
             Ok(res) => res,
-            Err(_) => Err(Status::deadline_exceeded("cto command timeout")),
+            Err(_) => {
+                // if we don't get a response in time, we should assume we're disconnected
+                {
+                    let mut slot = self.connect_data.write().unwrap();
+                    *slot = None;
+                }
+                Err(Status::deadline_exceeded("cto command timeout"))
+            }
         }
     }
 }
