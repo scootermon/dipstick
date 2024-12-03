@@ -9,12 +9,13 @@ use gpiocdev::line::{EdgeEvent, EdgeKind, EventClock, OffsetMap, Values};
 use gpiocdev::tokio::AsyncRequest;
 use gpiocdev::Request;
 use tokio::sync::{mpsc, oneshot};
-use tokio::task;
+use tokio::{task, time};
 use tonic::{Result, Status};
 
 use super::PinMap;
 
 const CONSUMER: &str = "dp-gpio";
+const FULL_READ_INTERVAL: Duration = Duration::from_millis(500);
 
 pub enum Message {
     Shutdown,
@@ -44,6 +45,7 @@ pub async fn spawn(
 struct Actor {
     receiver: mpsc::Receiver<Message>,
     req: AsyncRequest,
+    full_read_interval: time::Interval,
     pins: Arc<PinMap>,
     offset_to_id: OffsetMap<String>,
 }
@@ -89,12 +91,25 @@ impl Actor {
                 IoDir::Unspecified => unreachable!(),
             }
         }
+
+        // HACK: apparently we're missing some edge events when they come in bursts so
+        // we need to periodically do a full read
+        let mut full_read_interval = time::interval(FULL_READ_INTERVAL);
+        full_read_interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
+
         Ok(Self {
             receiver,
             req: AsyncRequest::new(builder.request()?),
+            full_read_interval,
             pins,
             offset_to_id,
         })
+    }
+
+    fn full_read(&self) {
+        if let Err(err) = task::block_in_place(|| self.full_read_blocking()) {
+            tracing::error!(err = &*err, "failed to read io values");
+        }
     }
 
     fn full_read_blocking(&self) -> anyhow::Result<()> {
@@ -174,24 +189,24 @@ impl Actor {
 }
 
 async fn run_actor(mut actor: Actor) {
-    if let Err(err) = task::block_in_place(|| actor.full_read_blocking()) {
-        tracing::error!(err = &*err, "failed to read initial values");
-    }
-
     enum Event {
         Shutdown,
         Message(Message),
         EdgeEvent(gpiocdev::Result<EdgeEvent>),
+        FullRead,
     }
     loop {
         let event = tokio::select! {
             msg = actor.receiver.recv() => msg.map_or(Event::Shutdown, Event::Message),
             event = actor.req.read_edge_event() => Event::EdgeEvent(event),
+            // the tick will trigger immediately on the first iteration, so we will perform a full read at the start
+            _ = actor.full_read_interval.tick() => Event::FullRead,
         };
         match event {
             Event::Shutdown => break,
             Event::Message(msg) => actor.handle_message(msg).await,
             Event::EdgeEvent(event) => actor.handle_edge_event(event).await,
+            Event::FullRead => actor.full_read(),
         }
     }
     tracing::info!("linux gpio actor shutting down");
